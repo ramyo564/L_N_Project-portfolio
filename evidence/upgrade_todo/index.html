@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade Todo Evidence Map</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script defer>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.hljs) {
+                window.hljs.highlightAll();
+            }
+        });
+    </script>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #080e18;
+            --panel: #0f1623;
+            --line: #233248;
+            --text: #d8e2f2;
+            --muted: #95a7c4;
+            --blue: #58a6ff;
+            --gold: #d29922;
+            --green: #2ea043;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at 20% 10%, #132034, var(--bg) 60%);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .wrap {
+            width: min(1120px, 92vw);
+            margin: 0 auto;
+            padding: 28px 0 60px;
+        }
+
+        .panel {
+            background: linear-gradient(180deg, rgba(15, 22, 35, 0.96), rgba(9, 14, 24, 0.96));
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.03em;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            color: var(--blue);
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 0.88rem;
+            color: var(--blue);
+            margin-bottom: 8px;
+            margin-top: 12px;
+        }
+
+        p,
+        li {
+            margin: 0;
+            color: var(--text);
+            font-size: 0.92rem;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .toc {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .toc a {
+            color: var(--text);
+            text-decoration: none;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: block;
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .toc a:hover {
+            border-color: var(--blue);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        th,
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--line);
+            border-right: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+            font-size: 0.87rem;
+        }
+
+        th:last-child,
+        td:last-child {
+            border-right: none;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        th {
+            color: var(--blue);
+            background: rgba(88, 166, 255, 0.08);
+            font-weight: 600;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: #c7d7ee;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 18px;
+            display: grid;
+            gap: 6px;
+        }
+
+        .case-summary {
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            border: 1px solid var(--green);
+            color: #9be9a8;
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+        }
+
+        .code-snippet {
+            margin-top: 8px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.24);
+        }
+
+        .code-snippet-label {
+            display: block;
+            padding: 7px 10px;
+            border-bottom: 1px solid var(--line);
+            color: var(--blue);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            background: rgba(88, 166, 255, 0.08);
+        }
+
+        .code-snippet pre {
+            margin: 0;
+            padding: 10px 12px;
+            overflow-x: auto;
+        }
+
+        .code-snippet pre code {
+            display: block;
+            white-space: pre;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.77rem;
+            line-height: 1.5;
+            color: inherit;
+        }
+
+        .code-snippet pre code.hljs {
+            background: transparent;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="wrap">
+        <section class="panel">
+            <h1>UPGRADE_TODO CODE EVIDENCE INDEX</h1>
+            <p class="muted">private 저장소 소스는 외부 GitHub 파일 링크 대신 이 페이지에서 코드 경로와 변경 근거를 공개 가능한 수준으로 정리했습니다.</p>
+            <div class="toc">
+                <a href="#case-1">Case 1. UUIDv7 + Persistable + Outbox</a>
+                <a href="#case-2">Case 2. JWT Claims + Access Gate</a>
+                <a href="#case-3">Case 3. Cache Transaction Boundary</a>
+                <a href="#case-4">Case 4. Pending Cache Async Gap</a>
+                <a href="#case-5">Case 5. Rabbit Async Publisher</a>
+                <a href="#case-6">Case 6. Integrated Performance Tuning</a>
+            </div>
+        </section>
+
+        <section id="case-1" class="panel">
+            <span class="badge">Case 1</span>
+            <h2>UUIDv7 merge 경로 제거 + Outbox 분리</h2>
+            <p class="case-summary">Assigned UUID 저장 시 merge 경로 병목을 줄이고 Auth/User 결합 트랜잭션을 Outbox 기반 비동기로 분리한 근거입니다.</p>
+
+            <h3 id="case-1-path">핵심 구현 코드</h3>
+            <div class="code-snippet">
+                <span class="code-snippet-label">AuthUserEntity - Persistable isNew()</span>
+                <pre><code class="language-java">public class AuthUserEntity implements Persistable&lt;UUID&gt; {
+  @Version
+  private Long version;
+
+  @Override
+  public boolean isNew() {
+    return this.id == null || this.version == null;
+  }
+}</code></pre>
+            </div>
+            <div class="code-snippet">
+                <span class="code-snippet-label">OutboxEventAuthProcessor - 단건 격리 발행</span>
+                <pre><code class="language-java">@Transactional(propagation = Propagation.REQUIRES_NEW)
+public void processOne(OutboxEventAuthEntity entity) {
+  try {
+    messagePublisherPort.publish(topic, key, payloadJson, headers);
+    entity.markPublished(Instant.now());
+  } catch (Exception ex) {
+    entity.markFailed(ex.getClass().getSimpleName() + ": " + ex.getMessage());
+  }
+  outboxEventAuthRepository.save(entity);
+}</code></pre>
+            </div>
+
+            <h3 id="case-1-commits">Commit Trail</h3>
+            <ul>
+                <li>Refactor user registration to use outbox pattern</li>
+                <li>이벤트 전체 트랜잭션 제거, 단건 processOne 분리</li>
+                <li>Persistable for entities 적용</li>
+                <li>User Auth 트랜잭션 분리 초기 구조 반영</li>
+            </ul>
+        </section>
+
+        <section id="case-2" class="panel">
+            <span class="badge">Case 2</span>
+            <h2>JWT Claims 기반 인증 + AOP 권한게이트</h2>
+            <p class="case-summary">인증 경로 N+1 문제를 줄이기 위해 요청당 반복 조회를 Claims/Cache 경로로 축소한 근거입니다.</p>
+
+            <h3 id="case-2-path">핵심 구현 코드</h3>
+            <div class="code-snippet">
+                <span class="code-snippet-label">JwtAuthenticationFilter - Claims 기반 인증 컨텍스트 구성</span>
+                <pre><code class="language-java">private void authenticateAndCache(String jwt) {
+  if (!jwtProvider.validateAccessToken(jwt)) return;
+
+  Claims claims = jwtProvider.getClaimsFromAccessToken(jwt);
+  String userId = claims.getSubject();
+  String email = claims.get("email", String.class);
+
+  CustomUserDetails userDetails = new CustomUserDetails(
+      UUIDv7.fromString(userId), email, "", false);
+  authTokenCache.put(jwt, userDetails, jwtProvider.getAccessTokenExpirationMs());
+  setAuthentication(userDetails);
+}</code></pre>
+            </div>
+            <div class="code-snippet">
+                <span class="code-snippet-label">ProjectAccessAspect - @CheckProjectAccess 선검증</span>
+                <pre><code class="language-java">@Before("@annotation(checkProjectAccess)")
+public void checkAccess(JoinPoint joinPoint, CheckProjectAccess checkProjectAccess) {
+  Object paramValue = args[paramIndex];
+  if (paramValue instanceof String stringValue) {
+    projectAccessVerifier.verify(UUIDv7.fromString(stringValue));
+  } else if (paramValue instanceof UUIDv7 uuidValue) {
+    projectAccessVerifier.verify(uuidValue);
+  }
+}</code></pre>
+            </div>
+
+            <h3 id="case-2-commits">Commit Trail</h3>
+            <ul>
+                <li>JWT auth token caching for MVC and WebFlux</li>
+                <li>project ownership check and audit logging optimization</li>
+                <li>N+1 최적화 반영</li>
+                <li>AOP 접근검증 반영</li>
+            </ul>
+        </section>
+
+        <section id="case-3" class="panel">
+            <span class="badge">Case 3</span>
+            <h2>Cache 조회의 트랜잭션 경계 분리</h2>
+            <p class="case-summary">idle in transaction 및 커넥션 점유 문제를 줄이기 위해 Redis 확인과 DB readOnly 경로를 분리한 근거입니다.</p>
+
+            <h3 id="case-3-path">핵심 구현 코드</h3>
+            <div class="code-snippet">
+                <span class="code-snippet-label">ProjectOwnershipPersistenceAdapter - Redis 선조회 + DB readOnly 분리</span>
+                <pre><code class="language-java">public boolean isOwner(UUIDv7 projectId, UUIDv7 userId) {
+  if (projectPendingCachePort.isPending(projectId.value().toString(), userId.value().toString())) {
+    return true;
+  }
+  return self.checkOwnershipInDb(projectId, userId);
+}
+
+@Transactional(readOnly = true)
+@Cacheable(value = "project_ownership_v2",
+  key = "#projectId.value() + ':' + #userId.value()",
+  unless = "#result == false")
+public boolean checkOwnershipInDb(UUIDv7 projectId, UUIDv7 userId) {
+  return projectRepositoryPort.isOwnerAndActive(projectId, userId);
+}</code></pre>
+            </div>
+
+            <h3 id="case-3-commits">Commit Trail</h3>
+            <ul>
+                <li>트랜잭션으로 커넥션 최적화</li>
+                <li>cacheable 메서드에서 transaction 제거 시도</li>
+                <li>cached repository 메서드에 readOnly transaction 복원</li>
+                <li>cache key 및 중복 어노테이션 정리</li>
+            </ul>
+        </section>
+
+        <section id="case-4" class="panel">
+            <span class="badge">Case 4</span>
+            <h2>Async Gap 대응 Pending Cache 라이프사이클</h2>
+            <p class="case-summary">비동기 생성 직후 발생하는 권한 레이스를 pending key 선적재와 TTL 정책으로 완화한 근거입니다.</p>
+
+            <h3 id="case-4-path">핵심 구현 코드</h3>
+            <div class="code-snippet">
+                <span class="code-snippet-label">ProjectCommandService - Pending Cache 선적재</span>
+                <pre><code class="language-java">@Override
+public void createProject(CreateProjectCommand command) {
+  pendingCachePort.savePendingProject(
+      command.id().value().toString(),
+      command.userId().value().toString());
+  messageProducerPort.sendCreateProject(command);
+}</code></pre>
+            </div>
+            <div class="code-snippet">
+                <span class="code-snippet-label">RedisProjectPendingCacheAdapter - TTL 600초</span>
+                <pre><code class="language-java">@Override
+public void savePendingProject(String projectId, String userId) {
+  String pendingKey = ProjectCacheKeys.getPendingProjectKey(projectId);
+  redisTemplate.opsForValue().set(
+      pendingKey, userId,
+      Duration.ofSeconds(ProjectCacheKeys.PENDING_PROJECT_TTL_SECONDS));
+}
+
+public static final long PENDING_PROJECT_TTL_SECONDS = 600;</code></pre>
+            </div>
+
+            <h3 id="case-4-commits">Commit Trail</h3>
+            <ul>
+                <li>project command async messaging refactor</li>
+                <li>cache event user context handling refactor</li>
+                <li>rmq 이벤트 배치처리 및 pending 키 상수화 반영</li>
+            </ul>
+        </section>
+
+        <section id="case-5" class="panel">
+            <span class="badge">Case 5</span>
+            <h2>RabbitMQ 동기 발행 분리와 비동기 실행기</h2>
+            <p class="case-summary">요청 스레드 블로킹을 줄이기 위해 발행 전용 executor와 async decorator를 적용한 근거입니다.</p>
+
+            <h3 id="case-5-path">핵심 구현 코드</h3>
+            <div class="code-snippet">
+                <span class="code-snippet-label">AsyncMessagePublishingDecorator - Virtual Thread + Semaphore 패턴</span>
+                <pre><code class="language-java">public class AsyncMessagePublishingDecorator {
+  private final ExecutorService executor;
+  private final Semaphore semaphore;
+
+  public void executeAsync(Runnable publishTask) {
+    executor.execute(() -&gt; {
+      try {
+        semaphore.acquire();
+        try { publishTask.run(); }
+        finally { semaphore.release(); }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    });
+  }
+}</code></pre>
+            </div>
+            <div class="code-snippet">
+                <span class="code-snippet-label">RabbitMQ Producer Adapter - 동기 호출 제거</span>
+                <pre><code class="language-java">@Override
+public void sendCreateProject(CreateProjectCommand command) {
+  asyncDecorator.executeAsync(() -&gt; {
+    ProjectCreatedEvent event = new ProjectCreatedEvent(...);
+    rabbitTemplate.convertAndSend(
+      RabbitConfig.TODO_EXCHANGE, RabbitConfig.PROJECT_CREATE, event);
+  });
+}</code></pre>
+            </div>
+
+            <h3 id="case-5-commits">Commit Trail</h3>
+            <ul>
+                <li>RabbitMQ messaging async refactor</li>
+                <li>Virtual Thread + Semaphore 패턴 적용</li>
+                <li>AsyncMessagePublishingDecorator update</li>
+                <li>RabbitMQ concurrency and caching logic tuning</li>
+            </ul>
+        </section>
+
+        <section id="case-6" class="panel">
+            <span class="badge">Case 6</span>
+            <h2>통합 성능 최적화: insertWithPosition + 인덱스 + 캐시 순서</h2>
+            <p class="case-summary">저장/조회 경로를 함께 조정해 RPS와 p95를 동시 개선한 근거입니다.</p>
+
+            <h3 id="case-6-path">핵심 구현 코드</h3>
+            <div class="code-snippet">
+                <span class="code-snippet-label">SpringDataTaskJpaRepository - insertWithPosition</span>
+                <pre><code class="language-java">@Query(nativeQuery = true, value =
+  "INSERT INTO tasks (id, title, description, status, project_id, position, created_at, updated_at) " +
+  "SELECT :id, :title, :description, :#{#status.name()}, :projectId, COALESCE(MAX(position), 0) + 1, :now, :now " +
+  "FROM tasks WHERE project_id = :projectId RETURNING *")
+TaskEntity insertWithPosition(...);</code></pre>
+            </div>
+            <div class="code-snippet">
+                <span class="code-snippet-label">Flyway Migration - Ownership / Status Index</span>
+                <pre><code class="language-sql">CREATE INDEX IF NOT EXISTS idx_projects_ownership
+ON projects (id, user_id)
+WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_tasks_pending
+ON tasks (project_id, position)
+WHERE status = 'PENDING' AND deleted_at IS NULL;</code></pre>
+            </div>
+
+            <h3 id="case-6-commits">Commit Trail</h3>
+            <ul>
+                <li>atomic position assignment 최적화</li>
+                <li>position concurrency and idle transaction 개선</li>
+                <li>flyway 최적화</li>
+                <li>project creation concurrency handling 개선</li>
+                <li>rmq 이벤트 배치처리 기능 추가</li>
+            </ul>
+        </section>
+
+        <section class="panel">
+            <h2>Note</h2>
+            <p class="muted">이 문서는 private 코드의 직접 링크를 대체하기 위한 공개 설명용 인덱스입니다. 실제 구현 핵심만 코드 스니펫으로 발췌했으며, 민감 정보는 제외했습니다.</p>
+        </section>
+    </main>
+</body>
+
+</html>
