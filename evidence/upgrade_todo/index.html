@@ -211,6 +211,25 @@
             background: transparent;
             padding: 0;
         }
+
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: stretch;
+        }
+
+        .evidence-grid>.panel {
+            margin-bottom: 0;
+            height: 100%;
+        }
+
+        @media (max-width: 920px) {
+            .evidence-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -229,6 +248,7 @@
             </div>
         </section>
 
+        <section class="evidence-grid">
         <section id="case-1" class="panel">
             <span class="badge">Case 1</span>
             <h2>UUIDv7 merge 경로 제거 + Outbox 분리</h2>
@@ -462,6 +482,7 @@ WHERE status = 'PENDING' AND deleted_at IS NULL;</code></pre>
                 <li>project creation concurrency handling 개선</li>
                 <li>rmq 이벤트 배치처리 기능 추가</li>
             </ul>
+        </section>
         </section>
 
         <section class="panel">
