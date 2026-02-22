@@ -412,6 +412,18 @@ body.modal-open {
     gap: 1.1rem;
 }
 
+.service-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.service-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
 .section-header {
     margin-top: 0.3rem;
 }
@@ -571,6 +583,59 @@ body.modal-open {
     color: var(--text-secondary);
     line-height: 1.45;
     white-space: pre-line;
+}
+
+.card-evidence {
+    border: 1px solid rgba(88, 166, 255, 0.24);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.16);
+    padding: 0.68rem 0.74rem;
+}
+
+.card-evidence-title {
+    font-family: var(--font-code);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--accent-blue);
+    margin-bottom: 0.45rem;
+}
+
+.card-evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.card-evidence-item {
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.24);
+    display: flex;
+    flex-direction: column;
+}
+
+.card-evidence-item img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.card-evidence-caption {
+    padding: 0.38rem 0.5rem;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+
+.card-evidence-item:hover {
+    border-color: var(--accent-blue);
+}
+
+.card-evidence-item:hover .card-evidence-caption {
+    color: #ffffff;
 }
 
 .card-meta-line {
@@ -955,6 +1020,10 @@ body.modal-open {
     }
 
     .service-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-evidence-grid {
         grid-template-columns: 1fr;
     }
 

@@ -346,6 +346,46 @@ function createHighlightList(items) {
     return list;
 }
 
+function createEvidenceGallery(items) {
+    const normalizedItems = Array.isArray(items) ? items.filter((item) => item?.src) : [];
+    if (normalizedItems.length === 0) {
+        return null;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-evidence';
+
+    const title = document.createElement('h4');
+    title.className = 'card-evidence-title';
+    title.textContent = 'PERFORMANCE_EVIDENCE';
+
+    const grid = document.createElement('div');
+    grid.className = 'card-evidence-grid';
+
+    normalizedItems.forEach((item) => {
+        const link = document.createElement('a');
+        link.className = 'card-evidence-item';
+        link.href = item.src;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+
+        const image = document.createElement('img');
+        image.src = item.src;
+        image.alt = item.alt || item.label || 'evidence image';
+        image.loading = 'lazy';
+
+        const caption = document.createElement('span');
+        caption.className = 'card-evidence-caption';
+        caption.textContent = item.label || 'EVIDENCE';
+
+        link.append(image, caption);
+        grid.appendChild(link);
+    });
+
+    wrapper.append(title, grid);
+    return wrapper;
+}
+
 function createCardLinks(card) {
     const links = Array.isArray(card.links) ? card.links.filter((item) => item?.href) : [];
     if (links.length === 0 && card.learnMore && card.learnMore !== '#') {
@@ -424,9 +464,11 @@ function createServiceCard(card, sectionConfig) {
 
     const roleLine = createMetaLine('ROLE', card.role);
     const stackLine = createMetaLine('STACK', card.stackSummary);
+    const causeBlock = createNarrativeBlock('원인', card.cause, 'problem');
     const problemBlock = createNarrativeBlock('문제', card.problem, 'problem');
     const solutionBlock = createNarrativeBlock('해결', card.solution, 'solution');
     const resultBlock = createNarrativeBlock('결과', card.result, 'result');
+    const evidenceGallery = createEvidenceGallery(card.evidenceImages);
     const tags = createTagList(card.skills);
     const highlights = createHighlightList(card.highlights);
     const links = createCardLinks(card);
@@ -442,6 +484,9 @@ function createServiceCard(card, sectionConfig) {
     if (stackLine) {
         content.append(stackLine);
     }
+    if (causeBlock) {
+        content.append(causeBlock);
+    }
     if (problemBlock) {
         content.append(problemBlock);
     }
@@ -450,6 +495,9 @@ function createServiceCard(card, sectionConfig) {
     }
     if (resultBlock) {
         content.append(resultBlock);
+    }
+    if (evidenceGallery) {
+        content.append(evidenceGallery);
     }
     if (tags) {
         content.append(tags);
@@ -484,25 +532,34 @@ function renderServiceSections() {
         heading.textContent = sectionConfig.title ?? 'SERVICES';
         header.appendChild(heading);
 
-        const grid = document.createElement('div');
-        grid.className = 'service-grid';
+        const groupsContainer = document.createElement('div');
+        groupsContainer.className = 'service-groups';
 
         const groups = Array.isArray(sectionConfig.groups) && sectionConfig.groups.length > 0
             ? sectionConfig.groups
             : [{ title: '', desc: '', cards: sectionConfig.cards ?? [] }];
 
         groups.forEach((group) => {
+            const groupSection = document.createElement('div');
+            groupSection.className = 'service-group';
+
             if (group.title || group.desc) {
-                grid.appendChild(createGroupDivider(group, sectionConfig.theme));
+                groupSection.appendChild(createGroupDivider(group, sectionConfig.theme));
             }
+
+            const groupGrid = document.createElement('div');
+            groupGrid.className = 'service-grid';
 
             const cards = Array.isArray(group.cards) ? group.cards : [];
             cards.forEach((card) => {
-                grid.appendChild(createServiceCard(card, sectionConfig));
+                groupGrid.appendChild(createServiceCard(card, sectionConfig));
             });
+
+            groupSection.appendChild(groupGrid);
+            groupsContainer.appendChild(groupSection);
         });
 
-        sectionWrapper.append(header, grid);
+        sectionWrapper.append(header, groupsContainer);
         container.appendChild(sectionWrapper);
     });
 }
