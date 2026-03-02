@@ -46,6 +46,11 @@ function setText(id, value) {
     }
 }
 
+function syncModalBodyLock() {
+    const hasOpenModal = Boolean(document.querySelector('.mermaid-modal.is-open, .extra-evidence-modal.is-open'));
+    document.body.classList.toggle('modal-open', hasOpenModal);
+}
+
 function setupUptime() {
     const uptimeElement = byId('uptime');
     if (!uptimeElement) {
@@ -346,8 +351,108 @@ function createHighlightList(items) {
     return list;
 }
 
-function createEvidenceGallery(items) {
-    const normalizedItems = Array.isArray(items) ? items.filter((item) => item?.src) : [];
+function detectEvidencePhase(item) {
+    const searchSpace = `${item?.label || ''} ${item?.src || ''}`.toLowerCase();
+    if (searchSpace.includes('before')) {
+        return 'before';
+    }
+    if (searchSpace.includes('after')) {
+        return 'after';
+    }
+    return 'other';
+}
+
+function buildEvidencePairKey(item) {
+    const explicitKey = String(item?.pairKey || '').trim().toLowerCase();
+    if (explicitKey) {
+        return explicitKey;
+    }
+
+    const normalizedLabel = String(item?.label || '')
+        .toLowerCase()
+        .replace(/\bbefore\b|\bafter\b/g, ' ')
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (normalizedLabel) {
+        return normalizedLabel;
+    }
+
+    return String(item?.src || '')
+        .toLowerCase()
+        .replace(/\bbefore\b|\bafter\b/g, ' ')
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function buildEvidencePairs(items) {
+    const grouped = new Map();
+
+    items.forEach((item) => {
+        const key = buildEvidencePairKey(item);
+        if (!grouped.has(key)) {
+            grouped.set(key, { before: [], after: [], other: [] });
+        }
+        const bucket = grouped.get(key);
+        if (item.phase === 'before') {
+            bucket.before.push(item);
+            return;
+        }
+        if (item.phase === 'after') {
+            bucket.after.push(item);
+            return;
+        }
+        bucket.other.push(item);
+    });
+
+    const pairs = [];
+    grouped.forEach((bucket) => {
+        const leftItems = [...bucket.before, ...bucket.other];
+        const rightItems = bucket.after;
+        const pairCount = Math.max(leftItems.length, rightItems.length);
+
+        for (let index = 0; index < pairCount; index += 1) {
+            pairs.push({
+                before: leftItems[index] || null,
+                after: rightItems[index] || null
+            });
+        }
+    });
+
+    return pairs;
+}
+
+function toPairSuffix(index) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let value = index;
+    let output = '';
+    do {
+        output = alphabet[value % 26] + output;
+        value = Math.floor(value / 26) - 1;
+    } while (value >= 0);
+    return output;
+}
+
+function normalizeEvidenceItems(items) {
+    const normalizedItems = Array.isArray(items)
+        ? items.filter((item) => item?.src).map((item) => ({
+            src: item.src,
+            label: item.label || 'EVIDENCE',
+            alt: item.alt || item.label || 'evidence image',
+            phase: detectEvidencePhase(item),
+            pairKey: item.pairKey || '',
+            missingBeforeReason: item.missingBeforeReason || '',
+            missingAfterReason: item.missingAfterReason || ''
+        }))
+        : [];
+    return normalizedItems;
+}
+
+function createEvidenceGallery(items, caseTitle) {
+    const normalizedItems = normalizeEvidenceItems(items);
     if (normalizedItems.length === 0) {
         return null;
     }
@@ -357,32 +462,85 @@ function createEvidenceGallery(items) {
 
     const title = document.createElement('h4');
     title.className = 'card-evidence-title';
-    title.textContent = 'PERFORMANCE_EVIDENCE';
+    title.textContent = 'PERFORMANCE_EVIDENCE (k6)';
 
     const grid = document.createElement('div');
     grid.className = 'card-evidence-grid';
 
     normalizedItems.forEach((item) => {
-        const link = document.createElement('a');
-        link.className = 'card-evidence-item';
-        link.href = item.src;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
+        const trigger = document.createElement('button');
+        trigger.className = 'card-evidence-item';
+        trigger.type = 'button';
+        trigger.setAttribute('aria-label', `${caseTitle || 'case'} performance evidence ${item.label}`);
 
         const image = document.createElement('img');
         image.src = item.src;
-        image.alt = item.alt || item.label || 'evidence image';
+        image.alt = item.alt;
         image.loading = 'lazy';
 
         const caption = document.createElement('span');
         caption.className = 'card-evidence-caption';
         caption.textContent = item.label || 'EVIDENCE';
 
-        link.append(image, caption);
-        grid.appendChild(link);
+        trigger.append(image, caption);
+        trigger.addEventListener('click', () => {
+            if (typeof openExtraEvidenceModal === 'function') {
+                openExtraEvidenceModal(
+                    normalizedItems,
+                    `${caseTitle || 'Case'} · PERFORMANCE_EVIDENCE`,
+                    { initialSrc: item.src }
+                );
+            } else {
+                window.open(item.src, '_blank', 'noopener,noreferrer');
+            }
+
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: 'select_content',
+                content_type: 'performance_evidence_modal',
+                item_id: caseTitle || 'unknown_case',
+                evidence_label: item.label || 'unknown_evidence'
+            });
+        });
+        grid.appendChild(trigger);
     });
 
     wrapper.append(title, grid);
+    return wrapper;
+}
+
+let openExtraEvidenceModal = null;
+
+function createExtraEvidenceButton(items, caseTitle) {
+    const normalizedItems = normalizeEvidenceItems(items);
+    if (normalizedItems.length === 0) {
+        return null;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-extra-actions';
+
+    const button = document.createElement('button');
+    button.className = 'card-extra-btn';
+    button.type = 'button';
+    button.textContent = `EXTRA_IMAGES (${normalizedItems.length})`;
+    button.setAttribute('aria-label', `${caseTitle || 'case'} extra evidence images`);
+
+    button.addEventListener('click', () => {
+        if (typeof openExtraEvidenceModal === 'function') {
+            openExtraEvidenceModal(normalizedItems, `${caseTitle || 'Extra Images'} · EXTRA_IMAGES`);
+        }
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'select_content',
+            content_type: 'extra_evidence_modal',
+            item_id: caseTitle || 'unknown_case',
+            item_count: normalizedItems.length
+        });
+    });
+
+    wrapper.appendChild(button);
     return wrapper;
 }
 
@@ -468,7 +626,8 @@ function createServiceCard(card, sectionConfig) {
     const problemBlock = createNarrativeBlock('문제', card.problem, 'problem');
     const solutionBlock = createNarrativeBlock('해결', card.solution, 'solution');
     const resultBlock = createNarrativeBlock('결과', card.result, 'result');
-    const evidenceGallery = createEvidenceGallery(card.evidenceImages);
+    const evidenceGallery = createEvidenceGallery(card.evidenceImages, card.title);
+    const extraEvidenceButton = createExtraEvidenceButton(card.extraEvidenceImages, card.title);
     const tags = createTagList(card.skills);
     const highlights = createHighlightList(card.highlights);
     const links = createCardLinks(card);
@@ -498,6 +657,9 @@ function createServiceCard(card, sectionConfig) {
     }
     if (evidenceGallery) {
         content.append(evidenceGallery);
+    }
+    if (extraEvidenceButton) {
+        content.append(extraEvidenceButton);
     }
     if (tags) {
         content.append(tags);
@@ -850,6 +1012,224 @@ function setupScrollSpy() {
     }, 720);
 }
 
+function setupExtraEvidenceModal() {
+    const modal = byId('extra-evidence-modal');
+    const modalContent = byId('extra-evidence-content');
+    const modalTitle = byId('extra-evidence-title');
+
+    if (!modal || !modalContent || !modalTitle) {
+        return;
+    }
+
+    const closeModal = () => {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        modalContent.replaceChildren();
+        syncModalBodyLock();
+    };
+
+    const openModal = (items, title, options = {}) => {
+        const normalizedItems = normalizeEvidenceItems(items);
+        if (normalizedItems.length === 0) {
+            return;
+        }
+
+        const heading = String(title || '').trim();
+        modalTitle.textContent = heading
+            ? heading
+            : 'Extra Images · EXTRA_IMAGES';
+        const phaseOrder = { before: 0, after: 1, other: 2 };
+        const sortedItems = [...normalizedItems].sort((left, right) => {
+            const phaseDiff = (phaseOrder[left.phase] ?? 9) - (phaseOrder[right.phase] ?? 9);
+            if (phaseDiff !== 0) {
+                return phaseDiff;
+            }
+            return left.label.localeCompare(right.label, 'ko');
+        }).map((item, index) => ({ ...item, __index: index }));
+
+        const evidencePairs = buildEvidencePairs(sortedItems);
+
+        const layout = document.createElement('div');
+        layout.className = 'extra-evidence-layout';
+
+        const listPanel = document.createElement('section');
+        listPanel.className = 'extra-evidence-list';
+
+        const pairList = document.createElement('div');
+        pairList.className = 'extra-evidence-pairs';
+
+        const preview = document.createElement('section');
+        preview.className = 'extra-evidence-preview';
+
+        const previewImageWrap = document.createElement('div');
+        previewImageWrap.className = 'extra-evidence-preview-image-wrap';
+
+        const previewImage = document.createElement('img');
+        previewImage.className = 'extra-evidence-preview-image';
+        previewImage.loading = 'lazy';
+
+        const previewCaption = document.createElement('p');
+        previewCaption.className = 'extra-evidence-preview-caption';
+
+        const previewActions = document.createElement('div');
+        previewActions.className = 'extra-evidence-preview-actions';
+
+        const zoomButton = document.createElement('button');
+        zoomButton.className = 'extra-evidence-zoom-btn';
+        zoomButton.type = 'button';
+        zoomButton.textContent = 'ZOOM';
+
+        const originalLink = document.createElement('a');
+        originalLink.className = 'extra-evidence-open-original';
+        originalLink.target = '_blank';
+        originalLink.rel = 'noopener noreferrer';
+        originalLink.textContent = 'OPEN_ORIGINAL';
+
+        const initialSrc = String(options.initialSrc || '').trim();
+        const initialIndex = Number.isInteger(options.initialIndex) ? options.initialIndex : 0;
+        let activeIndex = Math.min(sortedItems.length - 1, Math.max(0, initialIndex));
+        if (initialSrc) {
+            const matchIndex = sortedItems.findIndex((item) => item.src === initialSrc);
+            if (matchIndex >= 0) {
+                activeIndex = matchIndex;
+            }
+        }
+        let isZoomed = false;
+        const thumbButtons = [];
+
+        const setZoom = (nextZoom) => {
+            isZoomed = nextZoom;
+            previewImage.classList.toggle('is-zoomed', isZoomed);
+            zoomButton.textContent = isZoomed ? 'RESET_ZOOM' : 'ZOOM';
+        };
+
+        const setActive = (index) => {
+            activeIndex = index;
+            const activeItem = sortedItems[index];
+            if (!activeItem) {
+                return;
+            }
+            previewImage.src = activeItem.src;
+            previewImage.alt = activeItem.alt;
+            previewCaption.textContent = `[${activeItem.phase.toUpperCase()}] ${activeItem.label}`;
+            originalLink.href = activeItem.src;
+            setZoom(false);
+
+            thumbButtons.forEach((button) => {
+                const buttonIndex = Number(button.dataset.index || '-1');
+                button.classList.toggle('is-active', buttonIndex === index);
+            });
+        };
+
+        const createEvidenceButton = (item, laneLabel) => {
+            const button = document.createElement('button');
+            button.className = 'extra-evidence-item';
+            button.type = 'button';
+            button.dataset.index = String(item.__index);
+
+            const visual = document.createElement('div');
+            visual.className = 'extra-evidence-thumb-visual';
+
+            const image = document.createElement('img');
+            image.src = item.src;
+            image.alt = item.alt;
+            image.loading = 'lazy';
+
+            const phaseBadge = document.createElement('span');
+            phaseBadge.className = `extra-evidence-phase is-${item.phase}`;
+            phaseBadge.textContent = laneLabel;
+
+            const caption = document.createElement('span');
+            caption.className = 'extra-evidence-caption';
+            caption.textContent = item.label;
+
+            visual.append(image, phaseBadge);
+            button.append(visual, caption);
+            button.addEventListener('click', () => setActive(item.__index));
+            thumbButtons.push(button);
+            return button;
+        };
+
+        const createMissingSlot = (phase, reason, laneLabel) => {
+            const empty = document.createElement('div');
+            empty.className = `extra-evidence-empty is-${phase}`;
+
+            const label = document.createElement('span');
+            label.className = 'extra-evidence-empty-label';
+            label.textContent = laneLabel;
+
+            const body = document.createElement('p');
+            body.className = 'extra-evidence-empty-text';
+            body.textContent = reason;
+
+            empty.append(label, body);
+            return empty;
+        };
+
+        evidencePairs.forEach((pair, pairIndex) => {
+            const suffix = toPairSuffix(pairIndex);
+            const card = document.createElement('article');
+            card.className = 'extra-evidence-pair-card';
+
+            const body = document.createElement('div');
+            body.className = 'extra-evidence-pair-body';
+
+            const beforeLane = document.createElement('div');
+            beforeLane.className = 'extra-evidence-slot is-before';
+            const afterLane = document.createElement('div');
+            afterLane.className = 'extra-evidence-slot is-after';
+
+            if (pair.before) {
+                beforeLane.appendChild(createEvidenceButton(pair.before, `BEFORE-${suffix}`));
+            } else {
+                const reason = pair.after?.missingBeforeReason || 'N/A 또는 비교축 미수집으로 before 증거가 없습니다.';
+                beforeLane.appendChild(createMissingSlot('before', reason, `BEFORE-${suffix}`));
+            }
+
+            if (pair.after) {
+                afterLane.appendChild(createEvidenceButton(pair.after, `AFTER-${suffix}`));
+            } else {
+                const reason = pair.before?.missingAfterReason || '해당 비교축의 after 증거가 아직 없거나 범위에서 제외되었습니다.';
+                afterLane.appendChild(createMissingSlot('after', reason, `AFTER-${suffix}`));
+            }
+
+            body.append(beforeLane, afterLane);
+            card.appendChild(body);
+            pairList.appendChild(card);
+        });
+
+        zoomButton.addEventListener('click', () => setZoom(!isZoomed));
+        previewImageWrap.addEventListener('click', () => setZoom(!isZoomed));
+
+        previewImageWrap.appendChild(previewImage);
+        previewActions.append(zoomButton, originalLink);
+        preview.append(previewImageWrap, previewCaption, previewActions);
+
+        listPanel.appendChild(pairList);
+        layout.append(listPanel, preview);
+        modalContent.replaceChildren(layout);
+        setActive(activeIndex);
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        syncModalBodyLock();
+    };
+
+    modal.querySelectorAll('[data-extra-close]').forEach((node) => {
+        node.addEventListener('click', closeModal);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (!modal.classList.contains('is-open')) {
+            return;
+        }
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    });
+
+    openExtraEvidenceModal = openModal;
+}
+
 function injectMermaidSources() {
     const nodes = Array.from(document.querySelectorAll('.mermaid'));
     const diagrams = templateConfig.diagrams ?? {};
@@ -980,7 +1360,7 @@ function setupMermaidModal() {
         baseSvgHeight = 0;
         zoom = 1;
         zoomValue.textContent = '100%';
-        document.body.classList.remove('modal-open');
+        syncModalBodyLock();
     };
 
     const openModal = (target) => {
@@ -1041,7 +1421,7 @@ function setupMermaidModal() {
 
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('modal-open');
+        syncModalBodyLock();
         scheduleCenterModalView();
     };
 
@@ -1165,6 +1545,7 @@ function setupMermaidModal() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     setSystemInfo();
+    setupExtraEvidenceModal();
     renderHero();
     renderTopPanels();
     renderSkills();
