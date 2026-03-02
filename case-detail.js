@@ -12,6 +12,14 @@ const analyticsSession = {
     caseTitle: 'Case Review'
 };
 
+const evidenceModalState = {
+    initialized: false,
+    isOpen: false,
+    openedAt: 0,
+    currentIndex: -1,
+    items: []
+};
+
 function byId(id) {
     return document.getElementById(id);
 }
@@ -257,6 +265,275 @@ function trackInitialPageView() {
         interactionAction: 'view',
         elementType: 'page',
         elementLabel: 'CASE_LIST'
+    });
+}
+
+function getEvidenceModalElements() {
+    return {
+        modal: byId('case-evidence-modal'),
+        image: byId('case-evidence-image'),
+        title: byId('case-evidence-title'),
+        phase: byId('case-evidence-phase'),
+        counter: byId('case-evidence-counter'),
+        prev: byId('case-evidence-prev'),
+        next: byId('case-evidence-next'),
+        openOriginal: byId('case-evidence-open-original')
+    };
+}
+
+function buildEvidenceElementLabel(item) {
+    const safeLabel = toSafeLabel(item?.label || 'EVIDENCE').replace(/\s+/g, '_').toUpperCase();
+    const phase = String(item?.phase || 'other').toUpperCase();
+    return `${phase}_${safeLabel}`;
+}
+
+function trackEvidenceModalEvent(currentItem, interactionAction, elementType, elementLabel, extra = {}) {
+    if (!currentItem) {
+        return;
+    }
+
+    trackSelectContent({
+        contentType: 'performance_evidence',
+        itemId: getCurrentItemId(),
+        itemName: getCurrentItemName(),
+        sectionName: 'evidence_modal',
+        interactionAction,
+        elementType,
+        elementLabel,
+        linkUrl: currentItem.href,
+        linkType: detectLinkType(currentItem.href),
+        modalName: 'case_evidence_modal',
+        evidence_phase: currentItem.phase,
+        evidence_tier: currentItem.tier,
+        evidence_pair: currentItem.pair,
+        evidence_pair_index: currentItem.pairIndex,
+        page_type: analyticsSession.pageType,
+        ...extra
+    });
+}
+
+function rebuildEvidenceModalItems() {
+    const evidenceElements = Array.from(document.querySelectorAll('[data-track-kind="evidence_slot"]'));
+    evidenceModalState.items = evidenceElements.map((element, index) => {
+        const href = element.getAttribute('href') || '';
+        const phase = element.dataset.evidencePhase || 'other';
+        const tier = element.dataset.evidenceTier || 'core';
+        const pair = element.dataset.evidencePair || 'PAIR';
+        const pairIndexRaw = Number.parseInt(element.dataset.evidencePairIndex || '', 10);
+        const pairIndex = Number.isFinite(pairIndexRaw) ? pairIndexRaw : undefined;
+        const label = element.dataset.evidenceLabel || element.textContent?.trim() || 'EVIDENCE';
+        const image = element.querySelector('img');
+        const alt = image?.getAttribute('alt') || label;
+
+        element.dataset.evidenceModalIndex = String(index);
+
+        return {
+            href,
+            phase,
+            tier,
+            pair,
+            pairIndex,
+            label,
+            alt
+        };
+    });
+
+    if (evidenceModalState.currentIndex >= evidenceModalState.items.length) {
+        evidenceModalState.currentIndex = evidenceModalState.items.length - 1;
+    }
+
+    if (evidenceModalState.items.length === 0 && evidenceModalState.isOpen) {
+        closeEvidenceModal('EMPTY_ITEMS');
+    }
+}
+
+function updateEvidenceModalView() {
+    const elements = getEvidenceModalElements();
+    const items = evidenceModalState.items;
+    const item = items[evidenceModalState.currentIndex];
+    if (!elements.modal || !elements.image || !item) {
+        return;
+    }
+
+    elements.image.src = item.href;
+    elements.image.alt = item.alt || item.label || 'Evidence image';
+    elements.title.textContent = `${item.pair} · ${item.label}`;
+    elements.counter.textContent = `${evidenceModalState.currentIndex + 1} / ${items.length}`;
+
+    const phaseClass = ['is-before', 'is-after', 'is-other'];
+    elements.phase.classList.remove(...phaseClass);
+    if (item.phase === 'before') {
+        elements.phase.classList.add('is-before');
+        elements.phase.textContent = 'BEFORE';
+    } else if (item.phase === 'after') {
+        elements.phase.classList.add('is-after');
+        elements.phase.textContent = 'AFTER';
+    } else {
+        elements.phase.classList.add('is-other');
+        elements.phase.textContent = 'EVIDENCE';
+    }
+
+    if (elements.prev) {
+        elements.prev.disabled = evidenceModalState.currentIndex <= 0;
+    }
+    if (elements.next) {
+        elements.next.disabled = evidenceModalState.currentIndex >= items.length - 1;
+    }
+    if (elements.openOriginal) {
+        elements.openOriginal.href = item.href || '#';
+    }
+}
+
+function openEvidenceModalAtIndex(index, openSource = 'slot_click') {
+    const elements = getEvidenceModalElements();
+    if (!elements.modal || evidenceModalState.items.length === 0) {
+        return;
+    }
+
+    if (index < 0 || index >= evidenceModalState.items.length) {
+        return;
+    }
+
+    evidenceModalState.currentIndex = index;
+    updateEvidenceModalView();
+
+    evidenceModalState.isOpen = true;
+    evidenceModalState.openedAt = Date.now();
+    elements.modal.classList.add('is-open');
+    elements.modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+
+    const currentItem = evidenceModalState.items[evidenceModalState.currentIndex];
+    trackEvidenceModalEvent(
+        currentItem,
+        'open_modal',
+        'modal',
+        buildEvidenceElementLabel(currentItem),
+        { open_source: openSource, value: evidenceModalState.currentIndex + 1 }
+    );
+}
+
+function closeEvidenceModal(reason = 'CLOSE') {
+    const elements = getEvidenceModalElements();
+    if (!elements.modal || !evidenceModalState.isOpen) {
+        return;
+    }
+
+    const currentItem = evidenceModalState.items[evidenceModalState.currentIndex];
+    const durationMs = Math.max(0, Date.now() - evidenceModalState.openedAt);
+
+    elements.modal.classList.remove('is-open');
+    elements.modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+
+    evidenceModalState.isOpen = false;
+    evidenceModalState.openedAt = 0;
+
+    trackEvidenceModalEvent(
+        currentItem,
+        'close_modal',
+        'button',
+        reason,
+        { duration_ms: durationMs, value: Math.round(durationMs / 1000) }
+    );
+}
+
+function moveEvidenceModal(step, label) {
+    if (!evidenceModalState.isOpen || evidenceModalState.items.length === 0) {
+        return;
+    }
+
+    const nextIndex = evidenceModalState.currentIndex + step;
+    if (nextIndex < 0 || nextIndex >= evidenceModalState.items.length) {
+        return;
+    }
+
+    evidenceModalState.currentIndex = nextIndex;
+    updateEvidenceModalView();
+
+    const currentItem = evidenceModalState.items[evidenceModalState.currentIndex];
+    trackEvidenceModalEvent(
+        currentItem,
+        'navigate_modal',
+        'button',
+        label,
+        { value: evidenceModalState.currentIndex + 1 }
+    );
+}
+
+function openEvidenceModalByElement(element) {
+    if (!element) {
+        return;
+    }
+
+    const indexRaw = Number.parseInt(element.dataset.evidenceModalIndex || '', 10);
+    if (!Number.isFinite(indexRaw)) {
+        return;
+    }
+
+    openEvidenceModalAtIndex(indexRaw, 'evidence_slot');
+}
+
+function setupEvidenceModalControls() {
+    if (evidenceModalState.initialized) {
+        return;
+    }
+
+    const elements = getEvidenceModalElements();
+    if (!elements.modal) {
+        return;
+    }
+
+    evidenceModalState.initialized = true;
+
+    elements.modal.addEventListener('click', (event) => {
+        if (!event.target.closest('[data-evidence-close]')) {
+            return;
+        }
+        closeEvidenceModal('CLOSE');
+    });
+
+    if (elements.prev) {
+        elements.prev.addEventListener('click', () => {
+            moveEvidenceModal(-1, 'PREV');
+        });
+    }
+
+    if (elements.next) {
+        elements.next.addEventListener('click', () => {
+            moveEvidenceModal(1, 'NEXT');
+        });
+    }
+
+    if (elements.openOriginal) {
+        elements.openOriginal.addEventListener('click', () => {
+            if (!evidenceModalState.isOpen) {
+                return;
+            }
+            const currentItem = evidenceModalState.items[evidenceModalState.currentIndex];
+            trackEvidenceModalEvent(currentItem, 'open_original', 'link', 'OPEN_ORIGINAL');
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (!evidenceModalState.isOpen) {
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeEvidenceModal('ESCAPE');
+            return;
+        }
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            moveEvidenceModal(-1, 'PREV');
+            return;
+        }
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            moveEvidenceModal(1, 'NEXT');
+        }
     });
 }
 
@@ -804,6 +1081,14 @@ function setupInteractionTracking() {
                 evidence_pair_index: pairIndex,
                 page_type: analyticsSession.pageType
             });
+
+            const isModifiedClick = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+            if (isModifiedClick) {
+                return;
+            }
+
+            event.preventDefault();
+            openEvidenceModalByElement(trigger);
         }
     });
 }
@@ -815,6 +1100,7 @@ function init() {
     }
 
     setupInteractionTracking();
+    setupEvidenceModalControls();
 
     const cards = collectCaseCards();
     if (cards.length === 0) {
@@ -823,6 +1109,7 @@ function init() {
                 <h1>케이스 데이터가 비어 있습니다.</h1>
             </section>
         `;
+        rebuildEvidenceModalItems();
         analyticsSession.pageType = 'case_list';
         analyticsSession.caseNumber = null;
         analyticsSession.caseTitle = 'Case Brief List';
@@ -836,6 +1123,7 @@ function init() {
 
     if (!selected) {
         buildCaseList(root, cards);
+        rebuildEvidenceModalItems();
         analyticsSession.pageType = 'case_list';
         analyticsSession.caseNumber = null;
         analyticsSession.caseTitle = 'Case Brief List';
@@ -845,6 +1133,7 @@ function init() {
     }
 
     buildCaseDetail(root, cards, selected);
+    rebuildEvidenceModalItems();
     analyticsSession.pageType = 'case_detail';
     analyticsSession.caseNumber = selected.caseNumber;
     analyticsSession.caseTitle = selected.card?.title || `Case ${selected.caseNumber}`;

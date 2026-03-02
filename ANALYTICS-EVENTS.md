@@ -86,4 +86,4 @@ Then map parameters from Data Layer Variables with the same keys.
 ## Page Coverage
 
 - `index.html`: main cards, nav, contact, diagrams, evidence interactions.
-- `case-detail.html`: case list cards, `BACK_TO_PORTFOLIO`, case navigation buttons, traceability links, Before/After evidence frame links, page lifecycle events.
+- `case-detail.html`: case list cards, `BACK_TO_PORTFOLIO`, case navigation buttons, traceability links, Before/After evidence frame links, evidence modal (`open_modal`, `navigate_modal`, `open_original`, `close_modal`), page lifecycle events.

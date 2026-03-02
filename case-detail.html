@@ -41,6 +41,35 @@
     </header>
 
     <main id="case-review-root" class="case-review-root"></main>
+
+    <div id="case-evidence-modal" class="case-evidence-modal" aria-hidden="true">
+        <div class="case-evidence-modal-backdrop" data-evidence-close></div>
+        <div class="case-evidence-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="case-evidence-title">
+            <div class="case-evidence-modal-header">
+                <span id="case-evidence-phase" class="case-evidence-phase is-other">EVIDENCE</span>
+                <span id="case-evidence-title" class="case-evidence-title">Evidence Preview</span>
+                <span id="case-evidence-counter" class="case-evidence-counter">1 / 1</span>
+                <button class="case-evidence-modal-close" type="button" data-evidence-close>CLOSE</button>
+            </div>
+
+            <div class="case-evidence-modal-content">
+                <button id="case-evidence-prev" class="case-evidence-nav-btn" type="button" aria-label="Previous image">
+                    PREV
+                </button>
+                <div class="case-evidence-image-wrap">
+                    <img id="case-evidence-image" class="case-evidence-image" src="" alt="">
+                </div>
+                <button id="case-evidence-next" class="case-evidence-nav-btn" type="button" aria-label="Next image">
+                    NEXT
+                </button>
+            </div>
+
+            <div class="case-evidence-modal-actions">
+                <a id="case-evidence-open-original" class="case-evidence-open-original" href="#" target="_blank"
+                    rel="noopener noreferrer">OPEN_ORIGINAL</a>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
