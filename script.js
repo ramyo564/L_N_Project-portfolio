@@ -1496,7 +1496,7 @@ function renderServiceSections() {
                 window.dispatchEvent(new Event('resize'));
             };
 
-            const setCollapsed = (nextCollapsed, reason = 'toggle') => {
+            const setCollapsed = (nextCollapsed, triggerSource = 'toggle') => {
                 if (isCollapsed === nextCollapsed) {
                     return false;
                 }
@@ -1505,7 +1505,7 @@ function renderServiceSections() {
                 applyVisibility();
 
                 trackSelectContent({
-                    contentType: 'case_showcase',
+                    contentType: 'case_showcase_toggle',
                     itemId: sectionConfig.id || 'service_cases',
                     itemName: sectionConfig.title || 'CASES',
                     sectionName: 'service_section',
@@ -1513,7 +1513,9 @@ function renderServiceSections() {
                     elementType: 'button',
                     elementLabel: 'CASE_SHOWCASE_TOGGLE',
                     value: renderedCards.length,
-                    reason
+                    trigger_source: triggerSource,
+                    hidden_count: isCollapsed ? Math.max(0, renderedCards.length - featuredSet.size) : 0,
+                    visible_count: isCollapsed ? featuredSet.size : renderedCards.length
                 });
                 return true;
             };
@@ -1533,11 +1535,11 @@ function renderServiceSections() {
 
             caseShowcaseControllers.push({
                 sectionId: sectionConfig.id || '',
-                revealCase(anchorId, reason = 'target_reveal') {
+                revealCase(anchorId, triggerSource = 'target_reveal') {
                     if (!anchorId || !allAnchorSet.has(anchorId) || !isCollapsed || featuredSet.has(anchorId)) {
                         return false;
                     }
-                    return setCollapsed(false, reason);
+                    return setCollapsed(false, triggerSource);
                 }
             });
         }
@@ -2941,7 +2943,7 @@ function setupMermaidModal() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const revealHashTarget = (hashValue, reason = 'hash_navigation') => {
+    const revealHashTarget = (hashValue, triggerSource = 'hash_navigation') => {
         const targetId = String(hashValue || '').replace(/^#/, '').trim();
         if (!targetId) {
             return;
@@ -2956,15 +2958,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             target.scrollIntoView({ block: 'start' });
+            const showcaseId = target.closest('.service-section')?.id || '';
             trackSelectContent({
-                contentType: 'case_showcase',
+                contentType: 'case_showcase_reveal',
                 itemId: targetId,
                 itemName: target.querySelector('.card-title')?.textContent?.trim() || targetId,
                 sectionName: 'service_section',
                 interactionAction: 'reveal_target',
                 elementType: 'section',
                 elementLabel: 'CASE_SHOWCASE_REVEAL',
-                reason
+                trigger_source: triggerSource,
+                showcase_id: showcaseId
             });
         }, 0);
     };

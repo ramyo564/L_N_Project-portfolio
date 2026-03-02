@@ -32,6 +32,10 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `evidence_tier`
 - `evidence_pair`
 - `evidence_pair_index`
+- `trigger_source`
+- `showcase_id`
+- `visible_count`
+- `hidden_count`
 
 ## content_type Values
 
@@ -51,6 +55,8 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `section_dwell`
 - `page_engagement`
 - `page_visibility`
+- `case_showcase_toggle`
+- `case_showcase_reveal`
 
 ## Recommended GA4 Custom Dimensions (Event Scope)
 
@@ -65,6 +71,8 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `open_source`
 - `evidence_phase`
 - `end_reason`
+- `trigger_source`
+- `showcase_id`
 
 ## Recommended GA4 Custom Metric (Event Scope)
 
@@ -74,6 +82,8 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `hidden_duration_ms` (integer)
 - `max_scroll_percent` (integer)
 - `unique_case_views` (integer)
+- `visible_count` (integer)
+- `hidden_count` (integer)
 
 ## GTM Trigger Tip
 
@@ -85,5 +95,5 @@ Then map parameters from Data Layer Variables with the same keys.
 
 ## Page Coverage
 
-- `index.html`: main cards, nav, contact, diagrams, evidence interactions.
+- `index.html`: main cards, nav, contact, diagrams, evidence interactions, case showcase toggle/reveal events.
 - `case-detail.html`: case list cards, `BACK_TO_PORTFOLIO`, case navigation buttons, traceability links, Before/After evidence frame links, evidence modal (`open_modal`, `navigate_modal`, `open_original`, `close_modal`), page lifecycle events.
