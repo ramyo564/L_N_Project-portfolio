@@ -46,6 +46,84 @@ function setText(id, value) {
     }
 }
 
+function pushDataLayerEvent(payload) {
+    if (!payload || typeof payload !== 'object') {
+        return;
+    }
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(payload);
+}
+
+function detectLinkType(href) {
+    const target = String(href || '').trim().toLowerCase();
+    if (!target) {
+        return 'unknown';
+    }
+    if (target.startsWith('mailto:')) {
+        return 'mailto';
+    }
+    if (target.startsWith('#')) {
+        return 'anchor';
+    }
+    if (target.startsWith('http://') || target.startsWith('https://')) {
+        return 'external';
+    }
+    return 'internal';
+}
+
+function trackSelectContent({
+    contentType,
+    itemId,
+    itemName,
+    sectionName,
+    interactionAction = 'click',
+    elementType,
+    elementLabel,
+    linkUrl,
+    linkType,
+    modalName,
+    value,
+    ...extra
+}) {
+    const payload = {
+        event: 'select_content',
+        content_type: contentType || 'unknown',
+        item_id: itemId || 'unknown',
+        section_name: sectionName || 'unknown',
+        interaction_action: interactionAction
+    };
+
+    if (itemName) {
+        payload.item_name = itemName;
+    }
+    if (elementType) {
+        payload.element_type = elementType;
+    }
+    if (elementLabel) {
+        payload.element_label = elementLabel;
+    }
+    if (linkUrl) {
+        payload.link_url = linkUrl;
+    }
+    if (linkType) {
+        payload.link_type = linkType;
+    }
+    if (modalName) {
+        payload.modal_name = modalName;
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        payload.value = value;
+    }
+
+    Object.entries(extra).forEach(([key, valueItem]) => {
+        if (valueItem !== undefined && valueItem !== null && valueItem !== '') {
+            payload[key] = valueItem;
+        }
+    });
+
+    pushDataLayerEvent(payload);
+}
+
 function syncModalBodyLock() {
     const hasOpenModal = Boolean(document.querySelector('.mermaid-modal.is-open, .extra-evidence-modal.is-open'));
     document.body.classList.toggle('modal-open', hasOpenModal);
@@ -92,11 +170,22 @@ function setupMobileNav() {
 
     toggle.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (nav.classList.contains('is-open')) {
+        const willClose = nav.classList.contains('is-open');
+        if (willClose) {
             closeNav();
         } else {
             openNav();
         }
+
+        trackSelectContent({
+            contentType: 'navigation',
+            itemId: 'header_nav_toggle',
+            itemName: willClose ? 'close' : 'open',
+            sectionName: 'header_nav',
+            interactionAction: willClose ? 'close' : 'open',
+            elementType: 'button',
+            elementLabel: 'NAV_TOGGLE'
+        });
     });
 
     nav.addEventListener('click', (event) => {
@@ -515,18 +604,26 @@ function createEvidenceGallery(items, caseTitle) {
                 openExtraEvidenceModal(
                     normalizedItems,
                     `${caseTitle || 'Case'} · PERFORMANCE_EVIDENCE`,
-                    { initialSrc: item.src }
+                    {
+                        initialSrc: item.src,
+                        source: 'performance_evidence_grid',
+                        caseId: caseTitle || 'unknown_case'
+                    }
                 );
             } else {
                 window.open(item.src, '_blank', 'noopener,noreferrer');
             }
 
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: 'select_content',
-                content_type: 'performance_evidence_modal',
-                item_id: caseTitle || 'unknown_case',
-                evidence_label: item.label || 'unknown_evidence'
+            trackSelectContent({
+                contentType: 'performance_evidence',
+                itemId: caseTitle || 'unknown_case',
+                itemName: item.label || 'unknown_evidence',
+                sectionName: 'case_card',
+                interactionAction: 'click_thumbnail',
+                elementType: 'button',
+                elementLabel: item.label || 'unknown_evidence',
+                modalName: 'extra_evidence_modal',
+                evidence_phase: item.phase || 'unknown'
             });
         });
         grid.appendChild(trigger);
@@ -555,15 +652,25 @@ function createExtraEvidenceButton(items, caseTitle) {
 
     button.addEventListener('click', () => {
         if (typeof openExtraEvidenceModal === 'function') {
-            openExtraEvidenceModal(normalizedItems, `${caseTitle || 'Extra Images'} · EXTRA_IMAGES`);
+            openExtraEvidenceModal(
+                normalizedItems,
+                `${caseTitle || 'Extra Images'} · EXTRA_IMAGES`,
+                {
+                    source: 'extra_images_button',
+                    caseId: caseTitle || 'unknown_case'
+                }
+            );
         }
 
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-            event: 'select_content',
-            content_type: 'extra_evidence_modal',
-            item_id: caseTitle || 'unknown_case',
-            item_count: normalizedItems.length
+        trackSelectContent({
+            contentType: 'extra_evidence_button',
+            itemId: caseTitle || 'unknown_case',
+            sectionName: 'case_card',
+            interactionAction: 'click',
+            elementType: 'button',
+            elementLabel: 'EXTRA_IMAGES',
+            modalName: 'extra_evidence_modal',
+            value: normalizedItems.length
         });
     });
 
@@ -596,13 +703,16 @@ function createCardLinks(card) {
 
         // GA4 Event Tracking
         link.addEventListener('click', () => {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: 'select_content',
-                content_type: 'case_link',
-                item_id: card.title || 'unknown_case',
-                link_label: item.label,
-                link_url: item.href
+            trackSelectContent({
+                contentType: 'case_link',
+                itemId: card.title || 'unknown_case',
+                itemName: item.label || 'LINK',
+                sectionName: 'case_card',
+                interactionAction: 'open_link',
+                elementType: 'link',
+                elementLabel: item.label || 'LINK',
+                linkUrl: item.href,
+                linkType: detectLinkType(item.href)
             });
         });
 
@@ -776,10 +886,25 @@ function renderContact() {
         action.className = 'action-btn';
         action.href = item.href || '#';
         action.textContent = item.label || 'LINK';
+        const actionHref = item.href || '#';
         if (!String(item.href || '').startsWith('mailto:')) {
             action.target = '_blank';
             action.rel = 'noopener noreferrer';
         }
+
+        action.addEventListener('click', () => {
+            trackSelectContent({
+                contentType: 'contact_action',
+                itemId: item.label || 'unknown_contact_action',
+                itemName: item.label || 'LINK',
+                sectionName: 'contact',
+                interactionAction: 'open_link',
+                elementType: 'link',
+                elementLabel: item.label || 'LINK',
+                linkUrl: actionHref,
+                linkType: detectLinkType(actionHref)
+            });
+        });
         actions.appendChild(action);
     });
 }
@@ -884,6 +1009,19 @@ function renderNavigation() {
             parent.className = 'nav-item nav-parent';
             parent.href = normalizedTarget;
             parent.textContent = item.label || 'CASES';
+            parent.addEventListener('click', () => {
+                trackSelectContent({
+                    contentType: 'navigation',
+                    itemId: normalizedTarget.replace(/^#/, '') || 'unknown_target',
+                    itemName: parent.textContent || 'CASES',
+                    sectionName: 'header_nav',
+                    interactionAction: 'navigate',
+                    elementType: 'nav_link',
+                    elementLabel: parent.textContent || 'CASES',
+                    linkUrl: normalizedTarget,
+                    linkType: detectLinkType(normalizedTarget)
+                });
+            });
             wrap.appendChild(parent);
 
             const submenu = document.createElement('div');
@@ -893,6 +1031,20 @@ function renderNavigation() {
                 subLink.className = 'nav-sub-item';
                 subLink.href = normalizeHashTarget(caseItem.target);
                 subLink.textContent = caseItem.label || 'CASE';
+                subLink.addEventListener('click', () => {
+                    const target = normalizeHashTarget(caseItem.target);
+                    trackSelectContent({
+                        contentType: 'navigation_case',
+                        itemId: target.replace(/^#/, '') || 'unknown_case_target',
+                        itemName: caseItem.label || 'CASE',
+                        sectionName: 'header_nav',
+                        interactionAction: 'navigate',
+                        elementType: 'nav_sub_link',
+                        elementLabel: caseItem.label || 'CASE',
+                        linkUrl: target,
+                        linkType: detectLinkType(target)
+                    });
+                });
                 submenu.appendChild(subLink);
             });
 
@@ -905,6 +1057,19 @@ function renderNavigation() {
         link.className = 'nav-item';
         link.href = normalizedTarget;
         link.textContent = item.label || 'SECTION';
+        link.addEventListener('click', () => {
+            trackSelectContent({
+                contentType: 'navigation',
+                itemId: normalizedTarget.replace(/^#/, '') || 'unknown_target',
+                itemName: item.label || 'SECTION',
+                sectionName: 'header_nav',
+                interactionAction: 'navigate',
+                elementType: 'nav_link',
+                elementLabel: item.label || 'SECTION',
+                linkUrl: normalizedTarget,
+                linkType: detectLinkType(normalizedTarget)
+            });
+        });
         nav.appendChild(link);
     });
 }
@@ -977,6 +1142,24 @@ function setupScrollSpy() {
             caseWrap.classList.add('is-active-group');
             caseParent.classList.add('is-active');
         }
+
+        const targetElement = matched.element;
+        const isCaseCard = targetElement.classList.contains('service-card') || targetId.startsWith('upgrade-todo-case-');
+        const itemName =
+            targetElement.querySelector('.card-title')?.textContent?.trim() ||
+            targetElement.querySelector('.section-title')?.textContent?.trim() ||
+            targetElement.querySelector('.panel-title')?.textContent?.trim() ||
+            targetId;
+
+        trackSelectContent({
+            contentType: 'section_view',
+            itemId: targetId,
+            itemName,
+            sectionName: 'scroll_spy',
+            interactionAction: 'view',
+            elementType: isCaseCard ? 'case_card' : 'section',
+            elementLabel: itemName
+        });
     };
 
     const rebuildTargetOrder = () => {
@@ -1049,10 +1232,25 @@ function setupExtraEvidenceModal() {
     }
 
     const closeModal = () => {
+        const wasOpen = modal.classList.contains('is-open');
+        const closingTitle = modalTitle.textContent || 'Extra Images';
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         modalContent.replaceChildren();
         syncModalBodyLock();
+
+        if (wasOpen) {
+            trackSelectContent({
+                contentType: 'extra_evidence',
+                itemId: closingTitle,
+                itemName: closingTitle,
+                sectionName: 'extra_evidence_modal',
+                interactionAction: 'close_modal',
+                elementType: 'modal',
+                elementLabel: closingTitle,
+                modalName: 'extra_evidence_modal'
+            });
+        }
     };
 
     const openModal = (items, title, options = {}) => {
@@ -1062,6 +1260,8 @@ function setupExtraEvidenceModal() {
         }
 
         const heading = String(title || '').trim();
+        const source = String(options.source || 'unknown').trim();
+        const caseId = String(options.caseId || 'unknown_case').trim();
         modalTitle.textContent = heading
             ? heading
             : 'Extra Images · EXTRA_IMAGES';
@@ -1130,7 +1330,7 @@ function setupExtraEvidenceModal() {
             zoomButton.textContent = isZoomed ? 'RESET_ZOOM' : 'ZOOM';
         };
 
-        const setActive = (index) => {
+        const setActive = (index, shouldTrack = false) => {
             activeIndex = index;
             const activeItem = sortedItems[index];
             if (!activeItem) {
@@ -1146,6 +1346,20 @@ function setupExtraEvidenceModal() {
                 const buttonIndex = Number(button.dataset.index || '-1');
                 button.classList.toggle('is-active', buttonIndex === index);
             });
+
+            if (shouldTrack) {
+                trackSelectContent({
+                    contentType: 'extra_evidence_preview',
+                    itemId: caseId,
+                    itemName: activeItem.label,
+                    sectionName: 'extra_evidence_modal',
+                    interactionAction: 'select_preview',
+                    elementType: 'thumbnail_button',
+                    elementLabel: activeItem.label,
+                    modalName: 'extra_evidence_modal',
+                    evidence_phase: activeItem.phase || 'unknown'
+                });
+            }
         };
 
         const createEvidenceButton = (item, laneLabel) => {
@@ -1172,7 +1386,7 @@ function setupExtraEvidenceModal() {
 
             visual.append(image, phaseBadge);
             button.append(visual, caption);
-            button.addEventListener('click', () => setActive(item.__index));
+            button.addEventListener('click', () => setActive(item.__index, true));
             thumbButtons.push(button);
             return button;
         };
@@ -1225,8 +1439,51 @@ function setupExtraEvidenceModal() {
             pairList.appendChild(card);
         });
 
-        zoomButton.addEventListener('click', () => setZoom(!isZoomed));
-        previewImageWrap.addEventListener('click', () => setZoom(!isZoomed));
+        zoomButton.addEventListener('click', () => {
+            const nextZoom = !isZoomed;
+            setZoom(nextZoom);
+            trackSelectContent({
+                contentType: 'extra_evidence_zoom',
+                itemId: caseId,
+                itemName: sortedItems[activeIndex]?.label || 'unknown_evidence',
+                sectionName: 'extra_evidence_modal',
+                interactionAction: nextZoom ? 'zoom_in' : 'zoom_reset',
+                elementType: 'button',
+                elementLabel: 'ZOOM',
+                modalName: 'extra_evidence_modal'
+            });
+        });
+        previewImageWrap.addEventListener('click', () => {
+            const nextZoom = !isZoomed;
+            setZoom(nextZoom);
+            trackSelectContent({
+                contentType: 'extra_evidence_zoom',
+                itemId: caseId,
+                itemName: sortedItems[activeIndex]?.label || 'unknown_evidence',
+                sectionName: 'extra_evidence_modal',
+                interactionAction: nextZoom ? 'zoom_in' : 'zoom_reset',
+                elementType: 'image',
+                elementLabel: 'PREVIEW_IMAGE',
+                modalName: 'extra_evidence_modal'
+            });
+        });
+
+        originalLink.addEventListener('click', () => {
+            const activeItem = sortedItems[activeIndex];
+            trackSelectContent({
+                contentType: 'extra_evidence_original',
+                itemId: caseId,
+                itemName: activeItem?.label || 'unknown_evidence',
+                sectionName: 'extra_evidence_modal',
+                interactionAction: 'open_link',
+                elementType: 'link',
+                elementLabel: 'OPEN_ORIGINAL',
+                linkUrl: activeItem?.src || originalLink.href,
+                linkType: detectLinkType(activeItem?.src || originalLink.href),
+                modalName: 'extra_evidence_modal',
+                evidence_phase: activeItem?.phase || 'unknown'
+            });
+        });
 
         previewImageWrap.appendChild(previewImage);
         previewActions.append(zoomButton, originalLink);
@@ -1239,6 +1496,19 @@ function setupExtraEvidenceModal() {
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         syncModalBodyLock();
+
+        trackSelectContent({
+            contentType: 'extra_evidence',
+            itemId: caseId,
+            itemName: heading || 'Extra Images',
+            sectionName: 'case_card',
+            interactionAction: 'open_modal',
+            elementType: 'modal',
+            elementLabel: heading || 'Extra Images',
+            modalName: 'extra_evidence_modal',
+            open_source: source,
+            value: normalizedItems.length
+        });
     };
 
     modal.querySelectorAll('[data-extra-close]').forEach((node) => {
@@ -1376,6 +1646,8 @@ function setupMermaidModal() {
     };
 
     const closeModal = () => {
+        const wasOpen = modal.classList.contains('is-open');
+        const closingTitle = modalTitle.textContent || 'Mermaid Diagram';
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         modalContent.replaceChildren();
@@ -1388,6 +1660,19 @@ function setupMermaidModal() {
         zoom = 1;
         zoomValue.textContent = '100%';
         syncModalBodyLock();
+
+        if (wasOpen) {
+            trackSelectContent({
+                contentType: 'mermaid_diagram',
+                itemId: closingTitle,
+                itemName: closingTitle,
+                sectionName: 'mermaid_modal',
+                interactionAction: 'close_modal',
+                elementType: 'modal',
+                elementLabel: closingTitle,
+                modalName: 'mermaid_modal'
+            });
+        }
     };
 
     const openModal = (target) => {
@@ -1444,12 +1729,25 @@ function setupMermaidModal() {
             target.closest('.service-card')?.querySelector('.card-title')?.textContent?.trim() ||
             target.closest('.hero-panel')?.querySelector('.panel-title')?.textContent?.trim() ||
             'Mermaid Diagram';
+        const sourceType = target.closest('.service-card') ? 'service_card' : 'hero_panel';
         modalTitle.textContent = titleText;
 
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         syncModalBodyLock();
         scheduleCenterModalView();
+
+        trackSelectContent({
+            contentType: 'mermaid_diagram',
+            itemId: titleText,
+            itemName: titleText,
+            sectionName: 'diagram',
+            interactionAction: 'open_modal',
+            elementType: 'diagram',
+            elementLabel: titleText,
+            modalName: 'mermaid_modal',
+            open_source: sourceType
+        });
     };
 
     controls.querySelectorAll('[data-mermaid-zoom]').forEach((button) => {
@@ -1465,15 +1763,45 @@ function setupMermaidModal() {
 
             if (action === 'in') {
                 setZoom(zoom + ZOOM_STEP);
+                trackSelectContent({
+                    contentType: 'mermaid_zoom',
+                    itemId: modalTitle.textContent || 'Mermaid Diagram',
+                    itemName: modalTitle.textContent || 'Mermaid Diagram',
+                    sectionName: 'mermaid_modal',
+                    interactionAction: 'zoom_in',
+                    elementType: 'button',
+                    elementLabel: 'ZOOM_IN',
+                    modalName: 'mermaid_modal'
+                });
                 return;
             }
             if (action === 'out') {
                 setZoom(zoom - ZOOM_STEP);
+                trackSelectContent({
+                    contentType: 'mermaid_zoom',
+                    itemId: modalTitle.textContent || 'Mermaid Diagram',
+                    itemName: modalTitle.textContent || 'Mermaid Diagram',
+                    sectionName: 'mermaid_modal',
+                    interactionAction: 'zoom_out',
+                    elementType: 'button',
+                    elementLabel: 'ZOOM_OUT',
+                    modalName: 'mermaid_modal'
+                });
                 return;
             }
             zoom = 1;
             applyZoom();
             scheduleCenterModalView();
+            trackSelectContent({
+                contentType: 'mermaid_zoom',
+                itemId: modalTitle.textContent || 'Mermaid Diagram',
+                itemName: modalTitle.textContent || 'Mermaid Diagram',
+                sectionName: 'mermaid_modal',
+                interactionAction: 'zoom_reset',
+                elementType: 'button',
+                elementLabel: 'ZOOM_RESET',
+                modalName: 'mermaid_modal'
+            });
         });
     });
 
