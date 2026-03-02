@@ -598,6 +598,63 @@ function createNarrativeBlock(label, content, tone) {
     return block;
 }
 
+function extractFirstLineSummary(content) {
+    if (!content) {
+        return '';
+    }
+
+    const lines = String(content)
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+    for (const line of lines) {
+        const cleaned = line
+            .replace(/^\d+\)\s*/, '')
+            .replace(/^[-*]\s*/, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        if (cleaned) {
+            return cleaned;
+        }
+    }
+
+    return '';
+}
+
+function createScanSummary(card) {
+    const rows = [
+        { label: 'PROBLEM', value: extractFirstLineSummary(card.problem || card.cause) },
+        { label: 'ACTION', value: extractFirstLineSummary(card.solution) },
+        { label: 'IMPACT', value: extractFirstLineSummary(card.result) }
+    ].filter((item) => item.value);
+
+    if (rows.length === 0) {
+        return null;
+    }
+
+    const wrapper = document.createElement('section');
+    wrapper.className = 'card-scan-summary';
+
+    rows.forEach((item) => {
+        const line = document.createElement('p');
+        line.className = 'card-scan-row';
+
+        const key = document.createElement('span');
+        key.className = 'card-scan-key';
+        key.textContent = item.label;
+
+        const value = document.createElement('span');
+        value.className = 'card-scan-value';
+        value.textContent = item.value;
+
+        line.append(key, value);
+        wrapper.appendChild(line);
+    });
+
+    return wrapper;
+}
+
 function createTagList(tags) {
     const normalizedTags = Array.isArray(tags) ? tags.filter(Boolean) : [];
     if (normalizedTags.length === 0) {
@@ -925,18 +982,13 @@ function createServiceCard(card, sectionConfig) {
 
     const description = document.createElement('p');
     description.className = 'card-desc';
-    description.textContent = card.overview ?? card.description ?? '';
+    const overviewText = card.overview ?? card.description ?? '';
+    description.textContent = extractFirstLineSummary(overviewText) || overviewText;
 
-    const roleLine = createMetaLine('ROLE', card.role);
     const stackLine = createMetaLine('STACK', card.stackSummary);
-    const problemBlock = createNarrativeBlock('1) 문제', card.problem, 'problem');
-    const causeBlock = createNarrativeBlock('2) 원인', card.cause, 'cause');
-    const solutionBlock = createNarrativeBlock('3) 해결', card.solution, 'solution');
-    const resultBlock = createNarrativeBlock('4) 결과', card.result, 'result');
+    const scanSummary = createScanSummary(card);
     const evidenceGallery = createEvidenceGallery(card.evidenceImages, card.title);
     const extraEvidenceButton = createExtraEvidenceButton(card.extraEvidenceImages, card.title);
-    const tags = createTagList(card.skills);
-    const highlights = createHighlightList(card.highlights);
     const links = createCardLinks(card);
 
     content.append(title);
@@ -944,35 +996,17 @@ function createServiceCard(card, sectionConfig) {
         content.append(subtitle);
     }
     content.append(description);
-    if (roleLine) {
-        content.append(roleLine);
-    }
     if (stackLine) {
         content.append(stackLine);
     }
-    if (problemBlock) {
-        content.append(problemBlock);
-    }
-    if (causeBlock) {
-        content.append(causeBlock);
-    }
-    if (solutionBlock) {
-        content.append(solutionBlock);
-    }
-    if (resultBlock) {
-        content.append(resultBlock);
+    if (scanSummary) {
+        content.append(scanSummary);
     }
     if (evidenceGallery) {
         content.append(evidenceGallery);
     }
     if (extraEvidenceButton) {
         content.append(extraEvidenceButton);
-    }
-    if (tags) {
-        content.append(tags);
-    }
-    if (highlights) {
-        content.append(highlights);
     }
     if (links) {
         content.append(links);
