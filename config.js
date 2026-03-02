@@ -12,10 +12,29 @@ export const templateConfig = {
         panelUid: 'ID: UPGRADE-TODO-PS-00',
         diagramId: 'upgrade-todo-problem-overview',
         metrics: [
-            '이력서 LifeNavigation(Upgrade Todo) 항목을 코드 경로 단위로 추적해 문제-원인-해결-결과 흐름으로 재구성했습니다.',
-            '핵심 근거는 Auth/User 엔티티 Persistable, Outbox Publisher Processor, JwtAuthenticationFilter, ProjectOwnershipPersistenceAdapter, AsyncMessagePublishingDecorator 입니다.',
-            'private 레포 제약 때문에 코드 링크는 외부 소스 대신 이 포트폴리오 내부 Evidence 문서로 연결했습니다.',
-            '핵심 지표: 쿼리 21 -> 3, timeout 15% -> 0%, p95 500ms -> 50ms, read RPS 972 -> 3680, write RPS 373 -> 916'
+            {
+                label: '요약',
+                value: 'Upgrade Todo 항목을 문제→원인→해결→결과 흐름으로 재구성했습니다.'
+            },
+            {
+                label: '검증',
+                value: 'Case Study 6건 + Code Path + Commit Trail + k6/Grafana Evidence'
+            },
+            {
+                label: '핵심 지표',
+                value: '인증/권한 쿼리 21 -> 3',
+                kind: 'metric'
+            },
+            {
+                label: '핵심 지표',
+                value: 'timeout 15% -> 0%, p95 500ms -> 50ms',
+                kind: 'metric'
+            },
+            {
+                label: '핵심 지표',
+                value: 'read RPS 972 -> 3680, write RPS 373 -> 916',
+                kind: 'metric'
+            }
         ]
     },
 

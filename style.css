@@ -7,6 +7,7 @@
     --accent-blue: #58a6ff;
     --accent-green: #238636;
     --accent-orange: #d29922;
+    --accent-red: #f85149;
     --accent-glow: rgba(88, 166, 255, 0.15);
     --font-ui: "Inter", sans-serif;
     --font-code: "JetBrains Mono", monospace;
@@ -366,16 +367,57 @@ body.modal-open {
     width: 100%;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 0.8rem 0.95rem;
-    background: rgba(0, 0, 0, 0.18);
-    color: var(--text-secondary);
+    padding: 0.9rem 1rem;
+    background: linear-gradient(180deg, rgba(88, 166, 255, 0.08), rgba(0, 0, 0, 0.22));
+    color: var(--text-primary);
     font-family: var(--font-code);
-    font-size: 0.82rem;
-    line-height: 1.6;
+    font-size: 0.84rem;
+    line-height: 1.65;
+}
+
+.hero-message p {
+    position: relative;
+    padding-left: 0.7rem;
+}
+
+.hero-line {
+    display: block;
+}
+
+.hero-line-label {
+    color: var(--accent-blue);
+    font-weight: 700;
+    margin-right: 0.36rem;
+}
+
+.hero-line-value {
+    color: var(--text-primary);
+}
+
+.hero-line.is-metric {
+    border: 1px solid rgba(88, 166, 255, 0.28);
+    border-radius: 6px;
+    padding: 0.34rem 0.52rem 0.34rem 0.82rem;
+    background: rgba(88, 166, 255, 0.08);
+}
+
+.hero-line.is-metric::before {
+    background: rgba(35, 134, 54, 0.82);
+}
+
+.hero-message p::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.35rem;
+    bottom: 0.35rem;
+    width: 2px;
+    border-radius: 999px;
+    background: rgba(88, 166, 255, 0.72);
 }
 
 .hero-message p + p {
-    margin-top: 0.2rem;
+    margin-top: 0.42rem;
 }
 
 .skill-grid {
@@ -535,9 +577,14 @@ body.modal-open {
 
 .card-desc {
     font-size: 0.9rem;
-    color: var(--text-secondary);
-    line-height: 1.55;
+    color: var(--text-primary);
+    line-height: 1.6;
     white-space: pre-line;
+    border: 1px solid rgba(88, 166, 255, 0.28);
+    border-left: 3px solid rgba(88, 166, 255, 0.72);
+    border-radius: 8px;
+    padding: 0.62rem 0.7rem;
+    background: rgba(88, 166, 255, 0.06);
 }
 
 .card-narrative {
@@ -545,18 +592,54 @@ body.modal-open {
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.2);
     padding: 0.68rem 0.74rem;
+    position: relative;
+    overflow: hidden;
 }
 
 .card-narrative.is-problem {
-    border-color: rgba(210, 153, 34, 0.45);
+    border-color: rgba(248, 81, 73, 0.5);
+    background: rgba(248, 81, 73, 0.08);
+}
+
+.card-narrative.is-cause {
+    border-color: rgba(210, 153, 34, 0.5);
+    background: rgba(210, 153, 34, 0.08);
 }
 
 .card-narrative.is-solution {
     border-color: rgba(88, 166, 255, 0.45);
+    background: rgba(88, 166, 255, 0.08);
 }
 
 .card-narrative.is-result {
     border-color: rgba(35, 134, 54, 0.48);
+    background: rgba(35, 134, 54, 0.1);
+}
+
+.card-narrative::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+}
+
+.card-narrative.is-problem::before {
+    background: rgba(248, 81, 73, 0.85);
+}
+
+.card-narrative.is-cause::before {
+    background: rgba(210, 153, 34, 0.82);
+}
+
+.card-narrative.is-solution::before {
+    background: rgba(88, 166, 255, 0.84);
+}
+
+.card-narrative.is-result::before {
+    background: rgba(35, 134, 54, 0.84);
 }
 
 .card-narrative-title {
@@ -567,6 +650,10 @@ body.modal-open {
 }
 
 .card-narrative.is-problem .card-narrative-title {
+    color: var(--accent-red);
+}
+
+.card-narrative.is-cause .card-narrative-title {
     color: var(--accent-orange);
 }
 

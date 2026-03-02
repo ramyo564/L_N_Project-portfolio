@@ -172,9 +172,36 @@ function renderMetricLines(container, lines, fallbackText) {
     }
 
     metricLines.forEach((line) => {
+        const isObjectLine = line && typeof line === 'object' && !Array.isArray(line);
+        const labelText = isObjectLine ? String(line.label ?? '').trim() : '';
+        const valueText = isObjectLine ? String(line.value ?? '').trim() : '';
+        const plainText = String(isObjectLine ? line.text ?? '' : line ?? '').replace(/^>\s*/, '').trim();
+
+        if (!plainText && !valueText) {
+            return;
+        }
+
         const item = document.createElement('p');
-        const cleanLine = String(line).replace(/^>\s*/, '');
-        item.textContent = `> ${cleanLine}`;
+        item.className = 'hero-line';
+
+        if (isObjectLine && String(line.kind ?? '').toLowerCase() === 'metric') {
+            item.classList.add('is-metric');
+        }
+
+        if (labelText && valueText) {
+            const label = document.createElement('span');
+            label.className = 'hero-line-label';
+            label.textContent = `${labelText}:`;
+
+            const value = document.createElement('span');
+            value.className = 'hero-line-value';
+            value.textContent = valueText;
+
+            item.append(label, value);
+        } else {
+            item.textContent = isObjectLine ? plainText : `> ${plainText}`;
+        }
+
         container.appendChild(item);
     });
 }
@@ -622,10 +649,10 @@ function createServiceCard(card, sectionConfig) {
 
     const roleLine = createMetaLine('ROLE', card.role);
     const stackLine = createMetaLine('STACK', card.stackSummary);
-    const causeBlock = createNarrativeBlock('원인', card.cause, 'problem');
-    const problemBlock = createNarrativeBlock('문제', card.problem, 'problem');
-    const solutionBlock = createNarrativeBlock('해결', card.solution, 'solution');
-    const resultBlock = createNarrativeBlock('결과', card.result, 'result');
+    const problemBlock = createNarrativeBlock('1) 문제', card.problem, 'problem');
+    const causeBlock = createNarrativeBlock('2) 원인', card.cause, 'cause');
+    const solutionBlock = createNarrativeBlock('3) 해결', card.solution, 'solution');
+    const resultBlock = createNarrativeBlock('4) 결과', card.result, 'result');
     const evidenceGallery = createEvidenceGallery(card.evidenceImages, card.title);
     const extraEvidenceButton = createExtraEvidenceButton(card.extraEvidenceImages, card.title);
     const tags = createTagList(card.skills);
@@ -643,11 +670,11 @@ function createServiceCard(card, sectionConfig) {
     if (stackLine) {
         content.append(stackLine);
     }
-    if (causeBlock) {
-        content.append(causeBlock);
-    }
     if (problemBlock) {
         content.append(problemBlock);
+    }
+    if (causeBlock) {
+        content.append(causeBlock);
     }
     if (solutionBlock) {
         content.append(solutionBlock);
