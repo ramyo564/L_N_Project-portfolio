@@ -1,0 +1,4 @@
+===== ROOT START =====
+NoSuchElementException: Pool exhausted
+RedisConnectionFailureException: Unable to connect to Redis
+===== ROOT END =====

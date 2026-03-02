@@ -1,0 +1,3 @@
+NoSuchElementException: Timeout waiting for idle object, borrowMaxWaitDuration=PT2.999999359S
+PoolException: Could not get a resource from the pool
+RedisConnectionFailureException: Unable to connect to Redis

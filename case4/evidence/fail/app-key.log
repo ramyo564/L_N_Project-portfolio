@@ -1,0 +1,16 @@
+# Source: extracted from terminal output shared on 2026-02-27 (Fail run, 07:30)
+
+event=method_error traceId=7fd23f5c-e51b-4105-a4d9-17b2452dfc34 class=com.example.project.auth.adapter.in.web.AuthController method=login durationMs=4536 userId=anonymousUser projectId=null
+event=method_error traceId=9136b69d-3940-43fc-95d0-33b92369a18e class=com.example.project.auth.adapter.in.web.AuthController method=login durationMs=4553 userId=anonymousUser projectId=null
+event=method_error traceId=fef07912-b669-4d4e-8253-c8e602245021 class=com.example.project.auth.adapter.in.web.AuthController method=login durationMs=4555 userId=anonymousUser projectId=null
+event=method_error traceId=0f29f6e3-ef82-4822-8280-a0b9f667e323 class=com.example.project.auth.adapter.in.web.AuthController method=login durationMs=4556 userId=anonymousUser projectId=null
+event=method_error traceId=28d93a68-5b43-4246-9a7b-79833ef4a165 class=com.example.project.auth.adapter.in.web.AuthController method=login durationMs=4558 userId=anonymousUser projectId=null
+
+RedisConnectionFailureException: Unable to connect to Redis
+PoolException: Could not get a resource from the pool
+NoSuchElementException: Timeout waiting for idle object, borrowMaxWaitDuration=PT2.999999359S
+
+Interpretation:
+- Login request failures repeat at ~4.3-4.6s under load.
+- Root cause chain is Redis pool borrow timeout -> PoolException -> RedisConnectionFailureException.
+- This aligns with k6 request timeout/status=0 symptoms in the same fail window.

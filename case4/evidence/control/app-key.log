@@ -1,0 +1,10 @@
+# Fill after control run (share=true)
+
+If no matching lines are found, keep exactly this line:
+NO_MATCH: same Redis pool-timeout error pattern not detected in control run.
+
+If matching lines exist, paste only key lines:
+- timestamp
+- exception class
+- method/class
+- durationMs

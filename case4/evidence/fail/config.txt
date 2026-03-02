@@ -1,0 +1,6 @@
+run=fail
+date=2026-02-27
+spring.threads.virtual.enabled=true
+spring.data.redis.lettuce.share-native-connection=false
+target_load=900-1000vu
+duration=5m

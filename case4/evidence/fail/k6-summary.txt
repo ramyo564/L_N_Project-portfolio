@@ -1,0 +1,8 @@
+# Source: extracted from terminal output shared on 2026-02-27 (Fail run)
+
+ERRO[0625] [2026-02-27T04:45:04.592Z] 프로젝트 삭제 실패: status=0, body=null
+WARN[0625] Request Failed error="Post \"https://lifenavigation.store/api/v1/projects/.../tasks\": request timeout"
+WARN[0625] Request Failed error="Delete \"https://lifenavigation.store/api/v1/projects/...\": request timeout"
+
+Interpretation:
+- status=0 and repeated request timeout indicate client-side timeout under load.

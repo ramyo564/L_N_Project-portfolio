@@ -1,0 +1,11 @@
+===== SUMMARY START =====
+ended_at=2026-02-27T19:40:30+09:00
+method_error_count=524
+status0_count=0
+request_timeout_count=0
+redis_conn_failure_count=0
+pool_exception_count=0
+borrow_timeout_count=0
+pipeline_exception_count=0
+query_timeout_count=0
+===== SUMMARY END =====

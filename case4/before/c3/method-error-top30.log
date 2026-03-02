@@ -1,0 +1,32 @@
+===== TOP30 START =====
+event=method_error traceId=fa5e987d-7ac7-4727-90f5-d9ed402d8d8a class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=4688 userId=anonymousUser projectId=null
+event=method_error traceId=7c1f7ffe-ad7e-4eae-b34b-eca1427d3bcd class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=4620 userId=anonymousUser projectId=null
+event=method_error traceId=e008c1c5-f891-4612-a4b8-a7aff3d50c27 class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=4502 userId=anonymousUser projectId=null
+event=method_error traceId=4b01c87f-ad1e-4ab2-b5b1-e8a2652b7802 class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=4448 userId=anonymousUser projectId=null
+event=method_error traceId=8cc84c97-2a02-432d-aa49-29d216bd5d48 class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=4398 userId=anonymousUser projectId=null
+event=method_error traceId=77752de8-7e24-4f82-a5ef-951ff7e6af42 class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=4278 userId=anonymousUser projectId=null
+event=method_error traceId=b3acfc33-df72-42a7-927a-212604339b9e class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=4352 userId=anonymousUser projectId=null
+event=method_error traceId=8d818b81-2036-4662-b080-2d09ce4d09b7 class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=9693 userId=anonymousUser projectId=null
+event=method_error traceId=e906854f-9c78-4923-8898-7b142ae99baa class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=9618 userId=anonymousUser projectId=null
+event=method_error traceId=f442a5c9-bc7a-47dd-8510-6b0034f73432 class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=9564 userId=anonymousUser projectId=null
+event=method_error traceId=b4fd9f1a-1c72-4bb8-9e8a-dad7122d77bb class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=9508 userId=anonymousUser projectId=null
+event=method_error traceId=4dd61725-9503-451f-ad88-b651afddae17 class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=9159 userId=anonymousUser projectId=null
+event=method_error traceId=2c5a4704-6395-44a7-9a82-a5945e7e840a class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=7755 userId=anonymousUser projectId=null
+event=method_error traceId=93b1215d-84fc-4b97-8573-c1a61227bbb8 class=com.example.project.user.adapter.in.web.UserController method=registerUser durationMs=5103 userId=anonymousUser projectId=null
+event=method_error traceId=3d24b6a5-0ece-4d35-a7ce-218fe7811e33 class=com.example.project.task_mvc.application.service.TaskCommandService method=createTask durationMs=600157 userId=019c9e95-3943-78c6-845f-c914ced47261 projectId=null
+event=method_error traceId=02467427-2c87-4f72-9845-3b56d821e7a0 class=com.example.project.subtask_mvc.application.service.SubTaskCommandService method=createSubTasks durationMs=600183 userId=019c9e95-20f0-7c8a-8a44-7a0eec0a1b15 projectId=null
+event=method_error traceId=4ae5835a-55b5-440c-b425-41374cfa288c class=com.example.project.subtask_mvc.application.service.SubTaskCommandService method=createSubTasks durationMs=600161 userId=019c9e94-f041-78d4-9166-3b15fba1fb68 projectId=null
+event=method_error traceId=5dfe3f2a-87f6-4425-816a-237dcc7b734a class=com.example.project.task_mvc.application.service.TaskCommandService method=createTask durationMs=600156 userId=019c9e94-e80d-7823-b0ff-aba17ee7cca6 projectId=null
+event=method_error traceId=75a6d652-d2d8-4014-8fb5-fa044a2b8d94 class=com.example.project.subtask_mvc.application.service.SubTaskCommandService method=createSubTasks durationMs=600154 userId=019c9e94-db5e-7f29-aedd-ac5d8eabf276 projectId=null
+event=method_error traceId=280f2a6a-1263-4191-afce-8ce7e8f181e7 class=com.example.project.task_mvc.application.service.TaskCommandService method=createTask durationMs=600175 userId=019c9e95-1096-7548-8f33-8179fd5562f3 projectId=null
+event=method_error traceId=5dfe3f2a-87f6-4425-816a-237dcc7b734a class=com.example.project.task_mvc.adapter.in.web.TaskController method=createTask durationMs=600156 userId=019c9e94-e80d-7823-b0ff-aba17ee7cca6 projectId=null
+event=method_error traceId=3d24b6a5-0ece-4d35-a7ce-218fe7811e33 class=com.example.project.task_mvc.adapter.in.web.TaskController method=createTask durationMs=600157 userId=019c9e95-3943-78c6-845f-c914ced47261 projectId=null
+event=method_error traceId=02467427-2c87-4f72-9845-3b56d821e7a0 class=com.example.project.subtask_mvc.adapter.in.web.SubTaskController method=createSubTasks durationMs=600183 userId=019c9e95-20f0-7c8a-8a44-7a0eec0a1b15 projectId=null
+event=method_error traceId=280f2a6a-1263-4191-afce-8ce7e8f181e7 class=com.example.project.task_mvc.adapter.in.web.TaskController method=createTask durationMs=600175 userId=019c9e95-1096-7548-8f33-8179fd5562f3 projectId=null
+event=method_error traceId=75a6d652-d2d8-4014-8fb5-fa044a2b8d94 class=com.example.project.subtask_mvc.adapter.in.web.SubTaskController method=createSubTasks durationMs=600154 userId=019c9e94-db5e-7f29-aedd-ac5d8eabf276 projectId=null
+event=method_error traceId=11429e57-2ee4-4dbf-971e-8bb955e051bc class=com.example.project.task_mvc.application.service.TaskCommandService method=createTask durationMs=600161 userId=019c9e95-30dc-7cb4-a89e-37bc3f357e6b projectId=null
+event=method_error traceId=f1dd5bfa-cd93-4359-a630-53c53d47f440 class=com.example.project.task_mvc.application.service.TaskCommandService method=createTask durationMs=600182 userId=019c9e95-28f2-7ef7-825a-6ca0189840f5 projectId=null
+event=method_error traceId=11429e57-2ee4-4dbf-971e-8bb955e051bc class=com.example.project.task_mvc.adapter.in.web.TaskController method=createTask durationMs=600162 userId=019c9e95-30dc-7cb4-a89e-37bc3f357e6b projectId=null
+event=method_error traceId=0d6fa26b-222f-4cfe-bb69-97140385fc3e class=com.example.project.task_mvc.application.service.TaskCommandService method=createTask durationMs=600156 userId=019c9e95-4135-7709-87cc-2236910dd6fc projectId=null
+event=method_error traceId=f1dd5bfa-cd93-4359-a630-53c53d47f440 class=com.example.project.task_mvc.adapter.in.web.TaskController method=createTask durationMs=600183 userId=019c9e95-28f2-7ef7-825a-6ca0189840f5 projectId=null
+===== TOP30 END =====
