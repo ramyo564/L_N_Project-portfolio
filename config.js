@@ -120,14 +120,34 @@ export const templateConfig = {
                             result: '1) 이력서 기준 락 대기 재현율 0%를 달성했습니다.\n2) 회원가입 핵심 트랜잭션과 후속 사용자 생성이 분리되어 응답성과 안정성이 개선되었습니다.',
                             evidenceImages: [
                                 {
-                                    label: 'k6 Write 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/write-500/쓰기_500.png',
-                                    alt: 'k6 write 500 for auth user flow'
+                                    label: 'k6 Write 50 Before',
+                                    src: './case1/before/case1-k6-write-50-before.png',
+                                    alt: 'k6 write before case1'
                                 },
                                 {
-                                    label: 'Grafana Write 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/write-500/쓰기_500_그라파나_1.png',
-                                    alt: 'grafana write 500 for auth user flow'
+                                    label: 'k6 Write 500 After',
+                                    src: './case1/after/case1-k6-write-500-after.png',
+                                    alt: 'k6 write after case1'
+                                }
+                            ],
+                            extraEvidenceImages: [
+                                { label: 'Signup Before (200)', src: './case1/before/case1-signup-response-before.png' },
+                                { label: 'Signup After (202)', src: './case1/after/case1-signup-response-after.png' },
+                                { label: 'Hibernate Before', src: './case1/before/case1-hibernate-before.png' },
+                                { label: 'Hibernate After', src: './case1/after/case1-hibernate-after.png' },
+                                { label: 'Outbox Table Before', src: './case1/before/case1-outbox-table-before.png' },
+                                { label: 'Outbox Table After', src: './case1/after/case1-outbox-table-after.png' },
+                                {
+                                    label: 'RabbitMQ Queue After Auth',
+                                    src: './case1/after/case1-rabbitmq-queue-after-auth.png',
+                                    pairKey: 'rabbitmq queue auth',
+                                    missingBeforeReason: 'Before 구간은 요청 경로가 동기식이라 RabbitMQ Queue 캡처가 존재하지 않습니다.'
+                                },
+                                {
+                                    label: 'RabbitMQ Queue After User',
+                                    src: './case1/after/case1-rabbitmq-queue-after-user.png',
+                                    pairKey: 'rabbitmq queue user',
+                                    missingBeforeReason: 'Before 구간은 요청 경로가 동기식이라 RabbitMQ Queue 캡처가 존재하지 않습니다.'
                                 }
                             ],
                             skills: ['Persistable', 'Outbox Pattern', 'Transaction Isolation', 'UUIDv7'],
@@ -138,7 +158,7 @@ export const templateConfig = {
                                 'text payload and error truncation prevent outbox poison loop'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_1', href: './evidence/upgrade_todo/index.html#case-1' },
+                                { label: 'EVIDENCE_CASE_1', href: './case1/CASE-1.md' },
                                 { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-1-path' },
                                 { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-1-commits' }
                             ]
@@ -157,15 +177,25 @@ export const templateConfig = {
                             result: '1) 이력서 기준 인증 경로 쿼리 수를 21 -> 3으로 축소했습니다.\n2) 인증/권한 검증의 경계가 명확해져 고부하 시 응답 안정성이 개선되었습니다.',
                             evidenceImages: [
                                 {
-                                    label: 'k6 Read 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/read-500/읽기_500.png',
-                                    alt: 'k6 read 500 for auth query reduction'
+                                    label: 'k6 Read 1000 Before',
+                                    src: './case2/before/case2-k6-read-1000-before.png',
+                                    alt: 'k6 read before case2'
                                 },
                                 {
-                                    label: 'Grafana Read 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/read-500/읽기_500_그라파나_1.png',
-                                    alt: 'grafana read 500 for auth query reduction'
+                                    label: 'k6 Read 1000 After',
+                                    src: './case2/after/case2-k6-read-1000-after.png',
+                                    alt: 'k6 read after case2'
                                 }
+                            ],
+                            extraEvidenceImages: [
+                                { label: 'Hibernate Queries Before', src: './case2/before/case2-hibernate-queries-before.png' },
+                                { label: 'Hibernate Queries After', src: './case2/after/case2-hibernate-queries-after.png' },
+                                { label: 'Redis Empty Before', src: './case2/before/case2-redis-empty-before.png', pairKey: 'redis auth token' },
+                                { label: 'Redis Key After', src: './case2/after/case2-redis-key-after.png', pairKey: 'redis auth token' },
+                                { label: 'Grafana Slow Query Before', src: './case2/before/case2-grafana-slowQuery-before.png' },
+                                { label: 'Grafana Slow Query After', src: './case2/after/case2-grafana-slowQuery-after.png' },
+                                { label: 'Grafana Postgres Before', src: './case2/before/case2-grafana-postgres-before.png' },
+                                { label: 'Grafana Postgres After', src: './case2/after/case2-grafana-postgres-after.png' }
                             ],
                             skills: ['JWT Claims', 'AOP Authorization', 'Query Reduction', 'Security Optimization'],
                             highlights: [
@@ -175,7 +205,7 @@ export const templateConfig = {
                                 'Ownership validation converges to one repository predicate'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_2', href: './evidence/upgrade_todo/index.html#case-2' },
+                                { label: 'EVIDENCE_CASE_2', href: './case2/CASE-2.md' },
                                 { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-2-path' },
                                 { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-2-commits' }
                             ]
@@ -200,15 +230,35 @@ export const templateConfig = {
                             result: '1) 이력서 기준 커넥션 누수 재현율 0%를 유지했습니다.\n2) 권한 조회 경로의 커넥션 점유 시간이 짧아져 부하 시 세션 안정성이 개선되었습니다.',
                             evidenceImages: [
                                 {
-                                    label: 'k6 Read 2000',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/read-2000/읽기_2000.png',
-                                    alt: 'k6 read 2000 for cache transaction boundary'
+                                    label: 'k6 Read 1000 Before',
+                                    src: './case3/before/case3-k6-read-1000-before.png',
+                                    alt: 'k6 read before case3'
                                 },
                                 {
-                                    label: 'Grafana Read 2000',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/read-2000/읽기_2000_그라파나_1.png',
-                                    alt: 'grafana read 2000 for cache transaction boundary'
+                                    label: 'k6 Read 1000 After',
+                                    src: './case3/after/case3-k6-read-1000-after.png',
+                                    alt: 'k6 read after case3'
                                 }
+                            ],
+                            extraEvidenceImages: [
+                                { label: 'pg_stat idle in tx Before', src: './case3/before/case3-pg_stat_idle_transaction-before.png' },
+                                { label: 'pg_stat idle in tx After', src: './case3/after/case3-pg_stat_idle_transaction-after.png' },
+                                {
+                                    label: 'Response 200 After',
+                                    src: './case3/after/case3-response-200-after.png',
+                                    pairKey: 'response status check',
+                                    missingBeforeReason: 'Before 403 재현은 타이밍 의존으로 반복 재현이 어려워 N/A로 처리했습니다.'
+                                },
+                                {
+                                    label: 'Redis Pending Key After',
+                                    src: './case3/after/case3-redis-pending-key-after.png',
+                                    pairKey: 'redis pending key',
+                                    missingBeforeReason: 'Before 단계에는 pending key 전략을 적용하지 않아 대응 이미지가 없습니다.'
+                                },
+                                { label: 'Grafana HikariCP Before', src: './case3/before/case3-Grafana-HikariCP-before.png' },
+                                { label: 'Grafana HikariCP After', src: './case3/after/case3-Grafana-HikariCP-after.png' },
+                                { label: 'Grafana DB Before', src: './case3/before/case3-Grafana-db-before.png' },
+                                { label: 'Grafana DB After', src: './case3/after/case3-Grafana-db-after.png' }
                             ],
                             skills: ['Cache Boundary', 'HikariCP', 'readOnly Tx', 'AOP Proxy Pattern'],
                             highlights: [
@@ -218,7 +268,7 @@ export const templateConfig = {
                                 'self-injection keeps transactional and cache annotations effective'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_3', href: './evidence/upgrade_todo/index.html#case-3' },
+                                { label: 'EVIDENCE_CASE_3', href: './case3/CASE-3.md' },
                                 { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-3-path' },
                                 { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-3-commits' }
                             ]
@@ -237,14 +287,56 @@ export const templateConfig = {
                             result: '1) 이력서 기준 생성 직후 권한 오류율 5% -> 0%를 달성했습니다.\n2) 202 즉시응답 UX를 유지하면서도 생성 직후 접근 일관성을 확보했습니다.',
                             evidenceImages: [
                                 {
-                                    label: 'k6 Write 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/write-500/쓰기_500.png',
-                                    alt: 'k6 write 500 for pending cache async gap'
+                                    label: 'C3 Matrix (Before)',
+                                    src: './case4/before/c3/c3-k6.png',
+                                    alt: 'case4 c3 matrix k6 evidence'
                                 },
                                 {
-                                    label: 'Grafana Write 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/write-500/쓰기_500_그라파나_1.png',
-                                    alt: 'grafana write 500 for pending cache async gap'
+                                    label: 'C4 Matrix (Control)',
+                                    src: './case4/before/c4/c4-k6.png',
+                                    alt: 'case4 c4 matrix k6 evidence'
+                                }
+                            ],
+                            extraEvidenceImages: [
+                                {
+                                    label: 'C3 RabbitMQ',
+                                    src: './case4/before/c3/c3-rmq.png',
+                                    missingAfterReason: 'Case4는 C3/C4 before 매트릭스로 원인 비교를 수행한 케이스라 after 짝이 없습니다.'
+                                },
+                                {
+                                    label: 'C3 Redis',
+                                    src: './case4/before/c3/c3-redis.png',
+                                    missingAfterReason: 'Case4는 C3/C4 before 매트릭스로 원인 비교를 수행한 케이스라 after 짝이 없습니다.'
+                                },
+                                {
+                                    label: 'C3 Postgres',
+                                    src: './case4/before/c3/c3-postgres.png',
+                                    missingAfterReason: 'Case4는 C3/C4 before 매트릭스로 원인 비교를 수행한 케이스라 after 짝이 없습니다.'
+                                },
+                                {
+                                    label: 'C3 RabbitMQ Web',
+                                    src: './case4/before/c3/c3-rmq-web.png',
+                                    missingAfterReason: 'Case4는 C3/C4 before 매트릭스로 원인 비교를 수행한 케이스라 after 짝이 없습니다.'
+                                },
+                                {
+                                    label: 'C4 RabbitMQ',
+                                    src: './case4/before/c4/c4-rmq.png',
+                                    missingAfterReason: 'Case4는 C3/C4 before 매트릭스로 원인 비교를 수행한 케이스라 after 짝이 없습니다.'
+                                },
+                                {
+                                    label: 'C4 Redis',
+                                    src: './case4/before/c4/c4-redis.png',
+                                    missingAfterReason: 'Case4는 C3/C4 before 매트릭스로 원인 비교를 수행한 케이스라 after 짝이 없습니다.'
+                                },
+                                {
+                                    label: 'C4 Postgres',
+                                    src: './case4/before/c4/c4-postgres.png',
+                                    missingAfterReason: 'Case4는 C3/C4 before 매트릭스로 원인 비교를 수행한 케이스라 after 짝이 없습니다.'
+                                },
+                                {
+                                    label: 'C4 RabbitMQ Web',
+                                    src: './case4/before/c4/c4-rmq-web.png',
+                                    missingAfterReason: 'Case4는 C3/C4 before 매트릭스로 원인 비교를 수행한 케이스라 after 짝이 없습니다.'
                                 }
                             ],
                             skills: ['Async Consistency', 'Pending Cache', 'Race Condition Control', 'Redis TTL Strategy'],
@@ -255,7 +347,7 @@ export const templateConfig = {
                                 'Immediate post-create access succeeds without waiting DB flush'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_4', href: './evidence/upgrade_todo/index.html#case-4' },
+                                { label: 'EVIDENCE_CASE_4', href: './case4/CASE-4.md' },
                                 { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-4-path' },
                                 { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-4-commits' }
                             ]
@@ -280,15 +372,27 @@ export const templateConfig = {
                             result: '1) 이력서 기준 timeout 에러율 15% -> 0%를 달성했습니다.\n2) p95 지연이 500ms -> 50ms로 단축되었습니다.',
                             evidenceImages: [
                                 {
-                                    label: 'k6 Write 2000',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/write-2000/쓰기_2000.png',
-                                    alt: 'k6 write 2000 for rabbit async publisher'
+                                    label: 'k6 Write 1000 Before',
+                                    src: './case5/before/case5-k6-write-1000-before.png',
+                                    alt: 'k6 write before case5'
                                 },
                                 {
-                                    label: 'Grafana Write 2000',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/write-2000/쓰기_2000_그라파나_1.png',
-                                    alt: 'grafana write 2000 for rabbit async publisher'
+                                    label: 'k6 Write 1000 After',
+                                    src: './case5/after/case5-k6-write-1000-after.png',
+                                    alt: 'k6 write after case5'
                                 }
+                            ],
+                            extraEvidenceImages: [
+                                { label: 'Publishing Thread Before', src: './case5/before/case5-thread-http-nio-before.png' },
+                                { label: 'Publishing Thread After', src: './case5/after/case5-thread-rabbit-publisher-after.png' },
+                                { label: 'Grafana Channels Before', src: './case5/before/case5-grafana-channels-before.png' },
+                                { label: 'Grafana Channels After', src: './case5/after/case5-grafana-channels-after.png' },
+                                { label: 'Grafana HTTP Percentiles Before', src: './case5/before/case5-grafana-http-response-time-percentiles-before.png' },
+                                { label: 'Grafana HTTP Percentiles After', src: './case5/after/case5-grafana-http-response-time-percentiles-after.png' },
+                                { label: 'Grafana RabbitMQ Message Processing Before', src: './case5/before/case5-grafana-rabbitmq-message-processing-before.png' },
+                                { label: 'Grafana RabbitMQ Message Processing After', src: './case5/after/case5-grafana-rabbitmq-message-processing-after.png' },
+                                { label: 'RabbitMQ Web Channels Before', src: './case5/before/case5-rmq-web-channels-before.png' },
+                                { label: 'RabbitMQ Web Channels After', src: './case5/after/case5-rmq-web-channels-after.png' }
                             ],
                             skills: ['RabbitMQ', 'Async Messaging', 'Executor Tuning', 'Latency Reduction'],
                             highlights: [
@@ -298,7 +402,7 @@ export const templateConfig = {
                                 'Producer adapters share one async publish pattern'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_5', href: './evidence/upgrade_todo/index.html#case-5' },
+                                { label: 'EVIDENCE_CASE_5', href: './case5/CASE-5.md' },
                                 { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-5-path' },
                                 { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-5-commits' }
                             ]
@@ -307,35 +411,65 @@ export const templateConfig = {
                             mermaidId: 'case-integrated-performance-tuning',
                             anchorId: 'upgrade-todo-case-6',
                             title: 'Case 6. 배치 캐시 트랜잭션 구조 통합 최적화로 처리량 증대',
-                            subtitle: '2025-12 · 500VU 읽기 쓰기 성능 통합 개선',
+                            subtitle: '2025-12 · 1000VU 읽기/쓰기 성능 통합 개선',
                             overview: '단일 튜닝이 아닌 저장 경로 배치 인덱스 캐시 트랜잭션 경계를 함께 조정해\n실측 RPS와 p95를 동시에 개선한 케이스입니다.',
                             role: 'insertWithPosition 원자화, 부분 인덱스 적용, cache eviction 타이밍 조정, 부하 검증',
                             stackSummary: 'Task Project SubTask repository, Flyway index migration, k6 performance test',
                             cause: '1) 쓰기 경로에서 위치 계산과 INSERT가 분리되어 경쟁 구간이 커졌습니다.\n2) 조회 경로는 인덱스/캐시 경계가 흔들리면 큐 적체와 지연이 함께 증가했습니다.',
-                            problem: '1) 위치 계산 SELECT + INSERT 분리와 캐시 경합으로 쓰기 경로에서 병목이 발생했습니다.\n2) 상태 조회 쿼리의 인덱스 부재로 고부하 시 큐 적체와 지연이 커졌습니다.\n3) 캐시 무효화/트랜잭션 순서가 어긋나면 일관성과 처리량을 동시에 잃는 문제가 있었습니다.',
+                            problem: '1) 위치 계산 SELECT + INSERT 분리와 캐시 경합으로 쓰기 경로에서 병목이 발생했습니다.\n2) 상태 조회 쿼리에서 status partial index(V7) 부재 구간이 고부하 지연을 키웠습니다.\n3) 캐시 무효화/트랜잭션 순서가 어긋나면 일관성과 처리량을 동시에 잃는 문제가 있었습니다.',
                             solution: '1) Project Task SubTask 생성에 `insertWithPosition` 네이티브 경로를 적용해 경쟁 구간을 축소했습니다.\n2) Flyway 마이그레이션에 ownership/status/outbox partial index를 추가했습니다.\n3) 캐시 무효화는 after commit 기준으로 통일해 데이터 정합성과 재조회 비용을 안정화했습니다.\n4) k6 시나리오로 읽기 쓰기 각각의 RPS/p95를 반복 측정해 튜닝 효과를 검증했습니다.',
                             result: '1) 이력서 기준 읽기 RPS 972 -> 3680, 쓰기 RPS 373 -> 916으로 향상되었습니다.\n2) 읽기 p95 975ms -> 141ms, 쓰기 p95 1.9s -> 126ms로 단축되었습니다.',
                             evidenceImages: [
                                 {
-                                    label: 'k6 Read 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/read-500/읽기_500.png',
-                                    alt: 'k6 read 500 result'
+                                    label: 'k6 Read 1000 Before',
+                                    src: './case6/before/case6-k6-read-1000-before.png',
+                                    alt: 'k6 read 1000 before case6 tuning'
                                 },
                                 {
-                                    label: 'k6 Write 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/write-500/쓰기_500.png',
-                                    alt: 'k6 write 500 result'
+                                    label: 'k6 Read 1000 After',
+                                    src: './case6/after/case6-k6-read-1000-after.png',
+                                    alt: 'k6 read 1000 after case6 tuning'
                                 },
                                 {
-                                    label: 'Grafana Read 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/read-500/읽기_500_그라파나_1.png',
-                                    alt: 'grafana read 500 dashboard'
+                                    label: 'k6 Write 1000 Before',
+                                    src: './case6/before/case6-k6-write-1000-before.png',
+                                    alt: 'k6 write 1000 before case6 tuning'
                                 },
                                 {
-                                    label: 'Grafana Write 500',
-                                    src: 'https://ramyo564.github.io/L_N_Project/img/grafana/write-500/쓰기_500_그라파나_1.png',
-                                    alt: 'grafana write 500 dashboard'
+                                    label: 'k6 Write 1000 After',
+                                    src: './case6/after/case6-k6-write-1000-after.png',
+                                    alt: 'k6 write 1000 after case6 tuning'
                                 }
+                            ],
+                            extraEvidenceImages: [
+                                {
+                                    label: 'Hibernate Separate Before',
+                                    src: './case6/before/case6-hibernate-separate-before.png',
+                                    pairKey: 'hibernate insert path'
+                                },
+                                {
+                                    label: 'Hibernate Atomic After',
+                                    src: './case6/after/case6-hibernate-atomic-after.png',
+                                    pairKey: 'hibernate insert path'
+                                },
+                                { label: 'EXPLAIN Before 1', src: './case6/before/case6-explain-before-1.png' },
+                                { label: 'EXPLAIN Before 2', src: './case6/before/case6-explain-before-2.png' },
+                                { label: 'EXPLAIN Before 3', src: './case6/before/case6-explain-before-3.png' },
+                                { label: 'EXPLAIN After 1', src: './case6/after/case6-explain-after-1.png' },
+                                { label: 'EXPLAIN After 2', src: './case6/after/case6-explain-after-2.png' },
+                                { label: 'EXPLAIN After 3', src: './case6/after/case6-explain-after-3.png' },
+                                { label: 'pg_indexes Active Before', src: './case6/before/case6-pg-indexes-active-before.png' },
+                                { label: 'pg_indexes Active After', src: './case6/after/case6-pg-indexes-active-after.png' },
+                                {
+                                    label: 'pg_indexes Status After',
+                                    src: './case6/after/case6-pg-indexes-status-after.png',
+                                    pairKey: 'pg indexes status',
+                                    missingBeforeReason: 'Before 시점은 V7 status partial index 미적용 구간이라 status 인덱스 결과가 N/A입니다.'
+                                },
+                                { label: 'Grafana Read Response Before', src: './case6/before/case6-grafana-read-response-time-before.png' },
+                                { label: 'Grafana Read Response After', src: './case6/after/case6-grafana-read-response-time-after.png' },
+                                { label: 'Grafana Write Response Before', src: './case6/before/case6-grafana-write-response-time-before.png' },
+                                { label: 'Grafana Write Response After', src: './case6/after/case6-grafana-write-response-time-after.png' }
                             ],
                             skills: ['Load Testing', 'Index Tuning', 'Atomic Insert', 'Cache and Tx Order'],
                             highlights: [
@@ -345,7 +479,7 @@ export const templateConfig = {
                                 'k6 metrics were used as acceptance gate for each tuning round'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_6', href: './evidence/upgrade_todo/index.html#case-6' },
+                                { label: 'EVIDENCE_CASE_6', href: './case6/CASE-6.md' },
                                 { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-6-path' },
                                 { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-6-commits' }
                             ]
