@@ -419,10 +419,36 @@ function renderHero() {
         return;
     }
     metrics.replaceChildren();
-    renderMetricLines(metrics, hero.metrics, '> Add metrics in templateConfig.hero.metrics');
+    const headline = String(hero.headline || '').trim();
+    if (headline) {
+        const headlineNode = document.createElement('div');
+        headlineNode.className = 'hero-headline';
+        headlineNode.textContent = headline;
+        metrics.appendChild(headlineNode);
+    }
+    const hasHeadlineItems = renderHeroHeadlineItems(metrics, hero.headlineItems);
+
+    const hasSummaryRows = renderHeroSummaryRows(metrics, hero.summaryRows);
+    const hasKpiCards = renderHeroKpiCards(metrics, hero.kpiCards);
+    if (!headline && !hasHeadlineItems && !hasSummaryRows && !hasKpiCards) {
+        renderMetricLines(metrics, hero.metrics, '> Add metrics in templateConfig.hero.metrics');
+    }
 
     if (!section) {
         return;
+    }
+
+    let diagramNote = section.querySelector('.hero-diagram-note');
+    const diagramNoteText = String(hero.diagramNote || '').trim();
+    if (diagramNoteText) {
+        if (!(diagramNote instanceof HTMLElement)) {
+            diagramNote = document.createElement('div');
+            diagramNote.className = 'hero-diagram-note';
+            section.appendChild(diagramNote);
+        }
+        diagramNote.textContent = diagramNoteText;
+    } else if (diagramNote instanceof HTMLElement) {
+        diagramNote.remove();
     }
 
     let actions = section.querySelector('.hero-actions');
@@ -461,6 +487,98 @@ function renderHero() {
     if (actions.childElementCount === 0) {
         actions.remove();
     }
+}
+
+function renderHeroSummaryRows(container, rows) {
+    const summaryRows = Array.isArray(rows)
+        ? rows.filter((item) => item && (item.label || item.value))
+        : [];
+    if (summaryRows.length === 0) {
+        return false;
+    }
+
+    const wrapper = document.createElement('section');
+    wrapper.className = 'hero-summary-grid';
+
+    summaryRows.forEach((row) => {
+        const item = document.createElement('article');
+        item.className = 'hero-summary-row';
+
+        const label = document.createElement('span');
+        label.className = 'hero-summary-label';
+        label.textContent = row.label || '요약';
+
+        const value = document.createElement('span');
+        value.className = 'hero-summary-value';
+        value.textContent = row.value || '';
+
+        item.append(label, value);
+        wrapper.appendChild(item);
+    });
+
+    container.appendChild(wrapper);
+    return true;
+}
+
+function renderHeroHeadlineItems(container, items) {
+    const lines = Array.isArray(items)
+        ? items.map((item) => String(item || '').trim()).filter(Boolean)
+        : [];
+    if (lines.length === 0) {
+        return false;
+    }
+
+    const grid = document.createElement('section');
+    grid.className = 'hero-headline-grid';
+
+    lines.forEach((line) => {
+        const item = document.createElement('article');
+        item.className = 'hero-headline-item';
+        item.textContent = line;
+        grid.appendChild(item);
+    });
+
+    container.appendChild(grid);
+    return true;
+}
+
+function renderHeroKpiCards(container, cards) {
+    const kpiCards = Array.isArray(cards)
+        ? cards.filter((item) => item && (item.label || item.value))
+        : [];
+    if (kpiCards.length === 0) {
+        return false;
+    }
+
+    const grid = document.createElement('section');
+    grid.className = 'hero-kpi-grid';
+
+    kpiCards.forEach((cardItem) => {
+        const card = document.createElement('article');
+        card.className = 'hero-kpi-card';
+
+        const label = document.createElement('div');
+        label.className = 'hero-kpi-label';
+        label.textContent = cardItem.label || '';
+
+        const value = document.createElement('div');
+        value.className = 'hero-kpi-value';
+        value.textContent = cardItem.value || '';
+
+        card.append(label, value);
+
+        if (cardItem.delta) {
+            const delta = document.createElement('div');
+            delta.className = 'hero-kpi-delta';
+            delta.textContent = cardItem.delta;
+            card.appendChild(delta);
+        }
+
+        grid.appendChild(card);
+    });
+
+    container.appendChild(grid);
+    return true;
 }
 
 function renderMetricLines(container, lines, fallbackText) {

@@ -11,7 +11,35 @@ export const templateConfig = {
         panelTitle: 'UPGRADE_TODO_PROBLEM_SOLVING_OVERVIEW',
         panelUid: 'ID: UPGRADE-TODO-PS-00',
         diagramId: 'upgrade-todo-problem-overview',
-        k6ButtonLabel: 'K6_TEST_ENVIRONMENT',
+        headline: '500VU 기준 핵심 성능 개선',
+        headlineItems: [
+            'WRITE p95: 1.9s -> 126ms',
+            'READ p95: 975ms -> 141ms',
+            'READ RPS: 972 -> 3680',
+            'WRITE RPS: 373 -> 916'
+        ],
+        summaryRows: [
+            {
+                label: '문제',
+                value: '고부하에서 인증/권한 쿼리, 메시지 발행 블로킹, 캐시·트랜잭션 경계 이슈가 동시에 병목으로 작동'
+            },
+            {
+                label: '해결',
+                value: 'Case 1~6으로 원인을 분해하고 UUID/Persistable, JWT Claims+AOP, Async Publisher, Index 튜닝을 단계 적용'
+            },
+            {
+                label: '결과',
+                value: '쿼리 21->3, timeout 15%->0%, 읽기/쓰기 RPS 대폭 개선을 k6·Grafana·로그로 교차 검증'
+            }
+        ],
+        kpiCards: [
+            { label: 'AUTH QUERIES', value: '21 -> 3', delta: '-86%' },
+            { label: 'TIMEOUT RATE', value: '15% -> 0%', delta: '-100%' },
+            { label: 'WRITE p95 (500VU)', value: '1.9s -> 126ms', delta: '-93%' },
+            { label: 'READ p95 (500VU)', value: '975ms -> 141ms', delta: '-86%' }
+        ],
+        diagramNote: '세부 코드 경로와 증거 체인은 아래 CODE_EVIDENCE_MAP에서 확인 가능합니다.',
+        k6ButtonLabel: '500VU BEFORE/CURRENT 증거 보기',
         metrics: [
             {
                 label: '요약',
@@ -140,7 +168,7 @@ export const templateConfig = {
     ],
 
     navigation: [
-        { label: 'UPGRADE_TODO_PROBLEM_SOLVING_OVERVIEW', target: '#upgrade-todo-problem-solving' },
+        { label: 'OVERVIEW', target: '#upgrade-todo-problem-solving' },
         { label: 'CASES', target: '#upgrade-todo-cases', caseMenu: true },
         { label: 'CODE_EVIDENCE', target: '#upgrade-todo-code-evidence' },
         { label: 'SKILL_SET', target: '#upgrade-todo-skill-set' },

@@ -287,6 +287,10 @@ body.modal-open {
     grid-row: 2;
     height: 100%;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.58rem;
 }
 
 #upgrade-todo-problem-solving .graph-container {
@@ -302,6 +306,11 @@ body.modal-open {
 
 #upgrade-todo-problem-solving .hero-actions {
     grid-column: 1;
+    grid-row: 3;
+}
+
+#upgrade-todo-problem-solving .hero-diagram-note {
+    grid-column: 2;
     grid-row: 3;
 }
 
@@ -444,6 +453,114 @@ body.modal-open {
 
 .hero-message p + p {
     margin-top: 0.42rem;
+}
+
+.hero-headline {
+    border: 1px solid rgba(88, 166, 255, 0.4);
+    border-radius: 8px;
+    background: rgba(88, 166, 255, 0.1);
+    padding: 0.55rem 0.65rem;
+    color: #e6f1ff;
+    font-family: var(--font-code);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.hero-headline-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+}
+
+.hero-headline-item {
+    border: 1px solid rgba(88, 166, 255, 0.32);
+    border-radius: 8px;
+    background: rgba(88, 166, 255, 0.06);
+    padding: 0.42rem 0.52rem;
+    color: #dcecff;
+    font-family: var(--font-code);
+    font-size: 0.69rem;
+    line-height: 1.45;
+}
+
+.hero-summary-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.44rem;
+}
+
+.hero-summary-row {
+    border: 1px solid rgba(139, 148, 158, 0.42);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.22);
+    padding: 0.5rem 0.58rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+}
+
+.hero-summary-label {
+    font-family: var(--font-code);
+    font-size: 0.68rem;
+    color: var(--accent-blue);
+    font-weight: 700;
+}
+
+.hero-summary-value {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    line-height: 1.45;
+}
+
+.hero-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.44rem;
+}
+
+.hero-kpi-card {
+    border: 1px solid rgba(35, 134, 54, 0.42);
+    border-radius: 8px;
+    background: rgba(35, 134, 54, 0.08);
+    padding: 0.48rem 0.54rem;
+    min-width: 0;
+    min-height: 74px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.hero-kpi-label {
+    font-family: var(--font-code);
+    font-size: 0.62rem;
+    color: #9be9a8;
+    letter-spacing: 0.03em;
+}
+
+.hero-kpi-value {
+    margin-top: 0.22rem;
+    font-family: var(--font-code);
+    font-size: 0.74rem;
+    color: #ffffff;
+    line-height: 1.4;
+}
+
+.hero-kpi-delta {
+    margin-top: 0.2rem;
+    font-family: var(--font-code);
+    font-size: 0.62rem;
+    color: #9be9a8;
+}
+
+.hero-diagram-note {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 0.65rem;
+    color: var(--text-secondary);
+    font-family: var(--font-code);
+    font-size: 0.71rem;
+    line-height: 1.45;
 }
 
 .hero-actions {
@@ -1735,6 +1852,19 @@ body.modal-open {
         grid-row: 4;
     }
 
+    #upgrade-todo-problem-solving .hero-diagram-note {
+        grid-column: 1;
+        grid-row: 5;
+    }
+
+    .hero-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hero-headline-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .k6-overview-summary-grid,
     .k6-overview-cards-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1859,6 +1989,14 @@ body.modal-open {
 
     #upgrade-todo-problem-solving .graph-container {
         height: 255px;
+    }
+
+    .hero-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hero-headline-grid {
+        grid-template-columns: 1fr;
     }
 
     #upgrade-django4-code-evidence .graph-container {
