@@ -920,6 +920,9 @@ function createCardLinks(card) {
         const isCaseReviewLink = resolvedHref !== originalHref;
         const link = document.createElement('a');
         link.className = 'card-link';
+        if (isCaseReviewLink) {
+            link.classList.add('case-review-link');
+        }
         link.href = resolvedHref;
         link.textContent = isCaseReviewLink ? 'CASE_REVIEW' : (item.label || 'LINK');
         if (!String(resolvedHref).startsWith('mailto:')) {

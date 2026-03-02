@@ -40,6 +40,53 @@ function splitNarrativeLines(text) {
         .filter(Boolean);
 }
 
+function detectEvidencePhase(item) {
+    const searchSpace = `${item?.label || ''} ${item?.src || ''}`.toLowerCase();
+    if (searchSpace.includes('before')) {
+        return 'before';
+    }
+    if (searchSpace.includes('after')) {
+        return 'after';
+    }
+    return 'other';
+}
+
+function normalizeEvidenceLabel(label) {
+    return String(label || '')
+        .toLowerCase()
+        .replace(/\bbefore\b|\bafter\b/g, ' ')
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function buildEvidencePairKey(item) {
+    const explicitKey = String(item?.pairKey || '').trim().toLowerCase();
+    if (explicitKey) {
+        return explicitKey;
+    }
+
+    const normalizedLabel = normalizeEvidenceLabel(item?.label || '');
+    if (normalizedLabel) {
+        if (normalizedLabel.includes('k6')) {
+            return normalizedLabel
+                .replace(/\b\d+\s*vu\b/g, ' ')
+                .replace(/\b\d+\b/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+        return normalizedLabel;
+    }
+
+    return String(item?.src || '')
+        .toLowerCase()
+        .replace(/\bbefore\b|\bafter\b/g, ' ')
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 function normalizeEvidenceItems(items) {
     if (!Array.isArray(items)) {
         return [];
@@ -51,6 +98,8 @@ function normalizeEvidenceItems(items) {
             label: item.label || 'EVIDENCE',
             src: item.src,
             alt: item.alt || item.label || 'evidence image',
+            phase: detectEvidencePhase(item),
+            pairKey: item.pairKey || '',
             missingBeforeReason: item.missingBeforeReason || '',
             missingAfterReason: item.missingAfterReason || ''
         }));
@@ -87,19 +136,105 @@ function collectCaseCards() {
     return cards.sort((a, b) => a.caseNumber - b.caseNumber);
 }
 
-function buildEvidenceGridHtml(items) {
+function buildEvidencePairs(items) {
+    const grouped = new Map();
+
+    items.forEach((item) => {
+        const key = buildEvidencePairKey(item);
+        if (!grouped.has(key)) {
+            grouped.set(key, { before: [], after: [], other: [] });
+        }
+
+        const bucket = grouped.get(key);
+        if (item.phase === 'before') {
+            bucket.before.push(item);
+            return;
+        }
+        if (item.phase === 'after') {
+            bucket.after.push(item);
+            return;
+        }
+        bucket.other.push(item);
+    });
+
+    const pairs = [];
+    grouped.forEach((bucket, key) => {
+        const beforeItems = [...bucket.before, ...bucket.other];
+        const afterItems = bucket.after;
+        const pairCount = Math.max(beforeItems.length, afterItems.length);
+
+        for (let index = 0; index < pairCount; index += 1) {
+            pairs.push({
+                key,
+                before: beforeItems[index] || null,
+                after: afterItems[index] || null
+            });
+        }
+    });
+
+    return pairs;
+}
+
+function sanitizePairTitle(label) {
+    const cleaned = normalizeEvidenceLabel(label || '')
+        .replace(/\b(before|after)\b/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (!cleaned) {
+        return '';
+    }
+    return cleaned.toUpperCase();
+}
+
+function buildEvidenceSlotHtml(item, phase, missingReason) {
+    const phaseLabel = phase === 'before' ? 'BEFORE' : 'AFTER';
+    const toneClass = phase === 'before' ? 'is-before' : 'is-after';
+
+    if (!item) {
+        return `
+            <div class="case-evidence-slot case-evidence-slot-missing ${toneClass}">
+                <span class="case-evidence-phase-badge ${toneClass}">${phaseLabel}</span>
+                <p class="case-evidence-missing-text">${escapeHtml(missingReason || 'N/A')}</p>
+            </div>
+        `;
+    }
+
+    return `
+        <a class="case-evidence-slot ${toneClass}" href="${escapeHtml(item.src)}" target="_blank" rel="noopener noreferrer">
+            <span class="case-evidence-phase-badge ${toneClass}">${phaseLabel}</span>
+            <img loading="lazy" src="${escapeHtml(item.src)}" alt="${escapeHtml(item.alt)}">
+            <span class="case-evidence-slot-caption">${escapeHtml(item.label)}</span>
+        </a>
+    `;
+}
+
+function buildEvidencePairsHtml(items) {
     if (items.length === 0) {
         return '<p class="case-review-empty">등록된 이미지 증거가 없습니다.</p>';
     }
 
+    const pairs = buildEvidencePairs(items);
+    if (pairs.length === 0) {
+        return '<p class="case-review-empty">Before/After 페어를 구성할 수 있는 증거가 없습니다.</p>';
+    }
+
     return `
-        <div class="case-evidence-grid">
-            ${items.map((item) => `
-                <a class="case-evidence-card" href="${escapeHtml(item.src)}" target="_blank" rel="noopener noreferrer">
-                    <img loading="lazy" src="${escapeHtml(item.src)}" alt="${escapeHtml(item.alt)}">
-                    <span>${escapeHtml(item.label)}</span>
-                </a>
-            `).join('')}
+        <div class="case-evidence-pairs">
+            ${pairs.map((pair, index) => {
+                const pairTitle = sanitizePairTitle(pair.before?.label || pair.after?.label || pair.key) || `PAIR ${index + 1}`;
+                const missingBeforeReason = !pair.before ? pair.after?.missingBeforeReason : '';
+                const missingAfterReason = !pair.after ? pair.before?.missingAfterReason : '';
+
+                return `
+                <article class="case-evidence-pair-card">
+                    <p class="case-evidence-pair-title">PAIR ${index + 1} · ${escapeHtml(pairTitle)}</p>
+                    <div class="case-evidence-frame">
+                        ${buildEvidenceSlotHtml(pair.before, 'before', missingBeforeReason)}
+                        ${buildEvidenceSlotHtml(pair.after, 'after', missingAfterReason)}
+                    </div>
+                </article>
+                `;
+            }).join('')}
         </div>
     `;
 }
@@ -122,7 +257,7 @@ function buildCaseList(root, cards) {
         <section class="case-review-panel">
             <p class="case-kicker">SELECT_CASE</p>
             <h1>심사자용 케이스 브리프</h1>
-            <p class="case-subtitle">각 케이스는 문제, 조치, 정량 결과를 먼저 확인하도록 구성됩니다.</p>
+            <p class="case-subtitle">각 케이스는 문제, 원인, 해결, 결과를 먼저 확인하도록 구성됩니다.</p>
             <div class="case-list-grid">
                 ${cards.map(({ caseNumber, card, groupTitle }) => `
                     <a class="case-list-card" href="./case-detail.html?case=${caseNumber}">
@@ -142,8 +277,9 @@ function buildCaseDetail(root, cards, selected) {
     const runbookLink = cardLinks.find((item) => isCaseRunbookLink(item.href)) || null;
     const referenceLinks = cardLinks.filter((item) => !isCaseRunbookLink(item.href));
 
-    const summaryProblem = splitNarrativeLines(card?.problem || card?.cause);
-    const summaryAction = splitNarrativeLines(card?.solution);
+    const summaryProblem = splitNarrativeLines(card?.problem);
+    const summaryCause = splitNarrativeLines(card?.cause);
+    const summarySolution = splitNarrativeLines(card?.solution);
     const summaryResult = splitNarrativeLines(card?.result);
 
     const coreEvidence = normalizeEvidenceItems(card?.evidenceImages);
@@ -197,17 +333,18 @@ function buildCaseDetail(root, cards, selected) {
             <p class="section-kicker">REVIEWER_SUMMARY</p>
             <div class="case-summary-grid">
                 ${buildSummaryBlock('문제', summaryProblem)}
-                ${buildSummaryBlock('조치', summaryAction)}
-                ${buildSummaryBlock('성과', summaryResult)}
+                ${buildSummaryBlock('원인', summaryCause)}
+                ${buildSummaryBlock('해결', summarySolution)}
+                ${buildSummaryBlock('결과', summaryResult)}
             </div>
         </section>
 
         <section class="case-review-panel">
             <p class="section-kicker">EVIDENCE_AT_A_GLANCE</p>
-            <h2>핵심 증거</h2>
-            ${buildEvidenceGridHtml(coreEvidence)}
+            <h2>핵심 증거 (Before/After Frame)</h2>
+            ${buildEvidencePairsHtml(coreEvidence)}
             <h2 class="case-section-subtitle">보조 증거</h2>
-            ${buildEvidenceGridHtml(extraEvidence)}
+            ${buildEvidencePairsHtml(extraEvidence)}
             ${missingReasons.length > 0 ? `
                 <div class="case-note-box">
                     <h3>N/A / 단측 증거 사유</h3>

@@ -779,10 +779,10 @@ body.modal-open {
 }
 
 .card-extra-btn {
-    border: 1px solid var(--accent-orange);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
-    background: rgba(210, 153, 34, 0.12);
-    color: var(--accent-orange);
+    background: rgba(0, 0, 0, 0.16);
+    color: var(--text-secondary);
     font-family: var(--font-code);
     font-size: 0.75rem;
     line-height: 1;
@@ -792,9 +792,9 @@ body.modal-open {
 }
 
 .card-extra-btn:hover {
-    color: #ffffff;
-    border-color: var(--accent-orange);
-    background: rgba(210, 153, 34, 0.28);
+    color: var(--text-primary);
+    border-color: rgba(139, 148, 158, 0.72);
+    background: rgba(139, 148, 158, 0.14);
 }
 
 .card-meta-line {
@@ -870,6 +870,18 @@ body.modal-open {
 .card-link:hover {
     color: #ffffff;
     background: var(--accent-blue);
+}
+
+.card-link.case-review-link {
+    border-color: rgba(248, 81, 73, 0.72);
+    color: var(--accent-red);
+    background: rgba(248, 81, 73, 0.12);
+}
+
+.card-link.case-review-link:hover {
+    color: #ffffff;
+    border-color: var(--accent-red);
+    background: rgba(248, 81, 73, 0.86);
 }
 
 .contact-panel {
