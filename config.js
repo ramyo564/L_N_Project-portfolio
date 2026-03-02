@@ -11,6 +11,7 @@ export const templateConfig = {
         panelTitle: 'UPGRADE_TODO_PROBLEM_SOLVING_OVERVIEW',
         panelUid: 'ID: UPGRADE-TODO-PS-00',
         diagramId: 'upgrade-todo-problem-overview',
+        k6ButtonLabel: 'K6_TEST_ENVIRONMENT',
         metrics: [
             {
                 label: '요약',
@@ -35,7 +36,55 @@ export const templateConfig = {
                 value: 'read RPS 972 -> 3680, write RPS 373 -> 916',
                 kind: 'metric'
             }
-        ]
+        ],
+        k6Overview: {
+            modalTitle: 'K6_TEST_ENVIRONMENT_OVERVIEW',
+            profile: '2m@100, 3m@200, 5m@300, 10m@400, 5m@500, 5m@300, 2m@0',
+            maxVu: 500,
+            hardware: [
+                { label: 'CPU', value: 'AMD Ryzen 7 5800U (8C/16T)' },
+                { label: 'RAM', value: '32GB' },
+                { label: 'OS', value: 'Ubuntu 22.04 LTS' },
+                { label: 'Storage', value: 'NVMe SSD (PCIe 3.0)' }
+            ],
+            keyMetrics: [
+                'WRITE: RPS 373 -> 916, p95 1.9s -> 126ms',
+                'READ: RPS 972 -> 3680, p95 975ms -> 141ms'
+            ],
+            dbRowEstimation: [
+                'WRITE setup: TOTAL_USERS=1000 기준 회원가입 row 생성(유저/인증 row).',
+                'WRITE iteration: 1 project + 2 tasks + 6 subtasks = 9 rows 생성 시도/iteration.',
+                'WRITE net row: SHOULD_DELETE_PROJECT=true 이므로 project/task/subtask 잔존 row는 거의 0.',
+                'WRITE rough total(current 916 RPS 기준): 요청 6개/iteration 가정 시 약 294k iteration, 약 2.6M rows 생성 후 삭제.',
+                'READ setup: user 1000명 × (project 1 + task 3 + subtask 9) = 약 13,000 rows(+회원 row).',
+                'READ run: 조회 전용 루프라 row 증가는 거의 없음.'
+            ],
+            comparisons: [
+                {
+                    id: 'write',
+                    title: 'WRITE_TEST (VU 500) · BEFORE vs CURRENT',
+                    beforeLabel: 'BEFORE',
+                    currentLabel: 'CURRENT',
+                    beforeImage: './k6-500-result/write_500-before.png',
+                    currentImage: './k6-500-result/write_500-current.png',
+                    beforeAlt: 'k6 write test before result',
+                    currentAlt: 'k6 write test current result'
+                },
+                {
+                    id: 'read',
+                    title: 'READ_TEST (VU 500) · BEFORE vs CURRENT',
+                    beforeLabel: 'BEFORE',
+                    currentLabel: 'CURRENT',
+                    beforeImage: './k6-500-result/read_500-before.png',
+                    currentImage: './k6-500-result/read_500-current.png',
+                    beforeAlt: 'k6 read test before result',
+                    currentAlt: 'k6 read test current result'
+                }
+            ],
+            links: [
+                { label: 'OPEN_K6_README', href: './k6/README.md' }
+            ]
+        }
     },
 
     topPanels: [

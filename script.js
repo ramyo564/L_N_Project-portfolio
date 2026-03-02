@@ -99,6 +99,7 @@ const analyticsSession = {
     currentSectionName: '',
     currentSectionEnteredAt: 0,
     uniqueCaseViews: new Set(),
+    k6OverviewModalOpenedAt: 0,
     extraEvidenceModalOpenedAt: 0,
     mermaidModalOpenedAt: 0,
     ended: false
@@ -291,7 +292,9 @@ function setupAnalyticsLifecycle() {
 }
 
 function syncModalBodyLock() {
-    const hasOpenModal = Boolean(document.querySelector('.mermaid-modal.is-open, .extra-evidence-modal.is-open'));
+    const hasOpenModal = Boolean(
+        document.querySelector('.mermaid-modal.is-open, .extra-evidence-modal.is-open, .k6-overview-modal.is-open')
+    );
     document.body.classList.toggle('modal-open', hasOpenModal);
 }
 
@@ -394,6 +397,8 @@ function setSystemInfo() {
     setText('system-name', templateConfig.system?.systemName);
 }
 
+let openK6OverviewModal = null;
+
 function renderHero() {
     const hero = templateConfig.hero ?? {};
     const section = byId('system-architecture');
@@ -415,6 +420,47 @@ function renderHero() {
     }
     metrics.replaceChildren();
     renderMetricLines(metrics, hero.metrics, '> Add metrics in templateConfig.hero.metrics');
+
+    if (!section) {
+        return;
+    }
+
+    let actions = section.querySelector('.hero-actions');
+    if (!(actions instanceof HTMLElement)) {
+        actions = document.createElement('div');
+        actions.className = 'hero-actions';
+        section.appendChild(actions);
+    }
+
+    actions.replaceChildren();
+    if (hero.k6Overview) {
+        const button = document.createElement('button');
+        button.className = 'hero-action-btn';
+        button.type = 'button';
+        button.textContent = hero.k6ButtonLabel || 'K6_TEST_ENVIRONMENT';
+        button.setAttribute('aria-haspopup', 'dialog');
+        button.addEventListener('click', () => {
+            if (typeof openK6OverviewModal === 'function') {
+                openK6OverviewModal(hero.k6Overview, hero.k6ButtonLabel || 'K6_TEST_ENVIRONMENT');
+            }
+
+            trackSelectContent({
+                contentType: 'hero_action',
+                itemId: 'k6_test_environment',
+                itemName: hero.k6ButtonLabel || 'K6_TEST_ENVIRONMENT',
+                sectionName: 'hero',
+                interactionAction: 'open_modal',
+                elementType: 'button',
+                elementLabel: hero.k6ButtonLabel || 'K6_TEST_ENVIRONMENT',
+                modalName: 'k6_overview_modal'
+            });
+        });
+        actions.appendChild(button);
+    }
+
+    if (actions.childElementCount === 0) {
+        actions.remove();
+    }
 }
 
 function renderMetricLines(container, lines, fallbackText) {
@@ -1441,6 +1487,294 @@ function setupScrollSpy() {
     }, 720);
 }
 
+function setupK6OverviewModal() {
+    const modal = byId('k6-overview-modal');
+    const modalContent = byId('k6-overview-content');
+    const modalTitle = byId('k6-overview-title');
+
+    if (!modal || !modalContent || !modalTitle) {
+        return;
+    }
+
+    let activeLabel = 'K6_TEST_ENVIRONMENT';
+
+    const durationToSeconds = (durationToken) => {
+        const text = String(durationToken || '').trim().toLowerCase();
+        const match = text.match(/^(\d+)\s*([smhd])$/);
+        if (!match) {
+            return 0;
+        }
+
+        const amount = Number.parseInt(match[1], 10);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            return 0;
+        }
+
+        const unit = match[2];
+        if (unit === 's') {
+            return amount;
+        }
+        if (unit === 'm') {
+            return amount * 60;
+        }
+        if (unit === 'h') {
+            return amount * 3600;
+        }
+        if (unit === 'd') {
+            return amount * 86400;
+        }
+        return 0;
+    };
+
+    const formatDuration = (totalSeconds) => {
+        const seconds = Math.max(0, Math.floor(totalSeconds));
+        if (seconds <= 0) {
+            return 'N/A';
+        }
+
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainSeconds = seconds % 60;
+
+        if (hours > 0) {
+            return `${hours}h ${minutes}m ${remainSeconds}s`;
+        }
+        return `${minutes}m ${remainSeconds}s`;
+    };
+
+    const createListCard = (titleText, items, ordered = false) => {
+        const card = document.createElement('article');
+        card.className = 'k6-overview-card';
+
+        const title = document.createElement('h3');
+        title.className = 'k6-overview-card-title';
+        title.textContent = titleText;
+        card.appendChild(title);
+
+        const list = document.createElement(ordered ? 'ol' : 'ul');
+        list.className = 'k6-overview-list';
+        items.forEach((line) => {
+            const item = document.createElement('li');
+            item.textContent = String(line);
+            list.appendChild(item);
+        });
+        card.appendChild(list);
+
+        return card;
+    };
+
+    const createSummaryItem = (labelText, valueText) => {
+        const item = document.createElement('article');
+        item.className = 'k6-overview-summary-item';
+
+        const label = document.createElement('p');
+        label.className = 'k6-overview-summary-label';
+        label.textContent = labelText;
+
+        const value = document.createElement('p');
+        value.className = 'k6-overview-summary-value';
+        value.textContent = valueText;
+
+        item.append(label, value);
+        return item;
+    };
+
+    const closeModal = () => {
+        const wasOpen = modal.classList.contains('is-open');
+        const closingTitle = modalTitle.textContent || 'K6_TEST_ENVIRONMENT_OVERVIEW';
+        const modalDurationMs = analyticsSession.k6OverviewModalOpenedAt
+            ? Math.max(0, Date.now() - analyticsSession.k6OverviewModalOpenedAt)
+            : 0;
+
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        modalContent.replaceChildren();
+        analyticsSession.k6OverviewModalOpenedAt = 0;
+        syncModalBodyLock();
+
+        if (wasOpen) {
+            trackSelectContent({
+                contentType: 'k6_overview',
+                itemId: 'k6_test_environment',
+                itemName: closingTitle,
+                sectionName: 'k6_overview_modal',
+                interactionAction: 'close_modal',
+                elementType: 'modal',
+                elementLabel: closingTitle,
+                modalName: 'k6_overview_modal',
+                duration_ms: modalDurationMs,
+                value: Math.round(modalDurationMs / 1000)
+            });
+        }
+    };
+
+    const openModal = (overview, sourceLabel = 'K6_TEST_ENVIRONMENT') => {
+        if (!overview || typeof overview !== 'object') {
+            return;
+        }
+
+        const profile = String(overview.profile || '').trim();
+        const totalDurationSeconds = profile
+            .split(',')
+            .map((stage) => stage.trim())
+            .filter(Boolean)
+            .reduce((sum, stage) => {
+                const [durationToken] = stage.split('@');
+                return sum + durationToSeconds(durationToken);
+            }, 0);
+
+        const hardwareRows = Array.isArray(overview.hardware) ? overview.hardware : [];
+        const keyMetrics = Array.isArray(overview.keyMetrics) ? overview.keyMetrics : [];
+        const dbRows = Array.isArray(overview.dbRowEstimation) ? overview.dbRowEstimation : [];
+        const comparisons = Array.isArray(overview.comparisons) ? overview.comparisons : [];
+        const links = Array.isArray(overview.links) ? overview.links.filter((item) => item?.href) : [];
+
+        activeLabel = String(sourceLabel || 'K6_TEST_ENVIRONMENT').trim() || 'K6_TEST_ENVIRONMENT';
+        analyticsSession.k6OverviewModalOpenedAt = Date.now();
+        modalTitle.textContent = String(overview.modalTitle || '').trim() || 'K6_TEST_ENVIRONMENT_OVERVIEW';
+
+        const layout = document.createElement('div');
+        layout.className = 'k6-overview-layout';
+
+        const summaryGrid = document.createElement('section');
+        summaryGrid.className = 'k6-overview-summary-grid';
+        summaryGrid.append(
+            createSummaryItem('RAMPING_PROFILE', profile || 'N/A'),
+            createSummaryItem('MAX_VU', overview.maxVu ? String(overview.maxVu) : 'N/A'),
+            createSummaryItem('TEST_WINDOW', formatDuration(totalDurationSeconds))
+        );
+        layout.appendChild(summaryGrid);
+
+        const cardsGrid = document.createElement('section');
+        cardsGrid.className = 'k6-overview-cards-grid';
+
+        if (hardwareRows.length > 0) {
+            const hardwareLines = hardwareRows.map((item) => `${item.label || 'ITEM'}: ${item.value || 'N/A'}`);
+            cardsGrid.appendChild(createListCard('HW / ENVIRONMENT', hardwareLines));
+        }
+        if (keyMetrics.length > 0) {
+            cardsGrid.appendChild(createListCard('KEY_METRICS', keyMetrics));
+        }
+        if (dbRows.length > 0) {
+            cardsGrid.appendChild(createListCard('DB_ROW_ESTIMATION', dbRows, true));
+        }
+        layout.appendChild(cardsGrid);
+
+        if (comparisons.length > 0) {
+            const compareSection = document.createElement('section');
+            compareSection.className = 'k6-overview-comparisons';
+
+            comparisons.forEach((comparison) => {
+                const compareCard = document.createElement('article');
+                compareCard.className = 'k6-overview-compare-card';
+
+                const heading = document.createElement('h3');
+                heading.className = 'k6-overview-compare-title';
+                heading.textContent = comparison.title || 'K6_COMPARISON';
+                compareCard.appendChild(heading);
+
+                const body = document.createElement('div');
+                body.className = 'k6-overview-compare-body';
+
+                const createFigure = (phase, label, src, alt) => {
+                    const figure = document.createElement('figure');
+                    figure.className = `k6-overview-figure is-${phase}`;
+
+                    const badge = document.createElement('span');
+                    badge.className = `k6-overview-phase is-${phase}`;
+                    badge.textContent = label;
+
+                    const image = document.createElement('img');
+                    image.src = src || '';
+                    image.alt = alt || label;
+                    image.loading = 'lazy';
+
+                    const caption = document.createElement('figcaption');
+                    caption.className = 'k6-overview-figure-caption';
+                    caption.textContent = label;
+
+                    figure.append(badge, image, caption);
+                    return figure;
+                };
+
+                body.append(
+                    createFigure('before', comparison.beforeLabel || 'BEFORE', comparison.beforeImage, comparison.beforeAlt),
+                    createFigure('current', comparison.currentLabel || 'CURRENT', comparison.currentImage, comparison.currentAlt)
+                );
+
+                compareCard.appendChild(body);
+                compareSection.appendChild(compareCard);
+            });
+
+            layout.appendChild(compareSection);
+        }
+
+        if (links.length > 0) {
+            const linkRow = document.createElement('section');
+            linkRow.className = 'k6-overview-links';
+
+            links.forEach((item) => {
+                const link = document.createElement('a');
+                link.className = 'k6-overview-link';
+                link.href = item.href;
+                link.textContent = item.label || 'LINK';
+                if (!String(item.href).startsWith('mailto:')) {
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                }
+                link.addEventListener('click', () => {
+                    trackSelectContent({
+                        contentType: 'k6_overview_link',
+                        itemId: 'k6_test_environment',
+                        itemName: item.label || 'LINK',
+                        sectionName: 'k6_overview_modal',
+                        interactionAction: 'open_link',
+                        elementType: 'link',
+                        elementLabel: item.label || 'LINK',
+                        linkUrl: item.href,
+                        linkType: detectLinkType(item.href),
+                        modalName: 'k6_overview_modal'
+                    });
+                });
+                linkRow.appendChild(link);
+            });
+
+            layout.appendChild(linkRow);
+        }
+
+        modalContent.replaceChildren(layout);
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        syncModalBodyLock();
+
+        trackSelectContent({
+            contentType: 'k6_overview',
+            itemId: 'k6_test_environment',
+            itemName: modalTitle.textContent || 'K6_TEST_ENVIRONMENT_OVERVIEW',
+            sectionName: 'hero',
+            interactionAction: 'open_modal',
+            elementType: 'modal',
+            elementLabel: activeLabel,
+            modalName: 'k6_overview_modal'
+        });
+    };
+
+    modal.querySelectorAll('[data-k6-overview-close]').forEach((node) => {
+        node.addEventListener('click', closeModal);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (!modal.classList.contains('is-open')) {
+            return;
+        }
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    });
+
+    openK6OverviewModal = openModal;
+}
+
 function setupExtraEvidenceModal() {
     const modal = byId('extra-evidence-modal');
     const modalContent = byId('extra-evidence-content');
@@ -2144,6 +2478,7 @@ function setupMermaidModal() {
 document.addEventListener('DOMContentLoaded', async () => {
     setSystemInfo();
     setupAnalyticsLifecycle();
+    setupK6OverviewModal();
     setupExtraEvidenceModal();
     renderHero();
     renderTopPanels();
