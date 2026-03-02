@@ -1,0 +1,313 @@
+.case-review-body {
+    min-height: 100vh;
+}
+
+.case-review-header {
+    position: sticky;
+    top: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    background:
+        linear-gradient(130deg, rgba(88, 166, 255, 0.16), rgba(13, 17, 23, 0.94) 42%),
+        var(--panel-bg);
+    backdrop-filter: blur(4px);
+}
+
+.case-review-home-link {
+    text-decoration: none;
+    font-family: var(--font-code);
+    font-size: 0.76rem;
+    letter-spacing: 0.05em;
+    color: var(--accent-blue);
+    border: 1px solid rgba(88, 166, 255, 0.45);
+    border-radius: 999px;
+    padding: 0.48rem 0.9rem;
+    background: rgba(88, 166, 255, 0.08);
+}
+
+.case-review-home-link:hover {
+    color: #ffffff;
+    background: rgba(88, 166, 255, 0.28);
+}
+
+.case-review-header-label {
+    margin: 0;
+    font-family: var(--font-code);
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+}
+
+.case-review-root {
+    width: min(1200px, 100%);
+    margin: 0 auto;
+    padding: 1.8rem 1.25rem 2.6rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.case-review-panel {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at top right, rgba(88, 166, 255, 0.09), transparent 45%),
+        var(--panel-bg);
+    padding: 1.25rem;
+}
+
+.case-review-hero-panel {
+    padding: 1.4rem;
+}
+
+.case-kicker,
+.section-kicker {
+    margin: 0 0 0.4rem;
+    font-family: var(--font-code);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--accent-blue);
+}
+
+.case-review-panel h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    line-height: 1.35;
+}
+
+.case-review-panel h2 {
+    margin: 0 0 0.55rem;
+    font-size: 1.05rem;
+}
+
+.case-section-subtitle {
+    margin-top: 1rem;
+}
+
+.case-subtitle {
+    margin: 0.5rem 0 0;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    white-space: pre-line;
+}
+
+.case-chip-row,
+.case-nav-row,
+.case-link-row {
+    margin-top: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.52rem;
+}
+
+.case-chip {
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    border-radius: 999px;
+    padding: 0.3rem 0.62rem;
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    background: rgba(88, 166, 255, 0.1);
+}
+
+.case-nav-btn,
+.case-link-btn {
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.47rem 0.7rem;
+    font-family: var(--font-code);
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.case-nav-btn:hover,
+.case-link-btn:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.case-link-btn-runbook {
+    border-color: rgba(210, 153, 34, 0.55);
+    color: var(--accent-orange);
+    background: rgba(210, 153, 34, 0.1);
+}
+
+.case-link-btn-runbook:hover {
+    color: #ffffff;
+    border-color: var(--accent-orange);
+    background: rgba(210, 153, 34, 0.26);
+}
+
+.case-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.case-summary-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.85rem;
+    background: rgba(0, 0, 0, 0.16);
+}
+
+.case-summary-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+    color: var(--accent-blue);
+}
+
+.case-summary-card ul {
+    margin: 0;
+    padding-left: 1rem;
+    display: grid;
+    gap: 0.38rem;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.case-evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.72rem;
+}
+
+.case-evidence-card {
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.22);
+    color: var(--text-secondary);
+}
+
+.case-evidence-card:hover {
+    border-color: var(--accent-blue);
+    color: #ffffff;
+}
+
+.case-evidence-card img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.case-evidence-card span {
+    display: block;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.74rem;
+    line-height: 1.35;
+}
+
+.case-note-box {
+    margin-top: 0.95rem;
+    border: 1px dashed rgba(210, 153, 34, 0.55);
+    border-radius: 10px;
+    padding: 0.75rem 0.85rem;
+    background: rgba(210, 153, 34, 0.1);
+}
+
+.case-note-box h3 {
+    margin: 0 0 0.45rem;
+    color: var(--accent-orange);
+    font-size: 0.9rem;
+}
+
+.case-note-box ul {
+    margin: 0;
+    padding-left: 1rem;
+    color: var(--text-secondary);
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.case-review-empty {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.case-list-grid {
+    margin-top: 0.95rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.case-list-card {
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.85rem;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-secondary);
+}
+
+.case-list-card:hover {
+    border-color: var(--accent-blue);
+    color: #ffffff;
+}
+
+.case-list-id {
+    margin: 0 0 0.42rem;
+    color: var(--accent-blue);
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+}
+
+.case-list-card h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    line-height: 1.35;
+}
+
+.case-list-card p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+@media (max-width: 1024px) {
+    .case-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .case-evidence-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .case-review-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .case-review-root {
+        padding: 1rem 0.8rem 2rem;
+    }
+
+    .case-review-panel {
+        padding: 0.95rem;
+    }
+
+    .case-summary-grid,
+    .case-evidence-grid,
+    .case-list-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .case-review-panel h1 {
+        font-size: 1.22rem;
+    }
+}

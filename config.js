@@ -178,8 +178,7 @@ export const templateConfig = {
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_1', href: './case1/CASE-1.md' },
-                                { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-1-path' },
-                                { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-1-commits' }
+                                { label: 'TECH_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-1-path' }
                             ]
                         },
                         {
@@ -225,8 +224,7 @@ export const templateConfig = {
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_2', href: './case2/CASE-2.md' },
-                                { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-2-path' },
-                                { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-2-commits' }
+                                { label: 'TECH_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-2-path' }
                             ]
                         }
                     ]
@@ -288,8 +286,7 @@ export const templateConfig = {
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_3', href: './case3/CASE-3.md' },
-                                { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-3-path' },
-                                { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-3-commits' }
+                                { label: 'TECH_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-3-path' }
                             ]
                         },
                         {
@@ -367,8 +364,7 @@ export const templateConfig = {
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_4', href: './case4/CASE-4.md' },
-                                { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-4-path' },
-                                { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-4-commits' }
+                                { label: 'TECH_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-4-path' }
                             ]
                         }
                     ]
@@ -422,8 +418,7 @@ export const templateConfig = {
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_5', href: './case5/CASE-5.md' },
-                                { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-5-path' },
-                                { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-5-commits' }
+                                { label: 'TECH_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-5-path' }
                             ]
                         },
                         {
@@ -499,8 +494,7 @@ export const templateConfig = {
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_6', href: './case6/CASE-6.md' },
-                                { label: 'CODE_PATH', href: './evidence/upgrade_todo/index.html#case-6-path' },
-                                { label: 'COMMIT_TRAIL', href: './evidence/upgrade_todo/index.html#case-6-commits' }
+                                { label: 'TECH_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-6-path' }
                             ]
                         }
                     ]
