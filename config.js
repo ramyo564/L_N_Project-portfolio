@@ -25,7 +25,7 @@ export const templateConfig = {
             },
             {
                 label: '해결',
-                value: 'Case 1~6으로 원인을 분해하고 UUID/Persistable, JWT Claims+AOP, Async Publisher, Index 튜닝을 단계 적용'
+                value: '병목을 6개 케이스로 분해해 인증 중복조회 제거, 비동기 발행 분리, DB 경로 튜닝을 순차 적용'
             },
             {
                 label: '결과',
@@ -61,7 +61,7 @@ export const templateConfig = {
             },
             {
                 label: '핵심 지표',
-                value: 'read RPS 972 -> 3680, write RPS 373 -> 916',
+                value: 'read p95 975ms -> 141ms, read RPS 972 -> 3680, write RPS 373 -> 916',
                 kind: 'metric'
             }
         ],
@@ -194,6 +194,27 @@ export const templateConfig = {
             id: 'upgrade-todo-cases',
             title: 'UPGRADE_TODO_TROUBLESHOOTING_CASES',
             navLabel: 'CASES',
+            sectionLead: '대표 3건을 먼저 보고, 필요할 때 전체 Case 1~6을 확장해 깊게 읽을 수 있도록 구성했습니다.',
+            recruiterBrief: {
+                kicker: 'RECRUITER_QUICK_BRIEF',
+                title: '1분 요약으로 먼저 보는 핵심 변화',
+                bullets: [
+                    'Case A(1): 회원가입 경로를 안정화해 락 대기 재현율 0%를 확인했습니다.',
+                    'Case B(2): 인증/권한 검증 경로를 정리해 요청당 쿼리를 21 -> 3으로 줄였습니다.',
+                    'Case C(5): 메시지 발행 대기를 API 요청과 분리해 timeout 15% -> 0%를 만들었습니다.',
+                    '검증은 k6 Before/Current, Grafana, DB 로그를 함께 비교해 단일 지표 의존을 피했습니다.',
+                    '상세 화면에서는 클래스/메서드, 커밋, 증거 이미지를 모두 추적할 수 있습니다.'
+                ]
+            },
+            featuredCaseAnchors: [
+                'upgrade-todo-case-1',
+                'upgrade-todo-case-2',
+                'upgrade-todo-case-5'
+            ],
+            featuredCaseCount: 3,
+            featuredStateLabel: '대표 3건 우선 노출',
+            featuredToggleLabel: '전체 Case 1~6 보기',
+            featuredCollapseLabel: '대표 Case 3건만 보기',
             theme: 'blue',
             cardVisualHeight: '300px',
             cardClass: 'problem-case-card',
@@ -208,6 +229,11 @@ export const templateConfig = {
                             title: 'Case 1. UUIDv7 merge 경로 제거와 Outbox 분리로 회원가입 트랜잭션 안정화',
                             subtitle: '2025-09 ~ 2025-10 · Auth User 생성 경로 리팩터링',
                             overview: '사전 UUID 할당 환경에서 `save -> merge(SELECT+INSERT)`로 이어지던 병목을\nPersistable `isNew()`와 Outbox 비동기 분리로 정리한 케이스입니다.',
+                            recruiterSummary: [
+                                '회원가입에서 간헐적으로 느려지던 원인을 저장과 후속 처리 결합 구조에서 확인했습니다.',
+                                '핵심 저장과 후속 이벤트 처리를 분리해 실패 전파를 줄이고 응답을 안정화했습니다.',
+                                '락 대기 재현율 0%를 기준으로 개선 효과를 검증했습니다.'
+                            ],
                             role: 'Auth/User 저장 경계 재설계, Outbox 발행 안정화, 단건 트랜잭션 분리',
                             stackSummary: 'Persistable, UUIDv7, OutboxEventAuthProcessor, RabbitMQ',
                             cause: '1) 사전 UUID 할당 엔티티가 merge 경로로 진입해 불필요한 SELECT와 락 대기가 누적되었습니다.\n2) Auth/User 생성을 한 트랜잭션에 묶어 후속 실패가 전체 롤백으로 번지는 결합이 있었습니다.',
@@ -264,6 +290,11 @@ export const templateConfig = {
                             title: 'Case 2. JWT Claims + AOP 권한게이트로 인증 N+1 경로 축소',
                             subtitle: '2025-11 · 인증 필터와 프로젝트 접근 검증 최적화',
                             overview: '요청마다 반복되던 auth_user 조회와 project 검증 쿼리를\nJWT Claims 기반 인증 + 단일 권한게이트로 정리한 케이스입니다.',
+                            recruiterSummary: [
+                                '인증 성공 이후에도 같은 사용자/권한 정보를 반복 조회해 응답이 느려지는 문제가 있었습니다.',
+                                '검증 경로를 한 곳으로 모아 중복 확인을 제거하고 요청당 기본 비용을 낮췄습니다.',
+                                '인증 경로 쿼리 수를 21 -> 3으로 줄여 고부하 구간 안정성을 확보했습니다.'
+                            ],
                             role: 'JwtAuthenticationFilter 최적화, @CheckProjectAccess 경계 정리, ownership 쿼리 단일화',
                             stackSummary: 'JwtAuthenticationFilter, ProjectAccessAspect, ProjectOwnershipPersistenceAdapter',
                             cause: '1) JWT 인증 요청마다 사용자 재조회가 발생해 요청당 기본 쿼리 비용이 누적됐습니다.\n2) 프로젝트 접근 검증이 핸들러마다 중복 호출되어 읽기 경로 부하가 커졌습니다.',
@@ -456,6 +487,11 @@ export const templateConfig = {
                             title: 'Case 5. RabbitMQ 동기 발행 블로킹을 비동기 데코레이터로 분리',
                             subtitle: '2025-12 · 1000VU timeout 구간 안정화',
                             overview: 'API 스레드에서 직접 `convertAndSend`를 수행하던 구조를\n전용 executor 비동기 발행으로 분리해 타임아웃을 줄인 케이스입니다.',
+                            recruiterSummary: [
+                                '요청 처리 중 메시지 발행 대기를 함께 수행해 고부하에서 timeout이 늘어나는 문제가 있었습니다.',
+                                '메시지 발행을 전용 비동기 경로로 분리해 API 응답 경로를 가볍게 만들었습니다.',
+                                'timeout 15% -> 0%, p95 500ms -> 50ms로 사용자 체감 지연을 크게 줄였습니다.'
+                            ],
                             role: 'AsyncMessagePublishingDecorator 설계, Producer Adapter 전환, Executor 정책 분리',
                             stackSummary: 'AsyncMessagePublishingDecorator, AsyncConfig, RabbitMQ producer adapters',
                             cause: '1) API 요청 스레드가 `convertAndSend` 동기 발행 대기를 직접 떠안아 timeout이 증가했습니다.\n2) 고VU 구간에서 채널 경합이 응답 지연으로 즉시 전파되는 구조였습니다.',

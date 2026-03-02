@@ -564,6 +564,26 @@ function splitNarrativeLines(text) {
         .filter(Boolean);
 }
 
+function buildRecruiterSummaryLines(card, summaryProblem, summaryCause, summarySolution, summaryResult) {
+    const explicit = Array.isArray(card?.recruiterSummary)
+        ? card.recruiterSummary.map((line) => String(line || '').trim()).filter(Boolean)
+        : [];
+    if (explicit.length > 0) {
+        return explicit.slice(0, 7);
+    }
+
+    const overviewLines = splitNarrativeLines(card?.overview || card?.description);
+    const candidates = [
+        overviewLines[0] || '',
+        summaryProblem[0] || '',
+        summaryCause[0] || '',
+        summarySolution[0] || '',
+        summaryResult[0] || ''
+    ].map((line) => String(line || '').trim()).filter(Boolean);
+
+    return Array.from(new Set(candidates)).slice(0, 7);
+}
+
 function detectEvidencePhase(item) {
     const searchSpace = `${item?.label || ''} ${item?.src || ''}`.toLowerCase();
     if (searchSpace.includes('before')) {
@@ -845,6 +865,13 @@ function buildCaseDetail(root, cards, selected) {
     const summaryCause = splitNarrativeLines(card?.cause);
     const summarySolution = splitNarrativeLines(card?.solution);
     const summaryResult = splitNarrativeLines(card?.result);
+    const recruiterSummaryLines = buildRecruiterSummaryLines(
+        card,
+        summaryProblem,
+        summaryCause,
+        summarySolution,
+        summaryResult
+    );
 
     const coreEvidence = normalizeEvidenceItems(card?.evidenceImages);
     const extraEvidence = normalizeEvidenceItems(card?.extraEvidenceImages);
@@ -903,6 +930,14 @@ function buildCaseDetail(root, cards, selected) {
                 <span class="case-chip">${escapeHtml(groupTitle)}</span>
                 <span class="case-chip">${escapeHtml(card?.stackSummary || 'Stack summary 없음')}</span>
             </div>
+            ${recruiterSummaryLines.length > 0 ? `
+                <div class="case-recruiter-summary-block">
+                    <p class="case-recruiter-kicker">RECRUITER_SUMMARY</p>
+                    <ul class="case-recruiter-summary-list">
+                        ${recruiterSummaryLines.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
             <div class="case-nav-row">
                 <a
                     class="case-nav-btn"

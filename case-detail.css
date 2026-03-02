@@ -113,6 +113,45 @@
     background: rgba(88, 166, 255, 0.1);
 }
 
+.case-recruiter-summary-block {
+    margin-top: 0.9rem;
+    border: 1px solid rgba(88, 166, 255, 0.35);
+    border-radius: 10px;
+    padding: 0.78rem 0.85rem;
+    background: linear-gradient(180deg, rgba(88, 166, 255, 0.08), rgba(0, 0, 0, 0.2));
+}
+
+.case-recruiter-kicker {
+    margin: 0 0 0.42rem;
+    font-family: var(--font-code);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    color: var(--accent-blue);
+}
+
+.case-recruiter-summary-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.33rem;
+}
+
+.case-recruiter-summary-list li {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.42;
+    position: relative;
+    padding-left: 0.78rem;
+}
+
+.case-recruiter-summary-list li::before {
+    content: ">";
+    position: absolute;
+    left: 0;
+    color: var(--accent-green);
+}
+
 .case-nav-btn,
 .case-link-btn {
     text-decoration: none;
@@ -542,6 +581,14 @@
 
     .case-review-panel {
         padding: 0.95rem;
+    }
+
+    .case-recruiter-summary-block {
+        padding: 0.66rem 0.7rem;
+    }
+
+    .case-recruiter-summary-list li {
+        font-size: 0.78rem;
     }
 
     .case-summary-grid,

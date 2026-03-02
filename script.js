@@ -39,6 +39,76 @@ function toSafeLabel(value) {
     return String(value ?? 'unknown').replace(/[^a-zA-Z0-9_-]+/g, ' ').trim() || 'unknown';
 }
 
+let mermaidRenderSequence = 0;
+
+async function renderMermaidContainer(container, options = {}) {
+    if (!(container instanceof HTMLElement)) {
+        return;
+    }
+
+    const shouldForce = Boolean(options?.force);
+    if (!shouldForce && container.querySelector('svg')) {
+        return;
+    }
+
+    // Mermaid 재렌더 시 이전 처리 상태가 남아 있으면 raw text만 남을 수 있어 초기화합니다.
+    container.removeAttribute('data-processed');
+
+    const mermaidId = container.getAttribute('data-mermaid-id') || '';
+    const diagrams = templateConfig.diagrams ?? {};
+    if (mermaidId && diagrams[mermaidId]) {
+        container.innerHTML = diagrams[mermaidId];
+    } else {
+        const label = toSafeLabel(mermaidId || 'undefined_id');
+        container.innerHTML = `
+            graph TD
+            A[${label}] --> B[Define templateConfig.diagrams entry]
+        `;
+    }
+
+    mermaidRenderSequence += 1;
+    const tempClass = `mermaid-reflow-target-${mermaidRenderSequence}`;
+    container.classList.add(tempClass);
+    try {
+        await mermaid.run({ querySelector: `.${tempClass}` });
+    } catch (error) {
+        console.error('Mermaid re-render failed for node:', container, error);
+        const failedId = container.getAttribute('data-mermaid-id') || 'unknown';
+        container.innerHTML = `<p style="margin:0;color:#ffb4b4;">Diagram render failed: ${failedId}</p>`;
+    } finally {
+        container.classList.remove(tempClass);
+    }
+}
+
+function rerenderVisibleCardDiagrams(entries, options = {}) {
+    const force = Boolean(options?.force);
+    const candidates = Array.isArray(entries)
+        ? entries
+            .map((entry) => entry?.element instanceof HTMLElement ? entry.element : null)
+            .filter(Boolean)
+            .filter((element) => !element.hidden)
+            .map((element) => element.querySelector('.mermaid'))
+            .filter((node) => node instanceof HTMLElement)
+            .filter((node) => force || !node.querySelector('svg'))
+        : [];
+
+    if (candidates.length === 0) {
+        return;
+    }
+
+    window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+            (async () => {
+                for (const container of candidates) {
+                    // Mermaid 내부 상태 충돌을 피하기 위해 순차적으로 렌더합니다.
+                    // eslint-disable-next-line no-await-in-loop
+                    await renderMermaidContainer(container, { force: true });
+                }
+            })();
+        });
+    });
+}
+
 function setText(id, value) {
     const el = byId(id);
     if (el && value) {
@@ -398,6 +468,7 @@ function setSystemInfo() {
 }
 
 let openK6OverviewModal = null;
+let caseShowcaseControllers = [];
 
 function renderHero() {
     const hero = templateConfig.hero ?? {};
@@ -819,6 +890,91 @@ function createScanSummary(card) {
     return wrapper;
 }
 
+function createRecruiterCardSummary(card) {
+    const explicitLines = Array.isArray(card?.recruiterSummary)
+        ? card.recruiterSummary.map((line) => String(line || '').trim()).filter(Boolean)
+        : [];
+
+    const fallbackLines = [
+        extractFirstLineSummary(card?.overview || card?.description),
+        extractFirstLineSummary(card?.result)
+    ].filter(Boolean);
+
+    const lines = (explicitLines.length > 0 ? explicitLines : fallbackLines).slice(0, 3);
+    if (lines.length === 0) {
+        return null;
+    }
+
+    const wrapper = document.createElement('section');
+    wrapper.className = 'card-recruiter-summary';
+
+    const kicker = document.createElement('p');
+    kicker.className = 'card-recruiter-kicker';
+    kicker.textContent = 'RECRUITER_SUMMARY';
+
+    const list = document.createElement('ul');
+    list.className = 'card-recruiter-list';
+    lines.forEach((line) => {
+        const item = document.createElement('li');
+        item.textContent = line;
+        list.appendChild(item);
+    });
+
+    wrapper.append(kicker, list);
+    return wrapper;
+}
+
+function createSectionRecruiterBrief(sectionConfig) {
+    const brief = sectionConfig?.recruiterBrief;
+    if (!brief || typeof brief !== 'object') {
+        return null;
+    }
+
+    const bullets = Array.isArray(brief.bullets)
+        ? brief.bullets.map((line) => String(line || '').trim()).filter(Boolean)
+        : [];
+
+    if (!brief.title && bullets.length === 0) {
+        return null;
+    }
+
+    const wrapper = document.createElement('section');
+    wrapper.className = 'section-recruiter-brief';
+
+    const kickerText = String(brief.kicker || '').trim();
+    if (kickerText) {
+        const kicker = document.createElement('p');
+        kicker.className = 'section-recruiter-kicker';
+        kicker.textContent = kickerText;
+        wrapper.appendChild(kicker);
+    }
+
+    const titleText = String(brief.title || '').trim();
+    if (titleText) {
+        const title = document.createElement('h3');
+        title.className = 'section-recruiter-title';
+        title.textContent = titleText;
+        wrapper.appendChild(title);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'section-recruiter-actions';
+    wrapper.appendChild(actions);
+
+    if (bullets.length > 0) {
+        const list = document.createElement('ul');
+        list.className = 'section-recruiter-list';
+        bullets.forEach((line) => {
+            const item = document.createElement('li');
+            item.textContent = line;
+            list.appendChild(item);
+        });
+        wrapper.appendChild(list);
+    }
+
+    return wrapper;
+}
+
 function createTagList(tags) {
     const normalizedTags = Array.isArray(tags) ? tags.filter(Boolean) : [];
     if (normalizedTags.length === 0) {
@@ -1152,7 +1308,8 @@ function createServiceCard(card, sectionConfig) {
     const overviewText = card.overview ?? card.description ?? '';
     description.textContent = extractFirstLineSummary(overviewText) || overviewText;
 
-    const stackLine = createMetaLine('STACK', card.stackSummary);
+    const recruiterSummary = createRecruiterCardSummary(card);
+    const stackLine = createMetaLine('TECH_DETAIL', card.stackSummary);
     const scanSummary = createScanSummary(card);
     const evidenceGallery = createEvidenceGallery(card.evidenceImages, card.title);
     const extraEvidenceButton = createExtraEvidenceButton(card.extraEvidenceImages, card.title);
@@ -1163,6 +1320,9 @@ function createServiceCard(card, sectionConfig) {
         content.append(subtitle);
     }
     content.append(description);
+    if (recruiterSummary) {
+        content.append(recruiterSummary);
+    }
     if (stackLine) {
         content.append(stackLine);
     }
@@ -1188,6 +1348,7 @@ function renderServiceSections() {
         return;
     }
     container.replaceChildren();
+    caseShowcaseControllers = [];
 
     const sections = Array.isArray(templateConfig.serviceSections) ? templateConfig.serviceSections : [];
     sections.forEach((sectionConfig) => {
@@ -1197,13 +1358,29 @@ function renderServiceSections() {
 
         const header = document.createElement('div');
         header.className = 'section-header';
+
+        const headingWrap = document.createElement('div');
+        headingWrap.className = 'section-header-main';
+
         const heading = document.createElement('h2');
         heading.className = 'section-title';
         heading.textContent = sectionConfig.title ?? 'SERVICES';
-        header.appendChild(heading);
+        headingWrap.appendChild(heading);
+
+        const sectionLeadText = String(sectionConfig.sectionLead || '').trim();
+        if (sectionLeadText) {
+            const sectionLead = document.createElement('p');
+            sectionLead.className = 'section-lead';
+            sectionLead.textContent = sectionLeadText;
+            headingWrap.appendChild(sectionLead);
+        }
+        header.appendChild(headingWrap);
 
         const groupsContainer = document.createElement('div');
         groupsContainer.className = 'service-groups';
+        const recruiterBrief = createSectionRecruiterBrief(sectionConfig);
+        const renderedCards = [];
+        const groupCardMap = new Map();
 
         const groups = Array.isArray(sectionConfig.groups) && sectionConfig.groups.length > 0
             ? sectionConfig.groups
@@ -1222,16 +1399,174 @@ function renderServiceSections() {
 
             const cards = Array.isArray(group.cards) ? group.cards : [];
             cards.forEach((card) => {
-                groupGrid.appendChild(createServiceCard(card, sectionConfig));
+                const cardElement = createServiceCard(card, sectionConfig);
+                groupGrid.appendChild(cardElement);
+
+                const anchorId = String(card?.anchorId || cardElement.id || '').trim();
+                renderedCards.push({ anchorId, element: cardElement, groupSection });
+
+                if (!groupCardMap.has(groupSection)) {
+                    groupCardMap.set(groupSection, []);
+                }
+                groupCardMap.get(groupSection).push(cardElement);
             });
 
             groupSection.appendChild(groupGrid);
             groupsContainer.appendChild(groupSection);
         });
 
-        sectionWrapper.append(header, groupsContainer);
+        const configuredFeaturedAnchors = Array.isArray(sectionConfig.featuredCaseAnchors)
+            ? sectionConfig.featuredCaseAnchors
+                .map((anchorId) => String(anchorId || '').trim())
+                .filter(Boolean)
+            : [];
+        const featuredCountCandidate = Number.parseInt(sectionConfig.featuredCaseCount, 10);
+        const featuredCount = Number.isFinite(featuredCountCandidate) && featuredCountCandidate > 0
+            ? featuredCountCandidate
+            : 3;
+        let featuredAnchors = configuredFeaturedAnchors.filter((anchorId) =>
+            renderedCards.some((entry) => entry.anchorId === anchorId)
+        );
+        if (featuredAnchors.length === 0) {
+            featuredAnchors = renderedCards
+                .slice(0, featuredCount)
+                .map((entry) => entry.anchorId)
+                .filter(Boolean);
+        }
+
+        const featuredSet = new Set(featuredAnchors);
+        const allAnchorSet = new Set(renderedCards.map((entry) => entry.anchorId).filter(Boolean));
+        const canCollapse = featuredSet.size > 0 && featuredSet.size < renderedCards.length;
+
+        if (canCollapse) {
+            const controls = document.createElement('div');
+            controls.className = 'case-showcase-controls';
+
+            const stateLabel = String(
+                sectionConfig.featuredStateLabel || `대표 ${featuredSet.size}건 우선 노출`
+            ).trim();
+            const expandLabel = String(
+                sectionConfig.featuredToggleLabel || `전체 Case ${renderedCards.length}건 보기`
+            ).trim();
+            const collapseLabel = String(
+                sectionConfig.featuredCollapseLabel || `대표 Case ${featuredSet.size}건만 보기`
+            ).trim();
+
+            const state = document.createElement('span');
+            state.className = 'case-showcase-state';
+
+            const toggleButton = document.createElement('button');
+            toggleButton.type = 'button';
+            toggleButton.className = 'case-showcase-toggle';
+            toggleButton.setAttribute('aria-expanded', 'false');
+
+            let isCollapsed = true;
+
+            const applyVisibility = () => {
+                const newlyVisibleEntries = [];
+                renderedCards.forEach((entry) => {
+                    const wasHidden = entry.element.hidden;
+                    const isVisible = !isCollapsed || featuredSet.has(entry.anchorId);
+                    entry.element.hidden = !isVisible;
+                    entry.element.classList.toggle('is-collapsed-hidden', !isVisible);
+                    if (wasHidden && isVisible) {
+                        newlyVisibleEntries.push(entry);
+                    }
+                });
+
+                groupCardMap.forEach((cardNodes, groupSection) => {
+                    const hasVisibleCard = cardNodes.some((cardNode) => !cardNode.hidden);
+                    groupSection.hidden = !hasVisibleCard;
+                    groupSection.classList.toggle('is-collapsed-empty', !hasVisibleCard);
+                });
+
+                sectionWrapper.classList.toggle('is-featured-collapsed', isCollapsed);
+                const hiddenCount = Math.max(0, renderedCards.length - featuredSet.size);
+                state.textContent = isCollapsed
+                    ? `${stateLabel} · 현재 ${featuredSet.size}/${renderedCards.length}건 표시 (숨김 ${hiddenCount}건)`
+                    : `현재 전체 ${renderedCards.length}/${renderedCards.length}건 표시`;
+                toggleButton.textContent = isCollapsed ? expandLabel : collapseLabel;
+                toggleButton.setAttribute('aria-expanded', String(!isCollapsed));
+                if (!isCollapsed) {
+                    rerenderVisibleCardDiagrams(
+                        newlyVisibleEntries.length > 0 ? newlyVisibleEntries : renderedCards,
+                        { force: true }
+                    );
+                }
+                window.dispatchEvent(new Event('resize'));
+            };
+
+            const setCollapsed = (nextCollapsed, reason = 'toggle') => {
+                if (isCollapsed === nextCollapsed) {
+                    return false;
+                }
+
+                isCollapsed = nextCollapsed;
+                applyVisibility();
+
+                trackSelectContent({
+                    contentType: 'case_showcase',
+                    itemId: sectionConfig.id || 'service_cases',
+                    itemName: sectionConfig.title || 'CASES',
+                    sectionName: 'service_section',
+                    interactionAction: isCollapsed ? 'collapse' : 'expand',
+                    elementType: 'button',
+                    elementLabel: 'CASE_SHOWCASE_TOGGLE',
+                    value: renderedCards.length,
+                    reason
+                });
+                return true;
+            };
+
+            toggleButton.addEventListener('click', () => {
+                setCollapsed(!isCollapsed, 'toggle_button');
+            });
+
+            controls.append(state, toggleButton);
+            const recruiterActionMount = recruiterBrief?.querySelector('.section-recruiter-actions');
+            if (recruiterActionMount instanceof HTMLElement) {
+                recruiterActionMount.appendChild(controls);
+            } else {
+                header.appendChild(controls);
+            }
+            applyVisibility();
+
+            caseShowcaseControllers.push({
+                sectionId: sectionConfig.id || '',
+                revealCase(anchorId, reason = 'target_reveal') {
+                    if (!anchorId || !allAnchorSet.has(anchorId) || !isCollapsed || featuredSet.has(anchorId)) {
+                        return false;
+                    }
+                    return setCollapsed(false, reason);
+                }
+            });
+        }
+
+        sectionWrapper.append(header);
+        if (recruiterBrief) {
+            sectionWrapper.appendChild(recruiterBrief);
+        }
+        sectionWrapper.appendChild(groupsContainer);
         container.appendChild(sectionWrapper);
     });
+}
+
+function ensureCaseCardVisible(targetId) {
+    const anchorId = String(targetId || '').replace(/^#/, '').trim();
+    if (!anchorId || caseShowcaseControllers.length === 0) {
+        return false;
+    }
+
+    let revealed = false;
+    caseShowcaseControllers.forEach((controller) => {
+        if (!controller || typeof controller.revealCase !== 'function') {
+            return;
+        }
+        if (controller.revealCase(anchorId, 'anchor_navigation')) {
+            revealed = true;
+        }
+    });
+    return revealed;
 }
 
 function renderContact() {
@@ -1404,9 +1739,11 @@ function renderNavigation() {
                 subLink.textContent = caseItem.label || 'CASE';
                 subLink.addEventListener('click', () => {
                     const target = normalizeHashTarget(caseItem.target);
+                    const targetId = target.replace(/^#/, '');
+                    ensureCaseCardVisible(targetId);
                     trackSelectContent({
                         contentType: 'navigation_case',
-                        itemId: target.replace(/^#/, '') || 'unknown_case_target',
+                        itemId: targetId || 'unknown_case_target',
                         itemName: caseItem.label || 'CASE',
                         sectionName: 'header_nav',
                         interactionAction: 'navigate',
@@ -1487,6 +1824,13 @@ function setupScrollSpy() {
     let sortedTargets = [];
     let currentActiveId = '';
     let rafToken = 0;
+    const isTargetVisible = (element) => {
+        if (!(element instanceof HTMLElement) || element.hidden) {
+            return false;
+        }
+        const style = window.getComputedStyle(element);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+    };
 
     const clearActive = () => {
         links.forEach((link) => link.classList.remove('is-active'));
@@ -1547,6 +1891,7 @@ function setupScrollSpy() {
 
     const rebuildTargetOrder = () => {
         sortedTargets = Array.from(targetMap.entries())
+            .filter(([, payload]) => isTargetVisible(payload.element))
             .map(([targetId, payload]) => ({
                 targetId,
                 top: payload.element.getBoundingClientRect().top + window.scrollY
@@ -1556,6 +1901,8 @@ function setupScrollSpy() {
 
     const applyByScrollPosition = () => {
         if (sortedTargets.length === 0) {
+            clearActive();
+            currentActiveId = '';
             return;
         }
 
@@ -2594,6 +2941,34 @@ function setupMermaidModal() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const revealHashTarget = (hashValue, reason = 'hash_navigation') => {
+        const targetId = String(hashValue || '').replace(/^#/, '').trim();
+        if (!targetId) {
+            return;
+        }
+        const revealed = ensureCaseCardVisible(targetId);
+        if (!revealed) {
+            return;
+        }
+        window.setTimeout(() => {
+            const target = byId(targetId);
+            if (!target) {
+                return;
+            }
+            target.scrollIntoView({ block: 'start' });
+            trackSelectContent({
+                contentType: 'case_showcase',
+                itemId: targetId,
+                itemName: target.querySelector('.card-title')?.textContent?.trim() || targetId,
+                sectionName: 'service_section',
+                interactionAction: 'reveal_target',
+                elementType: 'section',
+                elementLabel: 'CASE_SHOWCASE_REVEAL',
+                reason
+            });
+        }, 0);
+    };
+
     setSystemInfo();
     setupAnalyticsLifecycle();
     setupK6OverviewModal();
@@ -2604,6 +2979,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderServiceSections();
     renderContact();
     renderNavigation();
+    revealHashTarget(window.location.hash, 'initial_hash');
+    window.addEventListener('hashchange', () => {
+        revealHashTarget(window.location.hash, 'hash_change');
+    });
     setupUptime();
     setupMobileNav();
 
