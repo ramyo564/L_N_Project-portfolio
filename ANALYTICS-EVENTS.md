@@ -26,6 +26,12 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `max_scroll_percent`
 - `unique_case_views`
 - `end_reason`
+- `page_type`
+- `link_role`
+- `destination_case`
+- `evidence_tier`
+- `evidence_pair`
+- `evidence_pair_index`
 
 ## content_type Values
 
@@ -76,3 +82,8 @@ Use a Custom Event trigger:
 - Event name: `select_content`
 
 Then map parameters from Data Layer Variables with the same keys.
+
+## Page Coverage
+
+- `index.html`: main cards, nav, contact, diagrams, evidence interactions.
+- `case-detail.html`: case list cards, `BACK_TO_PORTFOLIO`, case navigation buttons, traceability links, Before/After evidence frame links, page lifecycle events.

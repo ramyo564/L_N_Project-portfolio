@@ -1,5 +1,17 @@
 import { templateConfig } from './config.js';
 
+const analyticsSession = {
+    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
+    pageStartedAt: Date.now(),
+    visibleStartedAt: document.visibilityState === 'hidden' ? 0 : Date.now(),
+    visibleDurationMs: 0,
+    maxScrollPercent: 0,
+    ended: false,
+    pageType: 'case_list',
+    caseNumber: null,
+    caseTitle: 'Case Review'
+};
+
 function byId(id) {
     return document.getElementById(id);
 }
@@ -11,6 +23,241 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+function toSafeLabel(value) {
+    return String(value ?? 'unknown').replace(/[^a-zA-Z0-9_-]+/g, ' ').trim() || 'unknown';
+}
+
+function pushDataLayerEvent(payload) {
+    if (!payload || typeof payload !== 'object') {
+        return;
+    }
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(payload);
+}
+
+function detectLinkType(href) {
+    const target = String(href || '').trim().toLowerCase();
+    if (!target) {
+        return 'unknown';
+    }
+    if (target.startsWith('mailto:')) {
+        return 'mailto';
+    }
+    if (target.startsWith('#')) {
+        return 'anchor';
+    }
+    if (target.startsWith('http://') || target.startsWith('https://')) {
+        return 'external';
+    }
+    return 'internal';
+}
+
+function trackSelectContent({
+    contentType,
+    itemId,
+    itemName,
+    sectionName,
+    interactionAction = 'click',
+    elementType,
+    elementLabel,
+    linkUrl,
+    linkType,
+    modalName,
+    value,
+    ...extra
+}) {
+    const payload = {
+        event: 'select_content',
+        session_id: analyticsSession.id,
+        content_type: contentType || 'unknown',
+        item_id: itemId || 'unknown',
+        section_name: sectionName || 'unknown',
+        interaction_action: interactionAction
+    };
+
+    if (itemName) {
+        payload.item_name = itemName;
+    }
+    if (elementType) {
+        payload.element_type = elementType;
+    }
+    if (elementLabel) {
+        payload.element_label = elementLabel;
+    }
+    if (linkUrl) {
+        payload.link_url = linkUrl;
+    }
+    if (linkType) {
+        payload.link_type = linkType;
+    }
+    if (modalName) {
+        payload.modal_name = modalName;
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        payload.value = value;
+    }
+
+    Object.entries(extra).forEach(([key, valueItem]) => {
+        if (valueItem !== undefined && valueItem !== null && valueItem !== '') {
+            payload[key] = valueItem;
+        }
+    });
+
+    pushDataLayerEvent(payload);
+}
+
+function getCurrentItemId() {
+    if (analyticsSession.pageType === 'case_detail' && analyticsSession.caseNumber) {
+        return `case_${analyticsSession.caseNumber}`;
+    }
+    return 'case_review_list';
+}
+
+function getCurrentItemName() {
+    if (analyticsSession.pageType === 'case_detail') {
+        return analyticsSession.caseTitle || 'Case Review';
+    }
+    return 'Case Brief List';
+}
+
+function readScrollPercent() {
+    const documentElement = document.documentElement;
+    const maxScrollable = Math.max(0, documentElement.scrollHeight - window.innerHeight);
+    if (maxScrollable <= 0) {
+        return 100;
+    }
+    const ratio = (window.scrollY / maxScrollable) * 100;
+    return Math.max(0, Math.min(100, Math.round(ratio)));
+}
+
+function updateMaxScrollPercent() {
+    analyticsSession.maxScrollPercent = Math.max(analyticsSession.maxScrollPercent, readScrollPercent());
+}
+
+function stopVisibleTimer(timestamp = Date.now()) {
+    if (!analyticsSession.visibleStartedAt) {
+        return;
+    }
+    analyticsSession.visibleDurationMs += Math.max(0, timestamp - analyticsSession.visibleStartedAt);
+    analyticsSession.visibleStartedAt = 0;
+}
+
+function startVisibleTimer(timestamp = Date.now()) {
+    if (document.visibilityState === 'hidden' || analyticsSession.visibleStartedAt) {
+        return;
+    }
+    analyticsSession.visibleStartedAt = timestamp;
+}
+
+function endAnalyticsSession(reason = 'pagehide') {
+    if (analyticsSession.ended) {
+        return;
+    }
+    analyticsSession.ended = true;
+
+    updateMaxScrollPercent();
+    stopVisibleTimer();
+
+    const totalDurationMs = Math.max(0, Date.now() - analyticsSession.pageStartedAt);
+    const visibleDurationMs = Math.min(totalDurationMs, analyticsSession.visibleDurationMs);
+    const hiddenDurationMs = Math.max(0, totalDurationMs - visibleDurationMs);
+
+    trackSelectContent({
+        contentType: 'page_engagement',
+        itemId: getCurrentItemId(),
+        itemName: getCurrentItemName(),
+        sectionName: 'lifecycle',
+        interactionAction: 'end',
+        elementType: 'page',
+        elementLabel: 'PAGE_END',
+        duration_ms: totalDurationMs,
+        engagement_time_msec: visibleDurationMs,
+        hidden_duration_ms: hiddenDurationMs,
+        max_scroll_percent: analyticsSession.maxScrollPercent,
+        page_type: analyticsSession.pageType,
+        end_reason: reason,
+        value: Math.round(visibleDurationMs / 1000)
+    });
+}
+
+function setupAnalyticsLifecycle() {
+    updateMaxScrollPercent();
+
+    trackSelectContent({
+        contentType: 'page_engagement',
+        itemId: getCurrentItemId(),
+        itemName: getCurrentItemName(),
+        sectionName: 'lifecycle',
+        interactionAction: 'start',
+        elementType: 'page',
+        elementLabel: 'PAGE_START',
+        page_type: analyticsSession.pageType
+    });
+
+    window.addEventListener('scroll', updateMaxScrollPercent, { passive: true });
+
+    document.addEventListener('visibilitychange', () => {
+        if (analyticsSession.ended) {
+            return;
+        }
+
+        if (document.visibilityState === 'hidden') {
+            stopVisibleTimer();
+            trackSelectContent({
+                contentType: 'page_visibility',
+                itemId: getCurrentItemId(),
+                itemName: getCurrentItemName(),
+                sectionName: 'lifecycle',
+                interactionAction: 'hidden',
+                elementType: 'page',
+                elementLabel: 'PAGE_HIDDEN',
+                page_type: analyticsSession.pageType
+            });
+            return;
+        }
+
+        startVisibleTimer();
+        trackSelectContent({
+            contentType: 'page_visibility',
+            itemId: getCurrentItemId(),
+            itemName: getCurrentItemName(),
+            sectionName: 'lifecycle',
+            interactionAction: 'visible',
+            elementType: 'page',
+            elementLabel: 'PAGE_VISIBLE',
+            page_type: analyticsSession.pageType
+        });
+    });
+
+    window.addEventListener('pagehide', () => endAnalyticsSession('pagehide'));
+    window.addEventListener('beforeunload', () => endAnalyticsSession('beforeunload'));
+}
+
+function trackInitialPageView() {
+    if (analyticsSession.pageType === 'case_detail' && analyticsSession.caseNumber) {
+        trackSelectContent({
+            contentType: 'section_view',
+            itemId: `case_${analyticsSession.caseNumber}`,
+            itemName: analyticsSession.caseTitle || `Case ${analyticsSession.caseNumber}`,
+            sectionName: 'case_review',
+            interactionAction: 'view',
+            elementType: 'page',
+            elementLabel: `CASE_${analyticsSession.caseNumber}`
+        });
+        return;
+    }
+
+    trackSelectContent({
+        contentType: 'section_view',
+        itemId: 'case_review_list',
+        itemName: 'Case Brief List',
+        sectionName: 'case_review',
+        interactionAction: 'view',
+        elementType: 'page',
+        elementLabel: 'CASE_LIST'
+    });
 }
 
 function parseCaseNumber(card) {
@@ -109,6 +356,26 @@ function isCaseRunbookLink(href) {
     return /(?:^|\/)case\d+\/CASE-\d+\.md$/i.test(String(href || '').trim());
 }
 
+function isPerformanceEvidenceLink(label, href) {
+    const text = `${label || ''} ${href || ''}`.toLowerCase();
+    return text.includes('performance_evidence')
+        || text.includes('k6')
+        || text.includes('report.html')
+        || text.includes('summary.json')
+        || text.includes('failure-summary');
+}
+
+function parseCaseQueryFromHref(href) {
+    try {
+        const targetUrl = new URL(String(href || ''), window.location.href);
+        const raw = targetUrl.searchParams.get('case') || '';
+        const value = Number.parseInt(raw, 10);
+        return Number.isFinite(value) ? value : null;
+    } catch (_error) {
+        return null;
+    }
+}
+
 function collectCaseCards() {
     const cards = [];
     const serviceSections = Array.isArray(templateConfig?.serviceSections) ? templateConfig.serviceSections : [];
@@ -186,9 +453,12 @@ function sanitizePairTitle(label) {
     return cleaned.toUpperCase();
 }
 
-function buildEvidenceSlotHtml(item, phase, missingReason) {
+function buildEvidenceSlotHtml(item, phase, missingReason, options = {}) {
     const phaseLabel = phase === 'before' ? 'BEFORE' : 'AFTER';
     const toneClass = phase === 'before' ? 'is-before' : 'is-after';
+    const pairTitle = options.pairTitle || 'PAIR';
+    const pairIndex = options.pairIndex || 0;
+    const tier = options.tier || 'core';
 
     if (!item) {
         return `
@@ -200,7 +470,18 @@ function buildEvidenceSlotHtml(item, phase, missingReason) {
     }
 
     return `
-        <a class="case-evidence-slot ${toneClass}" href="${escapeHtml(item.src)}" target="_blank" rel="noopener noreferrer">
+        <a
+            class="case-evidence-slot ${toneClass}"
+            href="${escapeHtml(item.src)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-track-kind="evidence_slot"
+            data-evidence-phase="${escapeHtml(phase)}"
+            data-evidence-tier="${escapeHtml(tier)}"
+            data-evidence-label="${escapeHtml(item.label)}"
+            data-evidence-pair="${escapeHtml(pairTitle)}"
+            data-evidence-pair-index="${pairIndex}"
+        >
             <span class="case-evidence-phase-badge ${toneClass}">${phaseLabel}</span>
             <img loading="lazy" src="${escapeHtml(item.src)}" alt="${escapeHtml(item.alt)}">
             <span class="case-evidence-slot-caption">${escapeHtml(item.label)}</span>
@@ -208,7 +489,7 @@ function buildEvidenceSlotHtml(item, phase, missingReason) {
     `;
 }
 
-function buildEvidencePairsHtml(items) {
+function buildEvidencePairsHtml(items, tier) {
     if (items.length === 0) {
         return '<p class="case-review-empty">등록된 이미지 증거가 없습니다.</p>';
     }
@@ -229,8 +510,8 @@ function buildEvidencePairsHtml(items) {
                 <article class="case-evidence-pair-card">
                     <p class="case-evidence-pair-title">PAIR ${index + 1} · ${escapeHtml(pairTitle)}</p>
                     <div class="case-evidence-frame">
-                        ${buildEvidenceSlotHtml(pair.before, 'before', missingBeforeReason)}
-                        ${buildEvidenceSlotHtml(pair.after, 'after', missingAfterReason)}
+                        ${buildEvidenceSlotHtml(pair.before, 'before', missingBeforeReason, { pairTitle, pairIndex: index + 1, tier })}
+                        ${buildEvidenceSlotHtml(pair.after, 'after', missingAfterReason, { pairTitle, pairIndex: index + 1, tier })}
                     </div>
                 </article>
                 `;
@@ -260,7 +541,13 @@ function buildCaseList(root, cards) {
             <p class="case-subtitle">각 케이스는 문제, 원인, 해결, 결과를 먼저 확인하도록 구성됩니다.</p>
             <div class="case-list-grid">
                 ${cards.map(({ caseNumber, card, groupTitle }) => `
-                    <a class="case-list-card" href="./case-detail.html?case=${caseNumber}">
+                    <a
+                        class="case-list-card"
+                        href="./case-detail.html?case=${caseNumber}"
+                        data-track-kind="case_list_card"
+                        data-case-number="${caseNumber}"
+                        data-case-title="${escapeHtml(card?.title || '')}"
+                    >
                         <p class="case-list-id">CASE ${caseNumber}</p>
                         <h2>${escapeHtml(card?.title || '')}</h2>
                         <p>${escapeHtml(groupTitle)}</p>
@@ -300,15 +587,32 @@ function buildCaseDetail(root, cards, selected) {
     const referenceButtons = [];
     if (runbookLink) {
         referenceButtons.push(`
-            <a class="case-link-btn case-link-btn-runbook" href="${escapeHtml(runbookLink.href)}" target="_blank" rel="noopener noreferrer">
+            <a
+                class="case-link-btn case-link-btn-runbook"
+                href="${escapeHtml(runbookLink.href)}"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-track-kind="traceability_link"
+                data-link-label="RUNBOOK_MD"
+                data-link-role="runbook"
+            >
                 RUNBOOK_MD
             </a>
         `);
     }
     referenceLinks.forEach((item) => {
+        const label = String(item.label || 'REFERENCE').trim() || 'REFERENCE';
         referenceButtons.push(`
-            <a class="case-link-btn" href="${escapeHtml(item.href)}" target="_blank" rel="noopener noreferrer">
-                ${escapeHtml(item.label || 'REFERENCE')}
+            <a
+                class="case-link-btn"
+                href="${escapeHtml(item.href)}"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-track-kind="traceability_link"
+                data-link-label="${escapeHtml(label)}"
+                data-link-role="reference"
+            >
+                ${escapeHtml(label)}
             </a>
         `);
     });
@@ -323,9 +627,34 @@ function buildCaseDetail(root, cards, selected) {
                 <span class="case-chip">${escapeHtml(card?.stackSummary || 'Stack summary 없음')}</span>
             </div>
             <div class="case-nav-row">
-                <a class="case-nav-btn" href="./index.html#${escapeHtml(card?.anchorId || '')}">BACK_TO_MAIN_CASE_CARD</a>
-                ${prev ? `<a class="case-nav-btn" href="./case-detail.html?case=${prev.caseNumber}">PREV_CASE_${prev.caseNumber}</a>` : ''}
-                ${next ? `<a class="case-nav-btn" href="./case-detail.html?case=${next.caseNumber}">NEXT_CASE_${next.caseNumber}</a>` : ''}
+                <a
+                    class="case-nav-btn"
+                    href="./index.html#${escapeHtml(card?.anchorId || '')}"
+                    data-track-kind="case_nav"
+                    data-nav-label="BACK_TO_MAIN_CASE_CARD"
+                >
+                    BACK_TO_MAIN_CASE_CARD
+                </a>
+                ${prev ? `
+                    <a
+                        class="case-nav-btn"
+                        href="./case-detail.html?case=${prev.caseNumber}"
+                        data-track-kind="case_nav"
+                        data-nav-label="PREV_CASE_${prev.caseNumber}"
+                    >
+                        PREV_CASE_${prev.caseNumber}
+                    </a>
+                ` : ''}
+                ${next ? `
+                    <a
+                        class="case-nav-btn"
+                        href="./case-detail.html?case=${next.caseNumber}"
+                        data-track-kind="case_nav"
+                        data-nav-label="NEXT_CASE_${next.caseNumber}"
+                    >
+                        NEXT_CASE_${next.caseNumber}
+                    </a>
+                ` : ''}
             </div>
         </section>
 
@@ -342,9 +671,9 @@ function buildCaseDetail(root, cards, selected) {
         <section class="case-review-panel">
             <p class="section-kicker">EVIDENCE_AT_A_GLANCE</p>
             <h2>핵심 증거 (Before/After Frame)</h2>
-            ${buildEvidencePairsHtml(coreEvidence)}
+            ${buildEvidencePairsHtml(coreEvidence, 'core')}
             <h2 class="case-section-subtitle">보조 증거</h2>
-            ${buildEvidencePairsHtml(extraEvidence)}
+            ${buildEvidencePairsHtml(extraEvidence, 'extra')}
             ${missingReasons.length > 0 ? `
                 <div class="case-note-box">
                     <h3>N/A / 단측 증거 사유</h3>
@@ -365,11 +694,127 @@ function buildCaseDetail(root, cards, selected) {
     `;
 }
 
+function setupInteractionTracking() {
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-track-kind]');
+        if (!trigger) {
+            return;
+        }
+
+        const kind = trigger.dataset.trackKind || '';
+        const href = trigger.getAttribute('href') || '';
+        const itemId = getCurrentItemId();
+        const itemName = getCurrentItemName();
+
+        if (kind === 'header_home') {
+            trackSelectContent({
+                contentType: 'navigation',
+                itemId,
+                itemName,
+                sectionName: 'case_review_header',
+                interactionAction: 'navigate',
+                elementType: 'link',
+                elementLabel: 'BACK_TO_PORTFOLIO',
+                linkUrl: href,
+                linkType: detectLinkType(href),
+                page_type: analyticsSession.pageType
+            });
+            return;
+        }
+
+        if (kind === 'case_list_card') {
+            const caseNumber = Number.parseInt(trigger.dataset.caseNumber || '', 10);
+            const caseTitle = trigger.dataset.caseTitle || `CASE ${caseNumber}`;
+            trackSelectContent({
+                contentType: 'navigation_case',
+                itemId: Number.isFinite(caseNumber) ? `case_${caseNumber}` : 'unknown_case',
+                itemName: caseTitle,
+                sectionName: 'case_list',
+                interactionAction: 'open_case',
+                elementType: 'card_link',
+                elementLabel: Number.isFinite(caseNumber) ? `CASE_${caseNumber}` : 'CASE_UNKNOWN',
+                linkUrl: href,
+                linkType: detectLinkType(href),
+                value: Number.isFinite(caseNumber) ? caseNumber : undefined
+            });
+            return;
+        }
+
+        if (kind === 'case_nav') {
+            const navLabel = trigger.dataset.navLabel || trigger.textContent?.trim() || 'CASE_NAV';
+            const destinationCase = parseCaseQueryFromHref(href);
+            trackSelectContent({
+                contentType: 'navigation',
+                itemId,
+                itemName,
+                sectionName: 'case_review_navigation',
+                interactionAction: 'navigate',
+                elementType: 'link',
+                elementLabel: navLabel,
+                linkUrl: href,
+                linkType: detectLinkType(href),
+                destination_case: destinationCase || '',
+                page_type: analyticsSession.pageType
+            });
+            return;
+        }
+
+        if (kind === 'traceability_link') {
+            const linkLabel = trigger.dataset.linkLabel || trigger.textContent?.trim() || 'REFERENCE';
+            const linkRole = trigger.dataset.linkRole || 'reference';
+            const contentType = isPerformanceEvidenceLink(linkLabel, href) ? 'performance_evidence' : 'case_link';
+            trackSelectContent({
+                contentType,
+                itemId,
+                itemName,
+                sectionName: 'traceability',
+                interactionAction: 'open_link',
+                elementType: 'link',
+                elementLabel: linkLabel,
+                linkUrl: href,
+                linkType: detectLinkType(href),
+                link_role: linkRole,
+                page_type: analyticsSession.pageType
+            });
+            return;
+        }
+
+        if (kind === 'evidence_slot') {
+            const phase = trigger.dataset.evidencePhase || 'other';
+            const tier = trigger.dataset.evidenceTier || 'core';
+            const evidenceLabel = trigger.dataset.evidenceLabel || 'EVIDENCE';
+            const pairTitle = trigger.dataset.evidencePair || 'PAIR';
+            const pairIndexRaw = Number.parseInt(trigger.dataset.evidencePairIndex || '', 10);
+            const pairIndex = Number.isFinite(pairIndexRaw) ? pairIndexRaw : undefined;
+            const safeLabel = toSafeLabel(evidenceLabel).replace(/\s+/g, '_').toUpperCase();
+
+            trackSelectContent({
+                contentType: 'performance_evidence',
+                itemId,
+                itemName,
+                sectionName: 'evidence_frame',
+                interactionAction: 'open_image',
+                elementType: 'image_link',
+                elementLabel: `${phase.toUpperCase()}_${safeLabel}`,
+                linkUrl: href,
+                linkType: detectLinkType(href),
+                evidence_phase: phase,
+                evidence_tier: tier,
+                evidence_pair: pairTitle,
+                evidence_pair_index: pairIndex,
+                page_type: analyticsSession.pageType
+            });
+        }
+    });
+}
+
 function init() {
     const root = byId('case-review-root');
     if (!root) {
         return;
     }
+
+    setupInteractionTracking();
 
     const cards = collectCaseCards();
     if (cards.length === 0) {
@@ -378,6 +823,11 @@ function init() {
                 <h1>케이스 데이터가 비어 있습니다.</h1>
             </section>
         `;
+        analyticsSession.pageType = 'case_list';
+        analyticsSession.caseNumber = null;
+        analyticsSession.caseTitle = 'Case Brief List';
+        setupAnalyticsLifecycle();
+        trackInitialPageView();
         return;
     }
 
@@ -386,10 +836,20 @@ function init() {
 
     if (!selected) {
         buildCaseList(root, cards);
+        analyticsSession.pageType = 'case_list';
+        analyticsSession.caseNumber = null;
+        analyticsSession.caseTitle = 'Case Brief List';
+        setupAnalyticsLifecycle();
+        trackInitialPageView();
         return;
     }
 
     buildCaseDetail(root, cards, selected);
+    analyticsSession.pageType = 'case_detail';
+    analyticsSession.caseNumber = selected.caseNumber;
+    analyticsSession.caseTitle = selected.card?.title || `Case ${selected.caseNumber}`;
+    setupAnalyticsLifecycle();
+    trackInitialPageView();
 }
 
 init();
