@@ -8,6 +8,7 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 
 ## Common Parameters
 
+- `session_id`
 - `content_type`
 - `item_id`
 - `item_name`
@@ -19,6 +20,12 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `link_type`
 - `modal_name`
 - `value`
+- `duration_ms`
+- `engagement_time_msec`
+- `hidden_duration_ms`
+- `max_scroll_percent`
+- `unique_case_views`
+- `end_reason`
 
 ## content_type Values
 
@@ -35,9 +42,13 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `mermaid_diagram`
 - `mermaid_zoom`
 - `section_view`
+- `section_dwell`
+- `page_engagement`
+- `page_visibility`
 
 ## Recommended GA4 Custom Dimensions (Event Scope)
 
+- `session_id`
 - `content_type`
 - `section_name`
 - `interaction_action`
@@ -47,10 +58,16 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `modal_name`
 - `open_source`
 - `evidence_phase`
+- `end_reason`
 
 ## Recommended GA4 Custom Metric (Event Scope)
 
 - `value` (integer)
+- `duration_ms` (integer)
+- `engagement_time_msec` (integer)
+- `hidden_duration_ms` (integer)
+- `max_scroll_percent` (integer)
+- `unique_case_views` (integer)
 
 ## GTM Trigger Tip
 
