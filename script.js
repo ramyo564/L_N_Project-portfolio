@@ -2618,14 +2618,14 @@ function setupExtraEvidenceModal() {
             if (pair.before) {
                 beforeLane.appendChild(createEvidenceButton(pair.before, `BEFORE-${suffix}`));
             } else {
-                const reason = pair.after?.missingBeforeReason || 'N/A 또는 비교축 미수집으로 before 증거가 없습니다.';
+                const reason = pair.after?.missingBeforeReason || 'VU50 부하에도 오류발생 -> VU500 같은 비교축 의미 X';
                 beforeLane.appendChild(createMissingSlot('before', reason, `BEFORE-${suffix}`));
             }
 
             if (pair.after) {
                 afterLane.appendChild(createEvidenceButton(pair.after, `AFTER-${suffix}`));
             } else {
-                const reason = pair.before?.missingAfterReason || '해당 비교축의 after 증거가 아직 없거나 범위에서 제외되었습니다.';
+                const reason = pair.before?.missingAfterReason || 'VU500에도 안정적이라 같은 VU50 비교축 없음';
                 afterLane.appendChild(createMissingSlot('after', reason, `AFTER-${suffix}`));
             }
 
