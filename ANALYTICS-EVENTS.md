@@ -51,6 +51,7 @@ This portfolio sends interaction events via `dataLayer.push` using the `select_c
 - `extra_evidence_original`
 - `mermaid_diagram`
 - `mermaid_zoom`
+- `k6_overview_evidence`
 - `section_view`
 - `section_dwell`
 - `page_engagement`

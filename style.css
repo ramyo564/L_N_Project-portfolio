@@ -1416,7 +1416,7 @@ body.modal-open {
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    z-index: 1250;
+    z-index: 1270;
 }
 
 .extra-evidence-modal.is-open {
@@ -1903,6 +1903,21 @@ body.modal-open {
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.22);
     overflow: hidden;
+}
+
+.k6-overview-figure.is-clickable {
+    cursor: zoom-in;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.k6-overview-figure.is-clickable:hover {
+    border-color: var(--accent-blue);
+}
+
+.k6-overview-figure.is-clickable:focus-visible {
+    outline: 2px solid rgba(88, 166, 255, 0.68);
+    outline-offset: 1px;
+    box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.42);
 }
 
 .k6-overview-figure img {

@@ -1101,7 +1101,9 @@ function normalizeEvidenceItems(items) {
             src: item.src,
             label: item.label || 'EVIDENCE',
             alt: item.alt || item.label || 'evidence image',
-            phase: detectEvidencePhase(item),
+            phase: ['before', 'after', 'other'].includes(String(item.phase || '').toLowerCase())
+                ? String(item.phase).toLowerCase()
+                : detectEvidencePhase(item),
             pairKey: item.pairKey || '',
             missingBeforeReason: item.missingBeforeReason || '',
             missingAfterReason: item.missingAfterReason || ''
@@ -2143,6 +2145,58 @@ function setupK6OverviewModal() {
                 const body = document.createElement('div');
                 body.className = 'k6-overview-compare-body';
 
+                const openComparisonEvidenceModal = (phase, label, src, alt) => {
+                    if (!src) {
+                        return;
+                    }
+
+                    const comparisonId = String(comparison?.id || '').trim() || 'comparison';
+                    const evidenceItems = [
+                        {
+                            src: comparison.beforeImage || '',
+                            label: comparison.beforeLabel || 'BEFORE',
+                            alt: comparison.beforeAlt || comparison.beforeLabel || 'k6 before result',
+                            phase: 'before',
+                            pairKey: comparisonId
+                        },
+                        {
+                            src: comparison.currentImage || '',
+                            label: comparison.currentLabel || 'CURRENT',
+                            alt: comparison.currentAlt || comparison.currentLabel || 'k6 current result',
+                            phase: 'after',
+                            pairKey: comparisonId
+                        }
+                    ].filter((item) => item.src);
+
+                    if (typeof openExtraEvidenceModal === 'function') {
+                        openExtraEvidenceModal(
+                            evidenceItems,
+                            `${comparison.title || 'K6_COMPARISON'} · IMAGE_ZOOM`,
+                            {
+                                initialSrc: src,
+                                source: 'k6_overview_compare',
+                                caseId: `k6_overview_${comparisonId}`
+                            }
+                        );
+                    } else {
+                        window.open(src, '_blank', 'noopener,noreferrer');
+                    }
+
+                    trackSelectContent({
+                        contentType: 'k6_overview_evidence',
+                        itemId: `k6_overview_${comparisonId}`,
+                        itemName: `${comparison.title || 'K6_COMPARISON'} ${label || ''}`.trim(),
+                        sectionName: 'k6_overview_modal',
+                        interactionAction: 'open_modal',
+                        elementType: 'image',
+                        elementLabel: label || phase || 'EVIDENCE',
+                        modalName: 'extra_evidence_modal',
+                        evidence_phase: phase === 'current' ? 'after' : phase,
+                        linkUrl: src,
+                        linkType: detectLinkType(src)
+                    });
+                };
+
                 const createFigure = (phase, label, src, alt) => {
                     const figure = document.createElement('figure');
                     figure.className = `k6-overview-figure is-${phase}`;
@@ -2161,6 +2215,25 @@ function setupK6OverviewModal() {
                     caption.textContent = label;
 
                     figure.append(badge, image, caption);
+
+                    if (src) {
+                        figure.classList.add('is-clickable');
+                        figure.setAttribute('role', 'button');
+                        figure.setAttribute('tabindex', '0');
+                        figure.setAttribute(
+                            'aria-label',
+                            `${comparison.title || 'k6 comparison'} ${label || phase} image zoom`
+                        );
+                        const openZoom = () => openComparisonEvidenceModal(phase, label, src, alt);
+                        figure.addEventListener('click', openZoom);
+                        figure.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                openZoom();
+                            }
+                        });
+                    }
+
                     return figure;
                 };
 
