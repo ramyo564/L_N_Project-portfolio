@@ -678,9 +678,59 @@ body.modal-open {
     color: var(--text-primary);
 }
 
+.section-recruiter-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+}
+
+.section-recruiter-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.24);
+    padding: 0.58rem 0.64rem;
+    display: grid;
+    gap: 0.28rem;
+}
+
+.section-recruiter-card-id {
+    margin: 0;
+    font-family: var(--font-code);
+    font-size: 0.66rem;
+    color: var(--accent-blue);
+    letter-spacing: 0.04em;
+}
+
+.section-recruiter-card-title {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    line-height: 1.35;
+}
+
+.section-recruiter-card-row {
+    margin: 0;
+    display: grid;
+    gap: 0.1rem;
+}
+
+.section-recruiter-card-key {
+    font-family: var(--font-code);
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    color: #ffd18d;
+}
+
+.section-recruiter-card-value {
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+
 .section-recruiter-actions {
     display: flex;
     align-items: stretch;
+    margin-top: 0.2rem;
 }
 
 .section-recruiter-list {
@@ -2215,6 +2265,23 @@ body.modal-open {
 
     .section-recruiter-title {
         font-size: 0.9rem;
+    }
+
+    .section-recruiter-card-grid {
+        grid-template-columns: 1fr;
+        gap: 0.48rem;
+    }
+
+    .section-recruiter-card {
+        padding: 0.52rem 0.56rem;
+    }
+
+    .section-recruiter-card-title {
+        font-size: 0.78rem;
+    }
+
+    .section-recruiter-card-value {
+        font-size: 0.71rem;
     }
 
     .section-recruiter-actions {

@@ -930,11 +930,23 @@ function createSectionRecruiterBrief(sectionConfig) {
         return null;
     }
 
+    const quickCases = Array.isArray(brief.cases)
+        ? brief.cases
+            .map((item) => ({
+                id: String(item?.id || '').trim(),
+                title: String(item?.title || '').trim(),
+                problem: String(item?.problem || '').trim(),
+                action: String(item?.action || '').trim(),
+                impact: String(item?.impact || '').trim()
+            }))
+            .filter((item) => item.id || item.title || item.problem || item.action || item.impact)
+        : [];
+
     const bullets = Array.isArray(brief.bullets)
         ? brief.bullets.map((line) => String(line || '').trim()).filter(Boolean)
         : [];
 
-    if (!brief.title && bullets.length === 0) {
+    if (!brief.title && bullets.length === 0 && quickCases.length === 0) {
         return null;
     }
 
@@ -957,11 +969,62 @@ function createSectionRecruiterBrief(sectionConfig) {
         wrapper.appendChild(title);
     }
 
-    const actions = document.createElement('div');
-    actions.className = 'section-recruiter-actions';
-    wrapper.appendChild(actions);
+    if (quickCases.length > 0) {
+        const cardGrid = document.createElement('div');
+        cardGrid.className = 'section-recruiter-card-grid';
 
-    if (bullets.length > 0) {
+        quickCases.forEach((item) => {
+            const card = document.createElement('article');
+            card.className = 'section-recruiter-card';
+
+            const idLine = document.createElement('p');
+            idLine.className = 'section-recruiter-card-id';
+            idLine.textContent = item.id || 'Case';
+
+            const cardTitle = document.createElement('h4');
+            cardTitle.className = 'section-recruiter-card-title';
+            cardTitle.textContent = item.title || '핵심 변화';
+
+            const createRow = (labelText, valueText) => {
+                if (!valueText) {
+                    return null;
+                }
+                const row = document.createElement('p');
+                row.className = 'section-recruiter-card-row';
+
+                const label = document.createElement('span');
+                label.className = 'section-recruiter-card-key';
+                label.textContent = `${labelText}:`;
+
+                const value = document.createElement('span');
+                value.className = 'section-recruiter-card-value';
+                value.textContent = valueText;
+
+                row.append(label, value);
+                return row;
+            };
+
+            const problemRow = createRow('PROBLEM', item.problem);
+            const actionRow = createRow('ACTION', item.action);
+            const impactRow = createRow('IMPACT', item.impact);
+
+            card.append(idLine, cardTitle);
+            if (problemRow) {
+                card.appendChild(problemRow);
+            }
+            if (actionRow) {
+                card.appendChild(actionRow);
+            }
+            if (impactRow) {
+                card.appendChild(impactRow);
+            }
+            cardGrid.appendChild(card);
+        });
+
+        wrapper.appendChild(cardGrid);
+    }
+
+    if (bullets.length > 0 && quickCases.length === 0) {
         const list = document.createElement('ul');
         list.className = 'section-recruiter-list';
         bullets.forEach((line) => {
@@ -971,6 +1034,10 @@ function createSectionRecruiterBrief(sectionConfig) {
         });
         wrapper.appendChild(list);
     }
+
+    const actions = document.createElement('div');
+    actions.className = 'section-recruiter-actions';
+    wrapper.appendChild(actions);
 
     return wrapper;
 }
@@ -2094,6 +2161,8 @@ function setupK6OverviewModal() {
 
         const hardwareRows = Array.isArray(overview.hardware) ? overview.hardware : [];
         const keyMetrics = Array.isArray(overview.keyMetrics) ? overview.keyMetrics : [];
+        const measurementProtocol = Array.isArray(overview.measurementProtocol) ? overview.measurementProtocol : [];
+        const resultInterpretation = Array.isArray(overview.resultInterpretation) ? overview.resultInterpretation : [];
         const dbRows = Array.isArray(overview.dbRowEstimation) ? overview.dbRowEstimation : [];
         const comparisons = Array.isArray(overview.comparisons) ? overview.comparisons : [];
         const links = Array.isArray(overview.links) ? overview.links.filter((item) => item?.href) : [];
@@ -2121,8 +2190,14 @@ function setupK6OverviewModal() {
             const hardwareLines = hardwareRows.map((item) => `${item.label || 'ITEM'}: ${item.value || 'N/A'}`);
             cardsGrid.appendChild(createListCard('HW / ENVIRONMENT', hardwareLines));
         }
+        if (measurementProtocol.length > 0) {
+            cardsGrid.appendChild(createListCard('MEASUREMENT_PROTOCOL', measurementProtocol, true));
+        }
+        if (resultInterpretation.length > 0) {
+            cardsGrid.appendChild(createListCard('RESULT_INTERPRETATION', resultInterpretation));
+        }
         if (keyMetrics.length > 0) {
-            cardsGrid.appendChild(createListCard('KEY_METRICS', keyMetrics));
+            cardsGrid.appendChild(createListCard(overview.keyMetricsTitle || 'MEASURED_RESULT', keyMetrics));
         }
         if (dbRows.length > 0) {
             cardsGrid.appendChild(createListCard('DB_ROW_ESTIMATION', dbRows, true));

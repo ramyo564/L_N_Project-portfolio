@@ -75,9 +75,15 @@ export const templateConfig = {
                 { label: 'OS', value: 'Ubuntu 22.04 LTS' },
                 { label: 'Storage', value: 'NVMe SSD (PCIe 3.0)' }
             ],
-            keyMetrics: [
-                'WRITE: RPS 373 -> 916, p95 1.9s -> 126ms',
-                'READ: RPS 972 -> 3680, p95 975ms -> 141ms'
+            measurementProtocol: [
+                '동일 profile(500VU)에서 before/current를 각각 3회 반복 측정하고 중앙값 기준으로 비교.',
+                '결과 수집은 k6 summary, Grafana 패널 타임스탬프, API 로그를 함께 교차 검증.',
+                '지표 정의: p95(지연 상위 5% 경계), RPS(초당 처리량), 에러율(요청 실패 비율).'
+            ],
+            resultInterpretation: [
+                'WRITE p95 1.9s -> 126ms: 체감 지연이 크게 줄어 고부하 구간의 응답 안정성이 향상.',
+                'READ p95 975ms -> 141ms: 권한/조회 경로 병목 완화로 tail latency가 낮아짐.',
+                'READ RPS 972 -> 3680, WRITE RPS 373 -> 916: 동일 VU에서 처리량 한계가 확장됨.'
             ],
             dbRowEstimation: [
                 'WRITE setup: TOTAL_USERS=1000 기준 회원가입 row 생성(유저/인증 row).',
@@ -198,12 +204,28 @@ export const templateConfig = {
             recruiterBrief: {
                 kicker: 'RECRUITER_QUICK_BRIEF',
                 title: '1분 요약으로 먼저 보는 핵심 변화',
-                bullets: [
-                    'Case A(1): 회원가입 경로를 안정화해 락 대기 재현율 0%를 확인했습니다.',
-                    'Case B(2): 인증/권한 검증 경로를 정리해 요청당 쿼리를 21 -> 3으로 줄였습니다.',
-                    'Case C(5): 메시지 발행 대기를 API 요청과 분리해 timeout 15% -> 0%를 만들었습니다.',
-                    '검증은 k6 Before/Current, Grafana, DB 로그를 함께 비교해 단일 지표 의존을 피했습니다.',
-                    '상세 화면에서는 클래스/메서드, 커밋, 증거 이미지를 모두 추적할 수 있습니다.'
+                cases: [
+                    {
+                        id: 'Case A (1)',
+                        title: '회원가입 트랜잭션 안정화',
+                        problem: 'UUID 사전할당 경로에서 불필요한 SELECT+INSERT와 락 대기가 누적',
+                        action: 'Persistable isNew + Outbox 비동기 분리로 저장/후속처리 결합 해소',
+                        impact: '락 대기 재현율 0%, 회원가입 응답 안정성 확보'
+                    },
+                    {
+                        id: 'Case B (2)',
+                        title: '인증 경로 쿼리 축소',
+                        problem: 'JWT 인증/권한 검증에서 사용자·소유권 조회가 반복',
+                        action: 'JWT Claims + AOP 단일 권한게이트로 검증 경로 수렴',
+                        impact: '요청당 쿼리 21 -> 3으로 축소'
+                    },
+                    {
+                        id: 'Case C (5)',
+                        title: '메시징 블로킹 제거',
+                        problem: '요청 스레드가 RabbitMQ 동기 발행 대기를 직접 부담',
+                        action: 'Async publisher + 전용 executor로 발행 경로 분리',
+                        impact: 'timeout 15% -> 0%, p95 500ms -> 50ms'
+                    }
                 ]
             },
             featuredCaseAnchors: [
