@@ -206,25 +206,52 @@ export const templateConfig = {
                 title: '1분 요약으로 먼저 보는 핵심 변화',
                 cases: [
                     {
-                        id: 'Case A (1)',
+                        id: 'Case 1',
+                        anchorId: 'upgrade-todo-case-1',
                         title: '회원가입 트랜잭션 안정화',
                         problem: 'UUID 사전할당 경로에서 불필요한 SELECT+INSERT와 락 대기가 누적',
                         action: 'Persistable isNew + Outbox 비동기 분리로 저장/후속처리 결합 해소',
                         impact: '락 대기 재현율 0%, 회원가입 응답 안정성 확보'
                     },
                     {
-                        id: 'Case B (2)',
+                        id: 'Case 2',
+                        anchorId: 'upgrade-todo-case-2',
                         title: '인증 경로 쿼리 축소',
                         problem: 'JWT 인증/권한 검증에서 사용자·소유권 조회가 반복',
                         action: 'JWT Claims + AOP 단일 권한게이트로 검증 경로 수렴',
                         impact: '요청당 쿼리 21 -> 3으로 축소'
                     },
                     {
-                        id: 'Case C (5)',
+                        id: 'Case 3',
+                        anchorId: 'upgrade-todo-case-3',
+                        title: '조회 트랜잭션 경량화',
+                        problem: '@Cacheable 경로가 트랜잭션을 길게 점유해 idle in transaction 발생',
+                        action: '읽기 전용 경계 분리와 cache hit 우선 경로로 조회 플로우 정리',
+                        impact: '커넥션 점유 시간 단축, 조회 경로 응답 변동성 완화'
+                    },
+                    {
+                        id: 'Case 4',
+                        anchorId: 'upgrade-todo-case-4',
+                        title: '비동기 생성 공백 보완',
+                        problem: '비동기 생성 직후 조회 시점에 데이터 공백이 발생',
+                        action: 'Pending Cache 라이프사이클을 도입해 생성중 상태를 일관되게 노출',
+                        impact: '사용자 체감 누락 감소, 재시도 트래픽 억제'
+                    },
+                    {
+                        id: 'Case 5',
+                        anchorId: 'upgrade-todo-case-5',
                         title: '메시징 블로킹 제거',
                         problem: '요청 스레드가 RabbitMQ 동기 발행 대기를 직접 부담',
                         action: 'Async publisher + 전용 executor로 발행 경로 분리',
                         impact: 'timeout 15% -> 0%, p95 500ms -> 50ms'
+                    },
+                    {
+                        id: 'Case 6',
+                        anchorId: 'upgrade-todo-case-6',
+                        title: '배치 처리량 최적화',
+                        problem: '배치 캐시/트랜잭션 경계가 분산되어 처리량이 제한',
+                        action: '배치 단위 트랜잭션과 캐시 경계를 재정렬해 lock/flush 비용 감소',
+                        impact: '고부하 구간 처리량 증대 및 tail latency 안정화'
                     }
                 ]
             },

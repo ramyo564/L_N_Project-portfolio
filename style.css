@@ -684,6 +684,10 @@ body.modal-open {
     gap: 0.6rem;
 }
 
+.service-section:not(.is-featured-collapsed) .section-recruiter-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .section-recruiter-card {
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -802,6 +806,7 @@ body.modal-open {
 }
 
 .service-card.is-collapsed-hidden,
+.section-recruiter-card.is-collapsed-hidden,
 .service-group.is-collapsed-empty {
     display: none;
 }
@@ -2092,6 +2097,10 @@ body.modal-open {
 
     .k6-overview-summary-grid,
     .k6-overview-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .section-recruiter-card-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 

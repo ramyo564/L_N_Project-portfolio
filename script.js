@@ -934,6 +934,7 @@ function createSectionRecruiterBrief(sectionConfig) {
         ? brief.cases
             .map((item) => ({
                 id: String(item?.id || '').trim(),
+                anchorId: String(item?.anchorId || '').trim(),
                 title: String(item?.title || '').trim(),
                 problem: String(item?.problem || '').trim(),
                 action: String(item?.action || '').trim(),
@@ -976,6 +977,9 @@ function createSectionRecruiterBrief(sectionConfig) {
         quickCases.forEach((item) => {
             const card = document.createElement('article');
             card.className = 'section-recruiter-card';
+            if (item.anchorId) {
+                card.setAttribute('data-anchor-id', item.anchorId);
+            }
 
             const idLine = document.createElement('p');
             idLine.className = 'section-recruiter-card-id';
@@ -1450,6 +1454,9 @@ function renderServiceSections() {
         const recruiterBrief = createSectionRecruiterBrief(sectionConfig);
         const renderedCards = [];
         const groupCardMap = new Map();
+        const recruiterCaseCards = recruiterBrief
+            ? Array.from(recruiterBrief.querySelectorAll('.section-recruiter-card'))
+            : [];
 
         const groups = Array.isArray(sectionConfig.groups) && sectionConfig.groups.length > 0
             ? sectionConfig.groups
@@ -1548,6 +1555,15 @@ function renderServiceSections() {
                     groupSection.hidden = !hasVisibleCard;
                     groupSection.classList.toggle('is-collapsed-empty', !hasVisibleCard);
                 });
+
+                if (recruiterCaseCards.length > 0) {
+                    recruiterCaseCards.forEach((cardNode) => {
+                        const anchorId = String(cardNode.getAttribute('data-anchor-id') || '').trim();
+                        const isVisible = !isCollapsed || !anchorId || featuredSet.has(anchorId);
+                        cardNode.hidden = !isVisible;
+                        cardNode.classList.toggle('is-collapsed-hidden', !isVisible);
+                    });
+                }
 
                 sectionWrapper.classList.toggle('is-featured-collapsed', isCollapsed);
                 const hiddenCount = Math.max(0, renderedCards.length - featuredSet.size);
