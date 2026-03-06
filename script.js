@@ -141,6 +141,47 @@ function detectLinkType(href) {
     return 'internal';
 }
 
+function inferDestinationPageType(destinationUrl) {
+    const raw = String(destinationUrl || '').trim();
+    if (!raw) {
+        return '';
+    }
+
+    const linkType = detectLinkType(raw);
+    if (linkType === 'anchor') {
+        return analyticsSession.pageType;
+    }
+    if (linkType === 'mailto') {
+        return 'contact';
+    }
+    if (linkType === 'external') {
+        return 'external';
+    }
+
+    let parsedUrl;
+    try {
+        parsedUrl = new URL(raw, window.location.href);
+    } catch {
+        return analyticsSession.pageType;
+    }
+
+    const normalizedPath = String(parsedUrl.pathname || '').toLowerCase();
+    if (!normalizedPath || normalizedPath === '/') {
+        return analyticsSession.pageType;
+    }
+    if (
+        normalizedPath === '/portfolio/' ||
+        normalizedPath === '/portfolio/index.html' ||
+        normalizedPath === '/portfolio'
+    ) {
+        return 'portfolio_hub';
+    }
+    if (normalizedPath.includes('-portfolio') || normalizedPath.includes('/docs/')) {
+        return 'portfolio';
+    }
+    return analyticsSession.pageType;
+}
+
 function parseCaseRunbookNumber(href) {
     const text = String(href || '').trim();
     const match = text.match(/(?:^|\/)case(\d+)\/CASE-\d+\.md$/i);
@@ -161,6 +202,7 @@ function toCaseReviewLink(href) {
 
 const analyticsSession = {
     id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
+    pageType: 'portfolio',
     pageStartedAt: Date.now(),
     visibleStartedAt: document.visibilityState === 'hidden' ? 0 : Date.now(),
     visibleDurationMs: 0,
@@ -187,19 +229,23 @@ function trackSelectContent({
     linkType,
     modalName,
     value,
+    sourceEvent = 'ui_click',
     ...extra
 }) {
+    const resolvedDestinationUrl = String(linkUrl || extra.destination_url || '').trim();
     const payload = {
         event: 'select_content',
         tracking_version: '2026-03-ga4-unified-v1',
         session_id: analyticsSession.id,
         page_path: window.location.pathname,
         page_title: document.title,
-        page_type: 'portfolio',
+        page_type: analyticsSession.pageType,
+        source_page_type: analyticsSession.pageType,
         content_type: contentType || 'unknown',
         item_id: itemId || 'unknown',
         section_name: sectionName || 'unknown',
-        interaction_action: interactionAction
+        interaction_action: interactionAction,
+        source_event: sourceEvent
     };
 
     if (itemName) {
@@ -211,11 +257,16 @@ function trackSelectContent({
     if (elementLabel) {
         payload.element_label = elementLabel;
     }
-    if (linkUrl) {
-        payload.link_url = linkUrl;
-    }
     if (linkType) {
         payload.link_type = linkType;
+    }
+    if (resolvedDestinationUrl) {
+        payload.link_url = resolvedDestinationUrl;
+        if (!payload.link_type) {
+            payload.link_type = detectLinkType(resolvedDestinationUrl);
+        }
+        payload.destination_url = resolvedDestinationUrl;
+        payload.destination_page_type = inferDestinationPageType(resolvedDestinationUrl);
     }
     if (modalName) {
         payload.modal_name = modalName;
@@ -306,6 +357,7 @@ function endAnalyticsSession(reason = 'pagehide') {
         interactionAction: 'end',
         elementType: 'page',
         elementLabel: 'PAGE_END',
+        sourceEvent: 'lifecycle',
         duration_ms: totalDurationMs,
         engagement_time_msec: visibleDurationMs,
         hidden_duration_ms: hiddenDurationMs,
@@ -326,7 +378,8 @@ function setupAnalyticsLifecycle() {
         sectionName: 'lifecycle',
         interactionAction: 'start',
         elementType: 'page',
-        elementLabel: 'PAGE_START'
+        elementLabel: 'PAGE_START',
+        sourceEvent: 'lifecycle'
     });
 
     window.addEventListener('scroll', updateMaxScrollPercent, { passive: true });
@@ -344,7 +397,8 @@ function setupAnalyticsLifecycle() {
                 sectionName: 'lifecycle',
                 interactionAction: 'hidden',
                 elementType: 'page',
-                elementLabel: 'PAGE_HIDDEN'
+                elementLabel: 'PAGE_HIDDEN',
+                sourceEvent: 'lifecycle'
             });
             return;
         }
@@ -357,7 +411,8 @@ function setupAnalyticsLifecycle() {
             sectionName: 'lifecycle',
             interactionAction: 'visible',
             elementType: 'page',
-            elementLabel: 'PAGE_VISIBLE'
+            elementLabel: 'PAGE_VISIBLE',
+            sourceEvent: 'lifecycle'
         });
     });
 
