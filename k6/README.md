@@ -1,6 +1,6 @@
 # K6 Test Environment README
 
-`UPGRADE_TODO_PROBLEM_SOLVING_OVERVIEW` 팝업에서 참조하는 k6 테스트 설명 문서입니다.
+`LIFE_NAVIGATION_PROBLEM_SOLVING_OVERVIEW` 팝업에서 참조하는 k6 테스트 설명 문서입니다.
 
 ## 1) Test Profile
 - `RAMPING_PROFILE`: `default`
@@ -9,7 +9,7 @@
 - `TOTAL_DURATION`: 약 `32분`
 
 ## 2) Before / Current Evidence
-- 이미지 경로: `L_N_Project-portfolio/k6-500-result`
+- 이미지 경로: `Life Navigation portfolio / k6-500-result`
 - 쓰기 비교:
   - `write_500-before.png`
   - `write_500-current.png`
@@ -24,18 +24,18 @@
 - Storage: `NVMe SSD (PCIe 3.0)`
 
 ## 4) Script Map (Source)
-실제 구동 스크립트는 아래 경로 기준으로 분석했습니다.
+실제 구동 스크립트는 private implementation repository 기준으로 분석했습니다.
 
 - Write:
-  - `/home/yohan/Git-U/upgrade_todo/k6/scenarios_2/test/smoke_test/mvc-write-task-subtask-fixed-user-load-test.js`
+  - `<private-implementation-repo>/k6/scenarios_2/test/smoke_test/mvc-write-task-subtask-fixed-user-load-test.js`
 - Read:
-  - `/home/yohan/Git-U/upgrade_todo/k6/scenarios_2/test/smoke_test/mvc-read-fixed-user-load-test.js`
+  - `<private-implementation-repo>/k6/scenarios_2/test/smoke_test/mvc-read-fixed-user-load-test.js`
 - 공통 설정:
-  - `/home/yohan/Git-U/upgrade_todo/k6/scenarios_2/test/utils/load-test-config.js`
-  - `/home/yohan/Git-U/upgrade_todo/k6/scenarios_2/test/utils/auth.js`
-  - `/home/yohan/Git-U/upgrade_todo/k6/scenarios_2/test/utils/test-utils.js`
-  - `/home/yohan/Git-U/upgrade_todo/k6/scenarios_2/test/utils/test-data.js`
-  - `/home/yohan/Git-U/upgrade_todo/k6/scenarios_2/test/utils/warmup.js`
+  - `<private-implementation-repo>/k6/scenarios_2/test/utils/load-test-config.js`
+  - `<private-implementation-repo>/k6/scenarios_2/test/utils/auth.js`
+  - `<private-implementation-repo>/k6/scenarios_2/test/utils/test-utils.js`
+  - `<private-implementation-repo>/k6/scenarios_2/test/utils/test-data.js`
+  - `<private-implementation-repo>/k6/scenarios_2/test/utils/warmup.js`
 
 ## 5) Scenario Logic
 ### Write (`mvc-write-task-subtask-fixed-user-load-test.js`)

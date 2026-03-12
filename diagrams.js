@@ -1,7 +1,7 @@
 export const diagrams = {
     'upgrade-todo-problem-overview': `
         graph LR
-        Resume[Resume Upgrade Todo Section] --> SelectOne[Select One Bottleneck]
+        Resume[Resume Life Navigation Section] --> SelectOne[Select One Bottleneck]
         SelectOne --> Trace[Trace Code Path]
         Trace --> Identity[UUID Persistable Outbox]
         Trace --> Authz[JWT Claims and Access Gate]
@@ -29,7 +29,7 @@ export const diagrams = {
 
     'upgrade-todo-code-evidence-overview': `
         graph TB
-        Root[Upgrade Todo Code Evidence Map]
+        Root[Life Navigation Code Evidence Map]
         Root --> Identity[IDENTITY AUTH]
         Root --> Cache[CACHE ASYNC GAP]
         Root --> Messaging[MESSAGING PERFORMANCE]

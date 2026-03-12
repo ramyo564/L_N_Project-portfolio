@@ -2,14 +2,14 @@ import { diagrams } from './diagrams.js';
 
 export const templateConfig = {
     system: {
-        documentTitle: 'Yohan | Upgrade Todo Problem Solving Portfolio',
-        systemName: 'UPGRADE_TODO_PROBLEM_SOLVING_V.1.0'
+        documentTitle: 'Yohan | Life Navigation Problem Solving Portfolio',
+        systemName: 'LIFE_NAVIGATION_PROBLEM_SOLVING_V.1.0'
     },
 
     hero: {
         sectionId: 'upgrade-todo-problem-solving',
-        panelTitle: 'UPGRADE_TODO_PROBLEM_SOLVING_OVERVIEW',
-        panelUid: 'ID: UPGRADE-TODO-PS-00',
+        panelTitle: 'LIFE_NAVIGATION_PROBLEM_SOLVING_OVERVIEW',
+        panelUid: 'ID: LIFE-NAV-PS-00',
         diagramId: 'upgrade-todo-problem-overview',
         headline: '500VU 기준 핵심 성능 개선',
         headlineItems: [
@@ -43,7 +43,7 @@ export const templateConfig = {
         metrics: [
             {
                 label: '요약',
-                value: 'Upgrade Todo 항목을 문제→원인→해결→결과 흐름으로 재구성했습니다.'
+                value: 'Life Navigation 백엔드 성능 개선 사례를 문제→원인→해결→결과 흐름으로 재구성했습니다.'
             },
             {
                 label: '검증',
@@ -125,7 +125,7 @@ export const templateConfig = {
         {
             sectionId: 'upgrade-todo-code-evidence',
             panelTitle: 'CODE_EVIDENCE_MAP',
-            panelUid: 'ID: UPGRADE-TODO-PS-01',
+            panelUid: 'ID: LIFE-NAV-PS-01',
             diagramId: 'upgrade-todo-code-evidence-overview',
             panelClass: 'code-evidence-summary-panel',
             navLabel: 'CODE_EVIDENCE',
@@ -138,7 +138,7 @@ export const templateConfig = {
         {
             sectionId: 'upgrade-todo-code-evidence-identity',
             panelTitle: 'IDENTITY_AUTH',
-            panelUid: 'ID: UPGRADE-TODO-PS-01A',
+            panelUid: 'ID: LIFE-NAV-PS-01A',
             diagramId: 'upgrade-todo-code-evidence-identity',
             panelClass: 'code-evidence-split-panel',
             metrics: [
@@ -150,7 +150,7 @@ export const templateConfig = {
         {
             sectionId: 'upgrade-todo-code-evidence-cache',
             panelTitle: 'CACHE_ASYNC_GAP',
-            panelUid: 'ID: UPGRADE-TODO-PS-01B',
+            panelUid: 'ID: LIFE-NAV-PS-01B',
             diagramId: 'upgrade-todo-code-evidence-cache',
             panelClass: 'code-evidence-split-panel',
             metrics: [
@@ -162,7 +162,7 @@ export const templateConfig = {
         {
             sectionId: 'upgrade-todo-code-evidence-messaging',
             panelTitle: 'MESSAGING_PERFORMANCE',
-            panelUid: 'ID: UPGRADE-TODO-PS-01C',
+            panelUid: 'ID: LIFE-NAV-PS-01C',
             diagramId: 'upgrade-todo-code-evidence-messaging',
             panelClass: 'code-evidence-split-panel',
             metrics: [
@@ -184,7 +184,7 @@ export const templateConfig = {
     skills: {
         sectionId: 'upgrade-todo-skill-set',
         panelTitle: 'SKILL_SET',
-        panelUid: 'ID: UPGRADE-TODO-STACK',
+        panelUid: 'ID: LIFE-NAV-STACK',
         items: [
             { title: 'BACKEND CORE', stack: 'Java 21, Spring Boot 3.5, JPA, PostgreSQL, Flyway' },
             { title: 'MESSAGING', stack: 'RabbitMQ, Outbox Pattern, Async Decorator, Worker Split' },
@@ -198,7 +198,7 @@ export const templateConfig = {
     serviceSections: [
         {
             id: 'upgrade-todo-cases',
-            title: 'UPGRADE_TODO_TROUBLESHOOTING_CASES',
+            title: 'LIFE_NAVIGATION_TROUBLESHOOTING_CASES',
             navLabel: 'CASES',
             sectionLead: '대표 3건을 먼저 보고, 필요할 때 전체 Case 1~6을 확장해 깊게 읽을 수 있도록 구성했습니다.',
             recruiterBrief: {
@@ -668,11 +668,11 @@ export const templateConfig = {
     contact: {
         sectionId: 'contact',
         panelTitle: 'CONTACT',
-        panelUid: 'ID: UPGRADE-TODO-COMMS',
-        description: 'Upgrade Todo 포트폴리오 관련 문의 및 전체 문서는 아래 경로로 확인 가능합니다.',
+        panelUid: 'ID: LIFE-NAV-COMMS',
+        description: 'Life Navigation 포트폴리오 관련 문의 및 전체 문서는 아래 경로로 확인 가능합니다.',
         actions: [
             { label: 'EMAIL', href: 'mailto:yohan032yohan@gmail.com' },
-            { label: 'L_N_PROJECT_REPO', href: 'https://github.com/ramyo564/L_N_Project' },
+            { label: 'LIFE_NAVIGATION_REPO', href: 'https://github.com/ramyo564/L_N_Project' },
             { label: 'EVIDENCE_DOCS', href: './evidence/upgrade_todo/index.html' }
         ]
     },

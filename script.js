@@ -352,7 +352,7 @@ function endAnalyticsSession(reason = 'pagehide') {
     trackSelectContent({
         contentType: 'page_engagement',
         itemId: 'portfolio_page',
-        itemName: document.title || 'Upgrade Todo Portfolio',
+        itemName: document.title || 'Life Navigation Portfolio',
         sectionName: 'lifecycle',
         interactionAction: 'end',
         elementType: 'page',
@@ -374,7 +374,7 @@ function setupAnalyticsLifecycle() {
     trackSelectContent({
         contentType: 'page_engagement',
         itemId: 'portfolio_page',
-        itemName: document.title || 'Upgrade Todo Portfolio',
+        itemName: document.title || 'Life Navigation Portfolio',
         sectionName: 'lifecycle',
         interactionAction: 'start',
         elementType: 'page',
@@ -393,7 +393,7 @@ function setupAnalyticsLifecycle() {
             trackSelectContent({
                 contentType: 'page_visibility',
                 itemId: 'portfolio_page',
-                itemName: document.title || 'Upgrade Todo Portfolio',
+                itemName: document.title || 'Life Navigation Portfolio',
                 sectionName: 'lifecycle',
                 interactionAction: 'hidden',
                 elementType: 'page',
@@ -407,7 +407,7 @@ function setupAnalyticsLifecycle() {
         trackSelectContent({
             contentType: 'page_visibility',
             itemId: 'portfolio_page',
-            itemName: document.title || 'Upgrade Todo Portfolio',
+            itemName: document.title || 'Life Navigation Portfolio',
             sectionName: 'lifecycle',
             interactionAction: 'visible',
             elementType: 'page',
