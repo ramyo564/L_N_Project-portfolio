@@ -316,7 +316,6 @@
                     <a href="../../case1/after/case1-signup-response-after.png">After 응답: signup 202</a>
                     <a href="../../case1/after/case1-rabbitmq-queue-after-auth.png">After RabbitMQ Queue(auth)</a>
                 </div>
-                <p class="mini">Before RabbitMQ 캡처는 `N/A(요청 경로 동기식)` 규칙으로 허용.</p>
 
                 <h3 id="case-1-commits">Commit Trail</h3>
                 <ul>
@@ -330,7 +329,7 @@
             <section id="case-2" class="panel">
                 <span class="badge">Case 2</span>
                 <h2>JWT Claims 기반 인증 + AOP 권한게이트</h2>
-                <p class="case-summary">인증 경로의 반복 DB 조회를 줄여 쿼리 수 21→3 개선을 입증한 케이스.</p>
+                <p class="case-summary">JWT Claims와 단일 권한게이트로 대표 단일 요청 기본 권한 게이트를 3→1로 줄인 케이스.</p>
 
                 <h3 id="case-2-path">핵심 구현 코드</h3>
                 <div class="code-snippet">
@@ -396,9 +395,8 @@ public boolean checkOwnershipInDb(UUIDv7 projectId, UUIDv7 userId) {
                     <a href="../../case3/before/case3-pg_stat_idle_transaction-before.png">Before pg_stat idle in tx</a>
                     <a href="../../case3/after/case3-pg_stat_idle_transaction-after.png">After pg_stat idle in tx</a>
                     <a href="../../case3/after/case3-response-200-after.png">After 즉시 조회 200</a>
-                    <a href="../../case3/before/case3-response-403-before-NA.md">Before 403 재현 실패 N/A 기록</a>
+                    <a href="../../case3/after/case3-redis-pending-key-after.png">After Redis Pending Key</a>
                 </div>
-                <p class="mini">`403 before`는 타이밍 의존으로 재현 실패 시 N/A 허용.</p>
 
                 <h3 id="case-3-commits">Commit Trail</h3>
                 <ul>
@@ -429,9 +427,10 @@ public void createProject(CreateProjectCommand command) {
                 <h3>증거 파일</h3>
                 <div class="case-links">
                     <a href="../../case4/CASE-4.md">Case 문서: CASE-4.md</a>
-                    <a href="../../case4/LOG-EVIDENCE.md">로그 증거: LOG-EVIDENCE.md</a>
                     <a href="../../case4/before/c3/summary.txt">C3 summary.txt</a>
                     <a href="../../case4/before/c4/summary.txt">C4 summary.txt</a>
+                    <a href="../../case4/before/c3/c3-k6.png">C3 k6</a>
+                    <a href="../../case4/before/c4/c4-k6.png">C4 k6</a>
                 </div>
 
                 <h3 id="case-4-commits">Commit Trail</h3>
@@ -489,7 +488,7 @@ public void createProject(CreateProjectCommand command) {
             <section id="case-6" class="panel">
                 <span class="badge">Case 6</span>
                 <h2>통합 성능 최적화: insertWithPosition + Partial Index + Batch</h2>
-                <p class="case-summary">1000VU 기준 read/write를 통일해 원자 INSERT + 인덱스 + 배치의 결합 효과를 검증한 케이스.</p>
+                <p class="case-summary">500VU 대표 benchmark와 1000VU 상세 캡처를 함께 사용해 통합 튜닝 효과를 정리한 케이스.</p>
 
                 <h3 id="case-6-path">핵심 구현 코드</h3>
                 <div class="code-snippet">
@@ -513,9 +512,8 @@ WHERE status = 'PENDING' AND deleted_at IS NULL;</code></pre>
                     <a href="../../case6/after/case6-k6-read-1000-after.png">After k6 Read 1000</a>
                     <a href="../../case6/before/case6-k6-write-1000-before.png">Before k6 Write 1000</a>
                     <a href="../../case6/after/case6-k6-write-1000-after.png">After k6 Write 1000</a>
-                    <a href="../../case6/before/case6-pg-indexes-status-before-NA.md">Before status index N/A</a>
+                    <a href="../../case6/after/case6-pg-indexes-status-after.png">After status index</a>
                 </div>
-                <p class="mini">Before `status index(B)`는 V7 미적용 시점에서 `0 row` 또는 `N/A`가 정상.</p>
 
                 <h3 id="case-6-commits">Commit Trail</h3>
                 <ul>

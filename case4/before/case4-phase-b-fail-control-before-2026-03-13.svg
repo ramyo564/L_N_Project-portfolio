@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#111827"/>
+  <rect x="40" y="40" width="1200" height="640" rx="18" fill="#0b1220" stroke="#334155" stroke-width="2"/>
+  <text x="80" y="100" fill="#e2e8f0" font-size="34" font-family="monospace">CASE4 PHASE B FAIL/CONTROL (2026-03-13)</text>
+  <text x="80" y="145" fill="#93c5fd" font-size="24" font-family="monospace">User recovery confirmed, complete closure still held</text>
+
+  <rect x="80" y="190" width="540" height="420" rx="14" fill="#2b1220" stroke="#7f1d1d" stroke-width="2"/>
+  <text x="110" y="235" fill="#fecaca" font-size="26" font-family="monospace">FAIL (share-native=false)</text>
+  <text x="110" y="280" fill="#fca5a5" font-size="22" font-family="monospace">http_req_failed.rate: 0.0024898</text>
+  <text x="110" y="315" fill="#fca5a5" font-size="22" font-family="monospace">checks.rate: 0.9975160</text>
+  <text x="110" y="350" fill="#fca5a5" font-size="22" font-family="monospace">req/s: 651.62</text>
+  <text x="110" y="385" fill="#fca5a5" font-size="22" font-family="monospace">health: timeout</text>
+  <text x="110" y="420" fill="#fca5a5" font-size="22" font-family="monospace">nginx 499: 2350</text>
+  <text x="110" y="470" fill="#cbd5e1" font-size="20" font-family="monospace">Signal: valid failure run</text>
+
+  <rect x="660" y="190" width="540" height="420" rx="14" fill="#10281b" stroke="#166534" stroke-width="2"/>
+  <text x="690" y="235" fill="#bbf7d0" font-size="26" font-family="monospace">CONTROL (share-native=true)</text>
+  <text x="690" y="280" fill="#86efac" font-size="22" font-family="monospace">http_req_failed.rate: 0.0000000</text>
+  <text x="690" y="315" fill="#86efac" font-size="22" font-family="monospace">checks.rate: 1.0000000</text>
+  <text x="690" y="350" fill="#86efac" font-size="22" font-family="monospace">req/s: 808.62</text>
+  <text x="690" y="385" fill="#86efac" font-size="22" font-family="monospace">health: HTTP 200</text>
+  <text x="690" y="420" fill="#86efac" font-size="22" font-family="monospace">nginx 499/5xx: none</text>
+  <text x="690" y="470" fill="#fde68a" font-size="19" font-family="monospace">Signal: user path recovered</text>
+  <text x="690" y="500" fill="#fde68a" font-size="19" font-family="monospace">Residual internal Redis risk remained</text>
+
+  <text x="80" y="650" fill="#94a3b8" font-size="18" font-family="monospace">Source: 2026-03-13 compare.md fail/control recapture</text>
+</svg>

@@ -24,18 +24,18 @@
 - Storage: `NVMe SSD (PCIe 3.0)`
 
 ## 4) Script Map (Source)
-실제 구동 스크립트는 private implementation repository 기준으로 분석했습니다.
+실제 구동 스크립트 기준으로 시나리오 구조와 설정 흐름을 정리했습니다.
 
 - Write:
-  - `<private-implementation-repo>/k6/scenarios_2/test/smoke_test/mvc-write-task-subtask-fixed-user-load-test.js`
+  - `k6/scenarios_2/test/smoke_test/mvc-write-task-subtask-fixed-user-load-test.js`
 - Read:
-  - `<private-implementation-repo>/k6/scenarios_2/test/smoke_test/mvc-read-fixed-user-load-test.js`
+  - `k6/scenarios_2/test/smoke_test/mvc-read-fixed-user-load-test.js`
 - 공통 설정:
-  - `<private-implementation-repo>/k6/scenarios_2/test/utils/load-test-config.js`
-  - `<private-implementation-repo>/k6/scenarios_2/test/utils/auth.js`
-  - `<private-implementation-repo>/k6/scenarios_2/test/utils/test-utils.js`
-  - `<private-implementation-repo>/k6/scenarios_2/test/utils/test-data.js`
-  - `<private-implementation-repo>/k6/scenarios_2/test/utils/warmup.js`
+  - `k6/scenarios_2/test/utils/load-test-config.js`
+  - `k6/scenarios_2/test/utils/auth.js`
+  - `k6/scenarios_2/test/utils/test-utils.js`
+  - `k6/scenarios_2/test/utils/test-data.js`
+  - `k6/scenarios_2/test/utils/warmup.js`
 
 ## 5) Scenario Logic
 ### Write (`mvc-write-task-subtask-fixed-user-load-test.js`)

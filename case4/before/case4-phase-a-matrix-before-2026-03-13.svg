@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#0f172a"/>
+  <rect x="40" y="40" width="1200" height="640" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <text x="80" y="100" fill="#e2e8f0" font-size="34" font-family="monospace">CASE4 PHASE A SUMMARY (2026-03-13)</text>
+  <text x="80" y="145" fill="#93c5fd" font-size="24" font-family="monospace">C3/C4 matrix identifies mitigation axis under VT=true</text>
+
+  <rect x="80" y="190" width="540" height="420" rx="14" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+  <text x="110" y="235" fill="#f8fafc" font-size="26" font-family="monospace">C3 (VT=true, share=false)</text>
+  <text x="110" y="280" fill="#fca5a5" font-size="22" font-family="monospace">http_req_failed.rate: 0.0106</text>
+  <text x="110" y="315" fill="#fca5a5" font-size="22" font-family="monospace">checks.rate: 0.9908</text>
+  <text x="110" y="350" fill="#fca5a5" font-size="22" font-family="monospace">req/s: 442.77</text>
+  <text x="110" y="385" fill="#fca5a5" font-size="22" font-family="monospace">method_error_count: 524</text>
+  <text x="110" y="420" fill="#fca5a5" font-size="22" font-family="monospace">redis_conn_failure_count: 0</text>
+  <text x="110" y="470" fill="#cbd5e1" font-size="20" font-family="monospace">Signal: user-facing failure observed</text>
+
+  <rect x="660" y="190" width="540" height="420" rx="14" fill="#1f2937" stroke="#475569" stroke-width="2"/>
+  <text x="690" y="235" fill="#f8fafc" font-size="26" font-family="monospace">C4 (VT=true, share=true)</text>
+  <text x="690" y="280" fill="#86efac" font-size="22" font-family="monospace">http_req_failed.rate: 0.0000</text>
+  <text x="690" y="315" fill="#86efac" font-size="22" font-family="monospace">checks.rate: 1.0000</text>
+  <text x="690" y="350" fill="#86efac" font-size="22" font-family="monospace">req/s: 804.68</text>
+  <text x="690" y="385" fill="#86efac" font-size="22" font-family="monospace">method_error_count: 0</text>
+  <text x="690" y="420" fill="#fde68a" font-size="22" font-family="monospace">redis_conn_failure_count: 2448</text>
+  <text x="690" y="470" fill="#cbd5e1" font-size="20" font-family="monospace">Signal: user impact recovered, residual internal risk</text>
+
+  <text x="80" y="650" fill="#94a3b8" font-size="18" font-family="monospace">Source: case4/before/c3|c4 summary and raw matrix evidence</text>
+</svg>

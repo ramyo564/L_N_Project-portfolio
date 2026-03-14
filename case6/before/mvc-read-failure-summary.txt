@@ -1,9 +1,0 @@
-╔══════════════════════════════════════════════════════════════╗
-║                    📊 FAILURE SUMMARY                        ║
-╠══════════════════════════════════════════════════════════════╣
-║  HTTP 요청 실패: ${String(httpReqFailed).padStart(8)}건 / ${String(httpReqTotal).padStart(10)}건 (${httpFailRate}%)║
-║  Check 실패:     ${String(checksFailed).padStart(8)}건 / ${String(checksTotal).padStart(10)}건 (${checksFailRate}%)║
-╠══════════════════════════════════════════════════════════════╣
-║  Check 상세:                                                 ║
-║    (실패 없음)                                                     ║
-╚══════════════════════════════════════════════════════════════╝

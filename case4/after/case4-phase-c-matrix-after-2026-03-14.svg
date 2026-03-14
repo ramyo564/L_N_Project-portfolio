@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#0b1220"/>
+  <rect x="40" y="40" width="1200" height="640" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <text x="80" y="95" fill="#e2e8f0" font-size="34" font-family="monospace">CASE4 PHASE C 2x2 MATRIX (2026-03-14)</text>
+  <text x="80" y="135" fill="#93c5fd" font-size="23" font-family="monospace">Latest-branch closure run with vt/redis combinations</text>
+
+  <rect x="80" y="170" width="1120" height="70" rx="10" fill="#1f2937"/>
+  <text x="105" y="215" fill="#cbd5e1" font-size="22" font-family="monospace">CASE_ID</text>
+  <text x="550" y="215" fill="#cbd5e1" font-size="22" font-family="monospace">http_req_failed.rate</text>
+  <text x="840" y="215" fill="#cbd5e1" font-size="22" font-family="monospace">checks.rate</text>
+  <text x="1040" y="215" fill="#cbd5e1" font-size="22" font-family="monospace">health</text>
+
+  <rect x="80" y="250" width="1120" height="70" rx="10" fill="#0f172a"/>
+  <text x="105" y="295" fill="#e2e8f0" font-size="20" font-family="monospace">after-vt-true-redis-true</text>
+  <text x="575" y="295" fill="#86efac" font-size="20" font-family="monospace">0</text>
+  <text x="860" y="295" fill="#86efac" font-size="20" font-family="monospace">1</text>
+  <text x="1040" y="295" fill="#86efac" font-size="20" font-family="monospace">HTTP 200</text>
+
+  <rect x="80" y="330" width="1120" height="70" rx="10" fill="#0f172a"/>
+  <text x="105" y="375" fill="#e2e8f0" font-size="20" font-family="monospace">after-vt-true-redis-false</text>
+  <text x="575" y="375" fill="#86efac" font-size="20" font-family="monospace">0</text>
+  <text x="860" y="375" fill="#86efac" font-size="20" font-family="monospace">1</text>
+  <text x="1040" y="375" fill="#86efac" font-size="20" font-family="monospace">HTTP 200</text>
+
+  <rect x="80" y="410" width="1120" height="70" rx="10" fill="#0f172a"/>
+  <text x="105" y="455" fill="#e2e8f0" font-size="20" font-family="monospace">after-vt-false-redis-true</text>
+  <text x="575" y="455" fill="#fde68a" font-size="20" font-family="monospace">0.0000011747</text>
+  <text x="860" y="455" fill="#fde68a" font-size="20" font-family="monospace">0.9999986543</text>
+  <text x="1040" y="455" fill="#86efac" font-size="20" font-family="monospace">HTTP 200</text>
+
+  <rect x="80" y="490" width="1120" height="70" rx="10" fill="#0f172a"/>
+  <text x="105" y="535" fill="#e2e8f0" font-size="20" font-family="monospace">after-vt-false-redis-false</text>
+  <text x="575" y="535" fill="#86efac" font-size="20" font-family="monospace">0</text>
+  <text x="860" y="535" fill="#86efac" font-size="20" font-family="monospace">1</text>
+  <text x="1040" y="535" fill="#86efac" font-size="20" font-family="monospace">HTTP 200</text>
+
+  <text x="80" y="615" fill="#86efac" font-size="22" font-family="monospace">app-key NO_MATCH: 12/12 | health 200: 4/4</text>
+  <text x="80" y="650" fill="#94a3b8" font-size="18" font-family="monospace">Source: case4-root-cause-2026-03-14/after/compare.md</text>
+</svg>

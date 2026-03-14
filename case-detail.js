@@ -707,7 +707,7 @@ function normalizeEvidenceItems(items) {
         }));
 }
 
-function isCaseRunbookLink(href) {
+function isCaseDetailLink(href) {
     return /(?:^|\/)case\d+\/CASE-\d+\.md$/i.test(String(href || '').trim());
 }
 
@@ -916,8 +916,8 @@ function buildCaseList(root, cards) {
 function buildCaseDetail(root, cards, selected) {
     const { caseNumber, groupTitle, card } = selected;
     const cardLinks = Array.isArray(card?.links) ? card.links.filter((item) => item?.href) : [];
-    const runbookLink = cardLinks.find((item) => isCaseRunbookLink(item.href)) || null;
-    const referenceLinks = cardLinks.filter((item) => !isCaseRunbookLink(item.href));
+    const caseDocLink = cardLinks.find((item) => isCaseDetailLink(item.href)) || null;
+    const referenceLinks = cardLinks.filter((item) => !isCaseDetailLink(item.href));
 
     const summaryProblem = splitNarrativeLines(card?.problem);
     const summaryCause = splitNarrativeLines(card?.cause);
@@ -947,18 +947,18 @@ function buildCaseDetail(root, cards, selected) {
     document.title = `Case ${caseNumber} Review | Yohan Portfolio`;
 
     const referenceButtons = [];
-    if (runbookLink) {
+    if (caseDocLink) {
         referenceButtons.push(`
             <a
-                class="case-link-btn case-link-btn-runbook"
-                href="${escapeHtml(runbookLink.href)}"
+                class="case-link-btn case-link-btn-detail"
+                href="${escapeHtml(caseDocLink.href)}"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-track-kind="traceability_link"
-                data-link-label="RUNBOOK_MD"
-                data-link-role="runbook"
+                data-link-label="CASE_MD"
+                data-link-role="detail"
             >
-                RUNBOOK_MD
+                CASE_MD
             </a>
         `);
     }

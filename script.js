@@ -182,7 +182,7 @@ function inferDestinationPageType(destinationUrl) {
     return analyticsSession.pageType;
 }
 
-function parseCaseRunbookNumber(href) {
+function parseCaseDetailNumber(href) {
     const text = String(href || '').trim();
     const match = text.match(/(?:^|\/)case(\d+)\/CASE-\d+\.md$/i);
     if (!match) {
@@ -193,7 +193,7 @@ function parseCaseRunbookNumber(href) {
 }
 
 function toCaseReviewLink(href) {
-    const caseNumber = parseCaseRunbookNumber(href);
+    const caseNumber = parseCaseDetailNumber(href);
     if (!caseNumber) {
         return String(href || '');
     }

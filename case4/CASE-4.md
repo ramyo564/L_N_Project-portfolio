@@ -1,91 +1,110 @@
-# Case 4. VT + Redis Shared 설정 조합 매트릭스 (C1~C4)
+# Case 4. C3/C4 완화축 식별에서 2x2 재검증 complete closure까지
 
-> 기준일: 2026-02-27  
-> 기준 데이터: `case4/before/c1~c4/*` + Grafana 캡처(`k6/postgres/redis/rmq`)
+> 기준일: 2026-03-14
+> canonical status: `complete (latest-branch verification complete)`
+> timeline scope: `2026-03-13` + `2026-03-14`
 
----
+## 요약
 
-## 0) 최종 결론 한 줄
+Case4는 한 번에 끝난 before/after 케이스가 아니라 3단계로 닫혔다.
 
-현재 데이터 기준에서 Case 4는 **`VT=true + share=false(C3)`에서 사용자 영향이 가장 크고, `share=true(C4)`에서 회복되는 설정 민감형 경합**으로 정리한다.
+1. `2026-03-13` C1~C4 매트릭스에서 `C3(VT=true, share=false)` 대비 `C4(VT=true, share=true)`의 완화축을 먼저 식별했다.
+2. 같은 날 fail/control 재수집으로 사용자 지표 회복은 확인했지만, 내부 Redis 예외 잔존으로 complete를 보류했다.
+3. `2026-03-14` 최신 브랜치 2x2 matrix(vt/redis) + 코드 경로 검증에서 장애 시그니처 소거를 확인하고 complete로 종료했다.
 
----
+## Phase Timeline
 
-## 1) 증거 범위 (이번 문서에서 채택)
+### Phase A. C1~C4 조합 비교 (2026-03-13)
 
-본문 필수:
+| Case | VT | share-native | `http_req_failed.rate` | `checks.rate` | req/s | method_error | redis_conn_failure |
+|---|---|---|---:|---:|---:|---:|---:|
+| C3 | true | false | 0.0106 | 0.9908 | 442.77 | 524 | 0 |
+| C4 | true | true | 0.0000 | 1.0000 | 804.68 | 0 | 2448 |
 
-1. `case4/before/c3/summary.txt`
-2. `case4/before/c3/mvc-task-subtask-fixed-user-load-test-summary.json`
-3. `case4/before/c3/root-cause.txt`
-4. `case4/before/c3/method-error-top30.log`
-5. `case4/before/c4/summary.txt`
-6. `case4/before/c4/mvc-task-subtask-fixed-user-load-test-summary.json`
-7. `case4/before/c4/root-cause.txt`
-8. `case4/before/c3/c3-k6.png`, `c3-postgres.png`, `c3-redis.png`, `c3-rmq.png`
-9. `case4/before/c4/c4-k6.png`, `c4-postgres.png`, `c4-redis.png`, `c4-rmq.png`
+해석:
 
-보조:
+- `C3 -> C4`는 사용자 영향 지표 관점에서 분명한 완화축이다.
+- 다만 C4에도 Redis 예외 흔적이 남아, 이 시점 claim은 complete가 아니라 mitigation이다.
 
-1. `case4/before/c1/*` (baseline)
-2. `case4/before/c2/*` (중간 상태)
-3. `case4/before/c*/c*-rmq-web.png` (참고용, 본문 필수 아님)
+### Phase B. fail/control 재수집 (2026-03-13)
 
-포트폴리오 UI 동기화 메모:
+| Run | share-native-connection | `http_req_failed.rate` | `checks.rate` | req/s | health probe | nginx error |
+|---|---|---:|---:|---:|---|---|
+| fail | false | 0.0024898 | 0.9975160 | 651.62 | timeout | 499 다수(2350) |
+| control | true | 0.0000000 | 1.0000000 | 808.62 | HTTP 200 | 499/5xx 없음 |
 
-1. 카드/팝업에는 비교축이 명확한 `C3`, `C4` 대표 이미지를 우선 노출한다.
-2. `C1`, `C2` 원본 증거는 본 문서와 `case4/before/c1~c2/*`에서 보조 근거로 유지한다.
+해석:
 
----
+- 사용자 경로는 회복됐지만 control 내부 Redis 예외가 남아 complete 보류가 맞았다.
+- 이 단계는 "회복 확인" 단계다.
 
-## 2) C1~C4 결과 요약
+### Phase C. 최신 브랜치 2x2 matrix closure (2026-03-14)
 
-| Case | VT | Share | HTTP req/s | p95 (ms) | avg (ms) | `http_req_failed.rate` | `checks.rate` | `method_error_count` | `redis_conn_failure_count` |
-|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| C1 | false | false | 932.33 | 269.39 | 130.67 | 0.0000 | 1.0000 | 0 | 0 |
-| C2 | false | true  | 793.10 | 495.21 | 229.91 | 0.0003 | 0.9997 | 0 | 3044 |
-| C3 | true  | false | 442.77 | 243.33 | 734.37 | 0.0106 | 0.9908 | 524 | 0 |
-| C4 | true  | true  | 804.68 | 468.10 | 218.56 | 0.0000 | 1.0000 | 0 | 2448 |
+| CASE_ID | vt | redis share-native | `http_req_failed.rate` | `checks.rate` | health |
+|---|---:|---:|---:|---:|---|
+| after-vt-true-redis-true | true | true | 0 | 1 | HTTP/1.1 200 |
+| after-vt-true-redis-false | true | false | 0 | 1 | HTTP/1.1 200 |
+| after-vt-false-redis-true | false | true | 0.0000011747 | 0.9999986543 | HTTP/1.1 200 |
+| after-vt-false-redis-false | false | false | 0 | 1 | HTTP/1.1 200 |
 
-핵심 비교축:
+추가 검증:
 
-1. `C3 -> C4`에서 `method_error_count`가 `524 -> 0`, `http_req_failed.rate`가 `1.06% -> 0%`로 회복
-2. `C1`은 안정 baseline
-3. `C2/C4`의 `RedisConnectionFailureException` 카운트는 잠재 리스크로 분류
+- `api/worker/nginx app-key NO_MATCH`: 12/12
+- 과거 장애 시그니처(`TaskRejectedException`, `AsyncExecutionInterceptor`, `RedisConnectionFailureException`, `Pool exhausted`)는 최신 matrix에서 재검출되지 않음
+- 공용 `CacheEvictionListener` 경로 제거 + 도메인 분리 리스너 경로로 전환
 
----
+## Final Verdict (2026-03-14)
 
-## 3) 해석 규칙 (과장 방지)
+- 판정: `complete`
+- 문구 기준: `최신 브랜치 기준 Case4 완전해결`
+- 제한: `모든 미래 배포 영구 0 오류 보장` 같은 과잉 단정은 금지
 
-1. 사용자 영향 평가는 `method_error_count`, `http_req_failed.rate`, `checks.rate`, `req/s`를 우선한다.
-2. `p95` 단독으로는 결론을 내리지 않는다. (실패 구간/극단값 영향으로 왜곡 가능)
-3. 예외 로그(`root-cause.txt`)는 원인 "후보" 신호로 쓰고, 사용자 영향 지표와 함께 제시한다.
-4. `mvc-write-failure-summary.txt`의 "HTTP 요청 실패 100%" 문구는 본문 수치 근거로 사용하지 않는다.
+## Claim Guardrail
 
----
+- 허용:
+  - `2x2 matrix 재검증에서 사용자/내부 시그니처 동시 안정`
+  - `2026-03-13 완화 -> 2026-03-14 complete closure`
+- 금지:
+  - `단일 변수 하나로 모든 원인 100% 증명`
+  - `모든 환경에서 영구 무결점 보장`
 
-## 4) 포트폴리오 본문용 서술 (복붙용)
+## Portfolio Evidence Layout
 
 ```text
-In the C1~C4 configuration matrix test (2026-02-27), the highest user impact was observed in C3 (VT=true, share=false): method_error_count=524, http_req_failed.rate=1.06%, and throughput drop to 442.77 req/s.
-Under the same virtual-thread condition, C4 (share=true) recovered user-facing stability (method_error_count=0, http_req_failed.rate=0%, checks.rate=1.0) with throughput up to 804.68 req/s.
-Based on this on/off contrast, Case 4 is concluded as configuration-sensitive contention under high load, and the final mitigation axis is share=false -> share=true within VT=true.
+case4/
+  before/
+    c1~c4/ (raw archive)
+    case4-phase-a-matrix-before-2026-03-13.svg
+    case4-phase-b-fail-control-before-2026-03-13.svg
+  after/
+    case4-phase-c-matrix-after-2026-03-14.svg
+    case4-phase-c-codepath-after-2026-03-14.svg
+    web-dashboard-img/after-vt-*.png
+  case4-evidence-manifest.md
 ```
 
----
+## Web Dashboard Policy
 
-## 5) 이미지 사용 규칙
+- k6 웹 대시보드 캡처는 Case4에서 `보조증거`다.
+- 따라서 before/after 강제 페어가 아니라 `after-only`로 유지한다.
+- complete 판정 수치의 정본은 `실패율 요약표`, `체크 성공률`, `오류 로그 미검출`, `헬스체크 정상 응답`이다.
 
-1. 본문 필수 이미지는 `c*-k6`, `c*-postgres`, `c*-redis`, `c*-rmq` 4종으로 고정한다.
-2. `c*-rmq-web`는 부록/참고로만 유지한다.
-3. `c2-redis.png` 아래에는 시간대 주석을 붙인다.  
-   `주석: Grafana/브라우저 시간대(TZ) 차이로 다른 패널과 시각 표기가 다르게 보일 수 있음.`
+## 용어 빠른 해석 (서류 검토자용)
 
----
+- 실패율 요약표: 부하 테스트에서 실패한 요청 비율을 보여주는 결과표
+- 체크 성공률: 테스트 검증 항목이 얼마나 통과했는지 보여주는 비율
+- 오류 로그 미검출: 과거 장애 때 보이던 핵심 오류 문구가 재등장하지 않음
+- 헬스체크 정상 응답: 서버가 기본 상태 점검 요청에 정상(`HTTP 200`)으로 응답함
 
-## 6) 최종 상태
+## Source of Truth
 
-- [x] Case 4 본문을 `C3 vs C4` 비교축으로 작성
-- [x] `c1/c2`를 baseline/보조 근거로 배치
-- [x] `rmq-web` 이미지를 본문 필수 목록에서 제외
-- [x] `c2-redis` 시간대(TZ) 주석 규칙 반영
+1. `../../Z-manage_local_docs/projects/life-navigation/evidence/assets/case4/README.md`
+2. `../../Z-manage_local_docs/projects/life-navigation/evidence/assets/case4/case4-logic-flow.md`
+3. `../../Z-manage_local_docs/projects/life-navigation/evidence/assets/case4/case4-final-status-2026-03-14.md`
+4. `../../Z-manage_local_docs/projects/life-navigation/evidence/assets/case4-root-cause-2026-03-13/compare.md`
+5. `../../Z-manage_local_docs/projects/life-navigation/evidence/assets/case4-root-cause-2026-03-14/after/compare.md`
+6. `./case4-evidence-manifest.md`
+
+## 해석
+
+Case4의 공개 설명은 "C3/C4 완화축 발견"에서 끝내지 않고, "latest-branch 2x2 재검증 + 코드 경로 소거 확인으로 complete 종료"까지 포함해야 문맥이 흔들리지 않는다.
