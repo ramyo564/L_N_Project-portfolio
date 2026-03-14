@@ -1438,7 +1438,7 @@ function createServiceCard(card, sectionConfig) {
     const description = document.createElement('p');
     description.className = 'card-desc';
     const overviewText = card.overview ?? card.description ?? '';
-    description.textContent = extractFirstLineSummary(overviewText) || overviewText;
+    description.textContent = overviewText;
 
     const recruiterSummary = createRecruiterCardSummary(card);
     const stackLine = createMetaLine('TECH_DETAIL', card.stackSummary);

@@ -208,7 +208,7 @@ export const templateConfig = {
                     {
                         id: 'Case 1',
                         anchorId: 'upgrade-todo-case-1',
-                        title: '회원가입 트랜잭션 안정화',
+                        title: 'UUIDv7 merge 제거와 회원가입 트랜잭션 안정화',
                         problem: 'UUID 사전할당 경로에서 불필요한 SELECT+INSERT와 락 대기가 누적',
                         action: 'Persistable isNew + Outbox 비동기 분리로 저장/후속처리 결합 해소',
                         impact: 'merge 경로 제거, 회원가입 응답을 202 Accepted + X-User-Id 흐름으로 전환'
@@ -216,7 +216,7 @@ export const templateConfig = {
                     {
                         id: 'Case 2',
                         anchorId: 'upgrade-todo-case-2',
-                        title: '인증 경로 쿼리 축소',
+                        title: '인증/권한 경로 최적화 (3→1)',
                         problem: 'JWT 인증/권한 검증에서 사용자·소유권 조회가 반복',
                         action: 'JWT Claims + AOP 단일 권한게이트로 검증 경로 수렴',
                         impact: '대표 단일 요청 기본 게이트 3 -> 1, JWT Claims + AOP 게이트'
@@ -232,7 +232,7 @@ export const templateConfig = {
                     {
                         id: 'Case 4',
                         anchorId: 'upgrade-todo-case-4',
-                        title: 'Case4 complete closure',
+                        title: 'VT/Redis 설정 조합 재검증 및 closure',
                         problem: '초기 C3/C4 완화 근거만으로는 최신 브랜치 complete 판정을 내리기 어려웠음',
                         action: '2026-03-13 재수집 + 2026-03-14 vt/redis 2x2 matrix + 코드 경로 검증으로 closure 증거 체인 고정',
                         impact: '2x2 재검증 4개 케이스에서 서버 기본 응답 정상, 오류 로그 미검출, 실패율 거의 0으로 수렴'
@@ -240,7 +240,7 @@ export const templateConfig = {
                     {
                         id: 'Case 5',
                         anchorId: 'upgrade-todo-case-5',
-                        title: '메시징 블로킹 제거',
+                        title: '비동기 메시징 고도화 (발행 블로킹 제거)',
                         problem: '요청 스레드가 RabbitMQ 동기 발행 대기를 직접 부담',
                         action: 'Async publisher + 전용 executor로 발행 경로 분리',
                         impact: 'http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms'
@@ -248,7 +248,7 @@ export const templateConfig = {
                     {
                         id: 'Case 6',
                         anchorId: 'upgrade-todo-case-6',
-                        title: '배치 처리량 최적화',
+                        title: '통합 성능 최적화 (배치/캐시/트랜잭션)',
                         problem: '배치 캐시/트랜잭션 경계가 분산되어 처리량이 제한',
                         action: '배치 단위 트랜잭션과 캐시 경계를 재정렬해 lock/flush 비용 감소',
                         impact: '고부하 구간 처리량 증대 및 tail latency 안정화'

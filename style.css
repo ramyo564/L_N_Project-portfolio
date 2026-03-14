@@ -230,19 +230,19 @@ body.modal-open {
     align-items: stretch;
 }
 
-.top-panels > .panel {
+.top-panels>.panel {
     min-width: 0;
 }
 
-.top-panels > .panel:only-child {
+.top-panels>.panel:only-child {
     grid-column: 1 / -1;
 }
 
-.top-panels > .code-evidence-summary-panel {
+.top-panels>.code-evidence-summary-panel {
     grid-column: 1 / -1;
 }
 
-.top-panels > .code-evidence-split-panel:nth-child(4) {
+.top-panels>.code-evidence-split-panel:nth-child(4) {
     grid-column: 1 / -1;
 }
 
@@ -451,7 +451,7 @@ body.modal-open {
     background: rgba(88, 166, 255, 0.72);
 }
 
-.hero-message p + p {
+.hero-message p+p {
     margin-top: 0.42rem;
 }
 
@@ -925,10 +925,7 @@ body.modal-open {
     border-radius: 8px;
     padding: 0.54rem 0.66rem;
     background: rgba(88, 166, 255, 0.06);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    white-space: pre-line;
 }
 
 .card-recruiter-summary {
@@ -2120,7 +2117,7 @@ body.modal-open {
         gap: 1rem;
     }
 
-    .top-panels > .code-evidence-split-panel:nth-child(4) {
+    .top-panels>.code-evidence-split-panel:nth-child(4) {
         grid-column: auto;
     }
 
