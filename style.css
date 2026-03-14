@@ -695,6 +695,17 @@ body.modal-open {
     padding: 0.58rem 0.64rem;
     display: grid;
     gap: 0.28rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.section-recruiter-card[data-anchor-id] {
+    cursor: pointer;
+}
+
+.section-recruiter-card[data-anchor-id]:hover {
+    transform: translateY(-2px);
+    border-color: rgba(88, 166, 255, 0.65);
+    background: rgba(88, 166, 255, 0.12);
 }
 
 .section-recruiter-card-id {

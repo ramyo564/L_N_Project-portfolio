@@ -1038,6 +1038,25 @@ function createSectionRecruiterBrief(sectionConfig) {
             card.className = 'section-recruiter-card';
             if (item.anchorId) {
                 card.setAttribute('data-anchor-id', item.anchorId);
+                card.addEventListener('click', () => {
+                    const targetId = item.anchorId.replace(/^#/, '');
+                    ensureCaseCardVisible(targetId);
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        history.pushState(null, '', `#${targetId}`);
+                    }
+                    trackSelectContent({
+                        contentType: 'recruiter_quick_brief_card',
+                        itemId: item.id || 'unknown_case',
+                        itemName: item.title || 'unknown_case',
+                        sectionName: 'recruiter_quick_brief',
+                        interactionAction: 'click_card',
+                        elementType: 'article',
+                        elementLabel: item.id || 'unknown_case',
+                        linkUrl: `#${targetId}`
+                    });
+                });
             }
 
             const idLine = document.createElement('p');
