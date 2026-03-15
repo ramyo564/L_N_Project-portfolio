@@ -1,4 +1,63 @@
 export const diagrams = {
+    'architecture': `
+            graph LR
+            subgraph Client [Client]
+                Browser[Web Browser]
+            end
+
+            subgraph Edge [Edge Layer]
+                CDN[Cloudflare]
+                LB[Nginx LB]
+            end
+
+            subgraph Spring [Spring Backend]
+                API[Task API]
+                AUTH[Auth Verify]
+                WORKER[Task Worker Listener]
+                EVICT[Cache Eviction Listener]
+            end
+
+            subgraph AI [FastAPI AI Service]
+                FAPI[Analyze and Feedback API]
+                ANALYSIS[AnalysisService]
+                RECO[RecommendationEngine]
+            end
+
+            subgraph Data [Data Layer]
+                PG[(PostgreSQL)]
+                REDIS[(Redis)]
+                MQ((RabbitMQ todo.exchange))
+                QDRANT[(Qdrant)]
+                LLM[External LLM API]
+            end
+
+            Browser -->|HTTPS| CDN
+            CDN --> LB
+            LB -->|/api| API
+            LB -->|/api/v1/ai| FAPI
+
+            API --> AUTH
+            API --> REDIS
+            API --> MQ
+            API --> PG
+            MQ -->|task events| WORKER
+            WORKER --> PG
+            WORKER --> EVICT
+            EVICT --> REDIS
+
+            FAPI -->|verify access token| AUTH
+            FAPI --> ANALYSIS
+            ANALYSIS --> REDIS
+            ANALYSIS --> RECO
+            RECO --> QDRANT
+            RECO --> LLM
+            FAPI -->|create selected tasks| API
+
+            classDef default fill:#161b22,stroke:#30363d,color:#c9d1d9
+            classDef accent fill:#161b22,stroke:#58a6ff,color:#58a6ff
+            class Browser,API,FAPI,WORKER accent
+        `,
+
     'upgrade-todo-problem-overview': `
         graph LR
         Resume[Resume Life Navigation Section] --> SelectOne[Select One Bottleneck]

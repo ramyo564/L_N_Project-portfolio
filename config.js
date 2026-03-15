@@ -10,26 +10,26 @@ export const templateConfig = {
         sectionId: 'upgrade-todo-problem-solving',
         panelTitle: 'LIFE_NAVIGATION_PROBLEM_SOLVING_OVERVIEW',
         panelUid: 'ID: LIFE-NAV-PS-00',
-        diagramId: 'upgrade-todo-problem-overview',
-        headline: '500VU 기준 핵심 성능 개선',
+        diagramId: 'architecture',
+        headline: '성능 병목 재현 및 단계적 아키텍처 튜닝을 통한 고부하 처리 역량 입증',
         headlineItems: [
-            'WRITE p95: 1.9s -> 126ms',
-            'READ p95: 975ms -> 141ms',
-            'READ RPS: 972 -> 3680',
-            'WRITE RPS: 373 -> 916'
+            'Reliability: http_req_failed 0.93% → 0% (Failed Rate Zero)',
+            'Throughput: Read RPS 279%↑, Write RPS 145%↑ 달성',
+            'Latency: Write p95 1.9s → 126ms (15배 개선)',
+            'Baseline: 500VU 고부하 환경 실측 증거 기반'
         ],
         summaryRows: [
             {
                 label: '문제',
-                value: '고부하에서 인증/권한 쿼리, 메시지 발행 블로킹, 캐시·트랜잭션 경계 이슈가 동시에 병목으로 작동'
+                value: '비즈니스 로직 확장 시 고부하에서 인증/권한 쿼리, 메시지 발행 블로킹 등 복합적 병목 발생'
             },
             {
                 label: '해결',
-                value: '병목을 6개 케이스로 분해해 인증 중복조회 제거, 비동기 발행 분리, DB 경로 튜닝을 순차 적용'
+                value: '병목을 6개 케이스로 분해: Spring Hexagonal 구조를 활용한 비동기 발행 분리 및 DB 경로 튜닝'
             },
             {
                 label: '결과',
-                value: '대표 요청 권한 게이트 3->1, http_req_failed.rate 0.93%->0%, 읽기/쓰기 RPS 대폭 개선을 k6·Grafana·로그로 교차 검증'
+                value: '500VU 고부하 환경에서 Failed Rate 0% 및 주요 지표 15배 개선, 코드 단위의 기술적 근거 확보'
             }
         ],
         kpiCards: [
@@ -200,10 +200,14 @@ export const templateConfig = {
             id: 'upgrade-todo-cases',
             title: 'LIFE_NAVIGATION_TROUBLESHOOTING_CASES',
             navLabel: 'CASES',
-            sectionLead: '대표 3건을 먼저 보고, 필요할 때 전체 Case 1~6을 확장해 깊게 읽을 수 있도록 구성했습니다.',
+            sectionLead: 'Case 1~6을 1분 요약페이지와 아키텍처, 깃허브 페이지로 구성했습니다',
             recruiterBrief: {
-                kicker: 'RECRUITER_QUICK_BRIEF',
+                kicker: 'QUICK_BRIEF',
                 title: '1분 요약으로 먼저 보는 핵심 변화',
+                actions: [
+                    { label: 'ARCHITECTURE_PAGE', href: 'https://ramyo564.github.io/L_N_Project/', variant: 'primary' },
+                    { label: 'GITHUB_REPO', href: 'https://github.com/ramyo564/L_N_Project', variant: 'secondary' }
+                ],
                 cases: [
                     {
                         id: 'Case 1',
@@ -252,6 +256,26 @@ export const templateConfig = {
                         problem: '배치 캐시/트랜잭션 경계가 분산되어 처리량이 제한',
                         action: '배치 단위 트랜잭션과 캐시 경계를 재정렬해 lock/flush 비용 감소',
                         impact: '고부하 구간 처리량 증대 및 tail latency 안정화'
+                    },
+                    {
+                        id: 'Architecture',
+                        title: '시스템 전체 아키텍처 및 설계 의도',
+                        problem: '프로젝트의 전체적인 서비스 구조와 레이어별 설계 의도를 파악하기 위해 아키텍처 페이지로 이동합니다.',
+                        action: '아키텍처 대시보드 버튼 클릭',
+                        impact: '전체 컴포넌트 간의 통신 흐름과 기술 결정 근거를 시각화하여 확인 가능',
+                        links: [
+                            { label: 'ARCHITECTURE_PAGE_OPEN', href: 'https://ramyo564.github.io/L_N_Project/' }
+                        ]
+                    },
+                    {
+                        id: 'Git repo',
+                        title: '기술 상세 구현 및 코드 베이스',
+                        problem: '실제 구현된 코드와 상세 기술 문서를 확인하기 위해 깃허브 레포지토리로 이동합니다.',
+                        action: '깃허브 레포지토리 버튼 클릭',
+                        impact: '전체 소스 코드와 커밋 히스토리, 기술 Wiki 확인 가능',
+                        links: [
+                            { label: 'GITHUB_REPO_OPEN', href: 'https://github.com/ramyo564/L_N_Project' }
+                        ]
                     }
                 ]
             },
@@ -688,6 +712,8 @@ export const templateConfig = {
         panelUid: 'ID: LIFE-NAV-COMMS',
         description: 'Life Navigation 포트폴리오 관련 문의 및 전체 문서는 아래 경로로 확인 가능합니다.',
         actions: [
+            { label: 'ARCHITECTURE_DEEP_DIVE', href: 'https://ramyo564.github.io/L_N_Project/', variant: 'primary' },
+            { label: 'PORTFOLIO_HUB', href: 'https://ramyo564.github.io/Portfolio/', variant: 'ghost' },
             { label: 'EMAIL', href: 'mailto:yohan032yohan@gmail.com' },
             { label: 'LIFE_NAVIGATION_REPO', href: 'https://github.com/ramyo564/L_N_Project' },
             { label: 'EVIDENCE_DOCS', href: './evidence/upgrade_todo/index.html' }

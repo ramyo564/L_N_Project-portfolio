@@ -1347,21 +1347,18 @@ body.modal-open {
 .mermaid {
     width: 100%;
     height: 100%;
-    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-code);
+    overflow: hidden;
 }
 
 .mermaid svg {
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    height: auto !important;
     display: block;
-    transform-origin: center center;
-    transition: transform 0.25s ease;
+    margin: 0 auto;
 }
 
 .graph-container:hover .mermaid svg,

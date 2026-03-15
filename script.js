@@ -996,7 +996,8 @@ function createSectionRecruiterBrief(sectionConfig) {
                 title: String(item?.title || '').trim(),
                 problem: String(item?.problem || '').trim(),
                 action: String(item?.action || '').trim(),
-                impact: String(item?.impact || '').trim()
+                impact: String(item?.impact || '').trim(),
+                links: item?.links || []
             }))
             .filter((item) => item.id || item.title || item.problem || item.action || item.impact)
         : [];
@@ -1095,12 +1096,45 @@ function createSectionRecruiterBrief(sectionConfig) {
             if (actionRow) details.appendChild(actionRow);
             if (impactRow) details.appendChild(impactRow);
 
+            // [추가] links 필드가 있으면 버튼으로 렌더링
+            if (Array.isArray(item.links)) {
+                item.links.forEach(linkInfo => {
+                    if (linkInfo.href) {
+                        const btn = document.createElement('a');
+                        btn.className = 'card-extra-btn';
+                        btn.style.display = 'block';
+                        btn.style.width = '100%';
+                        btn.style.marginTop = '0.8rem';
+                        btn.style.textAlign = 'center';
+                        btn.href = linkInfo.href;
+                        btn.target = '_blank';
+                        btn.rel = 'noopener noreferrer';
+                        btn.textContent = linkInfo.label || 'GO TO PAGE';
+                        // GTM 추적 추가
+                        btn.addEventListener('click', () => {
+                            trackSelectContent({
+                                contentType: 'recruiter_brief_link',
+                                itemId: item.id || 'brief_case',
+                                itemName: item.title || 'Brief Case',
+                                sectionName: 'recruiter_brief',
+                                interactionAction: 'open_link',
+                                elementType: 'link',
+                                elementLabel: linkInfo.label || 'LINK',
+                                linkUrl: linkInfo.href
+                            });
+                        });
+                        details.appendChild(btn);
+                    }
+                });
+            }
+
             if (item.anchorId) {
                 const gotoBtn = document.createElement('button');
                 gotoBtn.className = 'card-extra-btn';
                 gotoBtn.style.marginTop = '0.8rem';
                 gotoBtn.style.width = '100%';
                 gotoBtn.textContent = 'GO_TO_FULL_PROBLEM_SOLVING';
+
                 gotoBtn.addEventListener('click', (e) => {                    e.stopPropagation();
                     const targetId = item.anchorId.replace(/^#/, '');
                     revealHashTarget(targetId, 'recruiter_card_goto');
