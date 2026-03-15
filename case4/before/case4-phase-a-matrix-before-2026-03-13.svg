@@ -20,7 +20,8 @@
   <text x="690" y="350" fill="#86efac" font-size="22" font-family="monospace">req/s: 804.68</text>
   <text x="690" y="385" fill="#86efac" font-size="22" font-family="monospace">method_error_count: 0</text>
   <text x="690" y="420" fill="#fde68a" font-size="22" font-family="monospace">redis_conn_failure_count: 2448</text>
-  <text x="690" y="470" fill="#cbd5e1" font-size="20" font-family="monospace">Signal: user impact recovered, residual internal risk</text>
+  <text x="690" y="470" fill="#cbd5e1" font-size="20" font-family="monospace">Signal: user impact recovered,</text>
+  <text x="690" y="500" fill="#cbd5e1" font-size="20" font-family="monospace">residual internal risk</text>
 
   <text x="80" y="650" fill="#94a3b8" font-size="18" font-family="monospace">Source: case4/before/c3|c4 summary and raw matrix evidence</text>
 </svg>

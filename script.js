@@ -1470,6 +1470,12 @@ function createServiceCard(card, sectionConfig) {
     if (subtitleText) {
         content.append(subtitle);
     }
+    if (card.businessImpact) {
+        const impact = document.createElement('p');
+        impact.className = 'card-business-impact';
+        impact.innerHTML = '<strong>🎯 비즈니스 임팩트:</strong> ' + card.businessImpact;
+        content.append(impact);
+    }
     content.append(description);
     if (recruiterSummary) {
         content.append(recruiterSummary);
@@ -3199,7 +3205,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!target) {
                 return;
             }
-            target.scrollIntoView({ block: 'start' });
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            target.classList.remove('target-highlight');
+            void target.offsetWidth; // trigger reflow
+            target.classList.add('target-highlight');
+            setTimeout(() => target.classList.remove('target-highlight'), 1200);
+
             const showcaseId = target.closest('.service-section')?.id || '';
             trackSelectContent({
                 contentType: 'case_showcase_reveal',
