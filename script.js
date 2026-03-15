@@ -527,7 +527,6 @@ function setSystemInfo() {
 }
 
 let openK6OverviewModal = null;
-let caseShowcaseControllers = [];
 
 function renderHero() {
     const hero = templateConfig.hero ?? {};
@@ -1037,27 +1036,12 @@ function createSectionRecruiterBrief(sectionConfig) {
             const card = document.createElement('article');
             card.className = 'section-recruiter-card';
             if (item.anchorId) {
-                card.setAttribute('data-anchor-id', item.anchorId);
-                card.addEventListener('click', () => {
-                    const targetId = item.anchorId.replace(/^#/, '');
-                    ensureCaseCardVisible(targetId);
-                    const targetEl = document.getElementById(targetId);
-                    if (targetEl) {
-                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        history.pushState(null, '', `#${targetId}`);
-                    }
-                    trackSelectContent({
-                        contentType: 'recruiter_quick_brief_card',
-                        itemId: item.id || 'unknown_case',
-                        itemName: item.title || 'unknown_case',
-                        sectionName: 'recruiter_quick_brief',
-                        interactionAction: 'click_card',
-                        elementType: 'article',
-                        elementLabel: item.id || 'unknown_case',
-                        linkUrl: `#${targetId}`
-                    });
-                });
+                card.id = `brief-${item.anchorId.replace(/^#/, '')}`;
             }
+
+            const header = document.createElement('div');
+            header.className = 'section-recruiter-card-header';
+            header.style.cursor = 'pointer';
 
             const idLine = document.createElement('p');
             idLine.className = 'section-recruiter-card-id';
@@ -1067,19 +1051,36 @@ function createSectionRecruiterBrief(sectionConfig) {
             cardTitle.className = 'section-recruiter-card-title';
             cardTitle.textContent = item.title || '핵심 변화';
 
+            header.append(idLine, cardTitle);
+
+            const toggleHint = document.createElement('div');
+            toggleHint.className = 'section-recruiter-card-toggle-hint';
+            toggleHint.textContent = 'DETAILS';
+            header.appendChild(toggleHint);
+
+            const details = document.createElement('div');
+            details.className = 'section-recruiter-card-details';
+
             const createRow = (labelText, valueText) => {
                 if (!valueText) {
                     return null;
                 }
                 const row = document.createElement('p');
                 row.className = 'section-recruiter-card-row';
+                row.style.marginBottom = '0.4rem';
 
                 const label = document.createElement('span');
                 label.className = 'section-recruiter-card-key';
-                label.textContent = `${labelText}:`;
+                label.style.display = 'block';
+                label.style.fontWeight = 'bold';
+                label.style.color = 'var(--accent-orange)';
+                label.style.fontSize = '0.65rem';
+                label.textContent = labelText;
 
                 const value = document.createElement('span');
                 value.className = 'section-recruiter-card-value';
+                value.style.fontSize = '0.78rem';
+                value.style.color = 'var(--text-secondary)';
                 value.textContent = valueText;
 
                 row.append(label, value);
@@ -1090,16 +1091,38 @@ function createSectionRecruiterBrief(sectionConfig) {
             const actionRow = createRow('ACTION', item.action);
             const impactRow = createRow('IMPACT', item.impact);
 
-            card.append(idLine, cardTitle);
-            if (problemRow) {
-                card.appendChild(problemRow);
+            if (problemRow) details.appendChild(problemRow);
+            if (actionRow) details.appendChild(actionRow);
+            if (impactRow) details.appendChild(impactRow);
+
+            if (item.anchorId) {
+                const gotoBtn = document.createElement('button');
+                gotoBtn.className = 'card-extra-btn';
+                gotoBtn.style.marginTop = '0.8rem';
+                gotoBtn.style.width = '100%';
+                gotoBtn.textContent = 'GO_TO_FULL_PROBLEM_SOLVING';
+                gotoBtn.addEventListener('click', (e) => {                    e.stopPropagation();
+                    const targetId = item.anchorId.replace(/^#/, '');
+                    revealHashTarget(targetId, 'recruiter_card_goto');
+                });
+                details.appendChild(gotoBtn);
             }
-            if (actionRow) {
-                card.appendChild(actionRow);
-            }
-            if (impactRow) {
-                card.appendChild(impactRow);
-            }
+
+            card.append(header, details);
+
+            card.addEventListener('click', () => {
+                const isExpanded = card.classList.toggle('is-expanded');
+                trackSelectContent({
+                    contentType: 'recruiter_quick_brief_card',
+                    itemId: item.id || 'unknown_case',
+                    itemName: item.title || 'unknown_case',
+                    sectionName: 'recruiter_quick_brief',
+                    interactionAction: isExpanded ? 'expand' : 'collapse',
+                    elementType: 'article',
+                    elementLabel: item.id || 'unknown_case'
+                });
+            });
+
             cardGrid.appendChild(card);
         });
 
@@ -1505,7 +1528,6 @@ function renderServiceSections() {
         return;
     }
     container.replaceChildren();
-    caseShowcaseControllers = [];
 
     const sections = Array.isArray(templateConfig.serviceSections) ? templateConfig.serviceSections : [];
     sections.forEach((sectionConfig) => {
@@ -1575,144 +1597,6 @@ function renderServiceSections() {
             groupsContainer.appendChild(groupSection);
         });
 
-        const configuredFeaturedAnchors = Array.isArray(sectionConfig.featuredCaseAnchors)
-            ? sectionConfig.featuredCaseAnchors
-                .map((anchorId) => String(anchorId || '').trim())
-                .filter(Boolean)
-            : [];
-        const featuredCountCandidate = Number.parseInt(sectionConfig.featuredCaseCount, 10);
-        const featuredCount = Number.isFinite(featuredCountCandidate) && featuredCountCandidate > 0
-            ? featuredCountCandidate
-            : 3;
-        let featuredAnchors = configuredFeaturedAnchors.filter((anchorId) =>
-            renderedCards.some((entry) => entry.anchorId === anchorId)
-        );
-        if (featuredAnchors.length === 0) {
-            featuredAnchors = renderedCards
-                .slice(0, featuredCount)
-                .map((entry) => entry.anchorId)
-                .filter(Boolean);
-        }
-
-        const featuredSet = new Set(featuredAnchors);
-        const allAnchorSet = new Set(renderedCards.map((entry) => entry.anchorId).filter(Boolean));
-        const canCollapse = featuredSet.size > 0 && featuredSet.size < renderedCards.length;
-
-        if (canCollapse) {
-            const controls = document.createElement('div');
-            controls.className = 'case-showcase-controls';
-
-            const stateLabel = String(
-                sectionConfig.featuredStateLabel || `대표 ${featuredSet.size}건 우선 노출`
-            ).trim();
-            const expandLabel = String(
-                sectionConfig.featuredToggleLabel || `전체 Case ${renderedCards.length}건 보기`
-            ).trim();
-            const collapseLabel = String(
-                sectionConfig.featuredCollapseLabel || `대표 Case ${featuredSet.size}건만 보기`
-            ).trim();
-
-            const state = document.createElement('span');
-            state.className = 'case-showcase-state';
-
-            const toggleButton = document.createElement('button');
-            toggleButton.type = 'button';
-            toggleButton.className = 'case-showcase-toggle';
-            toggleButton.setAttribute('aria-expanded', 'false');
-
-            let isCollapsed = true;
-
-            const applyVisibility = () => {
-                const newlyVisibleEntries = [];
-                renderedCards.forEach((entry) => {
-                    const wasHidden = entry.element.hidden;
-                    const isVisible = !isCollapsed || featuredSet.has(entry.anchorId);
-                    entry.element.hidden = !isVisible;
-                    entry.element.classList.toggle('is-collapsed-hidden', !isVisible);
-                    if (wasHidden && isVisible) {
-                        newlyVisibleEntries.push(entry);
-                    }
-                });
-
-                groupCardMap.forEach((cardNodes, groupSection) => {
-                    const hasVisibleCard = cardNodes.some((cardNode) => !cardNode.hidden);
-                    groupSection.hidden = !hasVisibleCard;
-                    groupSection.classList.toggle('is-collapsed-empty', !hasVisibleCard);
-                });
-
-                if (recruiterCaseCards.length > 0) {
-                    recruiterCaseCards.forEach((cardNode) => {
-                        const anchorId = String(cardNode.getAttribute('data-anchor-id') || '').trim();
-                        const isVisible = !isCollapsed || !anchorId || featuredSet.has(anchorId);
-                        cardNode.hidden = !isVisible;
-                        cardNode.classList.toggle('is-collapsed-hidden', !isVisible);
-                    });
-                }
-
-                sectionWrapper.classList.toggle('is-featured-collapsed', isCollapsed);
-                const hiddenCount = Math.max(0, renderedCards.length - featuredSet.size);
-                state.textContent = isCollapsed
-                    ? `${stateLabel} · 현재 ${featuredSet.size}/${renderedCards.length}건 표시 (숨김 ${hiddenCount}건)`
-                    : `현재 전체 ${renderedCards.length}/${renderedCards.length}건 표시`;
-                toggleButton.textContent = isCollapsed ? expandLabel : collapseLabel;
-                toggleButton.setAttribute('aria-expanded', String(!isCollapsed));
-                if (!isCollapsed) {
-                    rerenderVisibleCardDiagrams(
-                        newlyVisibleEntries.length > 0 ? newlyVisibleEntries : renderedCards,
-                        { force: true }
-                    );
-                }
-                window.dispatchEvent(new Event('resize'));
-            };
-
-            const setCollapsed = (nextCollapsed, triggerSource = 'toggle') => {
-                if (isCollapsed === nextCollapsed) {
-                    return false;
-                }
-
-                isCollapsed = nextCollapsed;
-                applyVisibility();
-
-                trackSelectContent({
-                    contentType: 'case_showcase_toggle',
-                    itemId: sectionConfig.id || 'service_cases',
-                    itemName: sectionConfig.title || 'CASES',
-                    sectionName: 'service_section',
-                    interactionAction: isCollapsed ? 'collapse' : 'expand',
-                    elementType: 'button',
-                    elementLabel: 'CASE_SHOWCASE_TOGGLE',
-                    value: renderedCards.length,
-                    trigger_source: triggerSource,
-                    hidden_count: isCollapsed ? Math.max(0, renderedCards.length - featuredSet.size) : 0,
-                    visible_count: isCollapsed ? featuredSet.size : renderedCards.length
-                });
-                return true;
-            };
-
-            toggleButton.addEventListener('click', () => {
-                setCollapsed(!isCollapsed, 'toggle_button');
-            });
-
-            controls.append(state, toggleButton);
-            const recruiterActionMount = recruiterBrief?.querySelector('.section-recruiter-actions');
-            if (recruiterActionMount instanceof HTMLElement) {
-                recruiterActionMount.appendChild(controls);
-            } else {
-                header.appendChild(controls);
-            }
-            applyVisibility();
-
-            caseShowcaseControllers.push({
-                sectionId: sectionConfig.id || '',
-                revealCase(anchorId, triggerSource = 'target_reveal') {
-                    if (!anchorId || !allAnchorSet.has(anchorId) || !isCollapsed || featuredSet.has(anchorId)) {
-                        return false;
-                    }
-                    return setCollapsed(false, triggerSource);
-                }
-            });
-        }
-
         sectionWrapper.append(header);
         if (recruiterBrief) {
             sectionWrapper.appendChild(recruiterBrief);
@@ -1722,22 +1606,41 @@ function renderServiceSections() {
     });
 }
 
-function ensureCaseCardVisible(targetId) {
-    const anchorId = String(targetId || '').replace(/^#/, '').trim();
-    if (!anchorId || caseShowcaseControllers.length === 0) {
-        return false;
+function revealHashTarget(hashValue, triggerSource = 'hash_navigation') {
+    const targetId = String(hashValue || '').replace(/^#/, '').trim();
+    if (!targetId) {
+        return;
     }
 
-    let revealed = false;
-    caseShowcaseControllers.forEach((controller) => {
-        if (!controller || typeof controller.revealCase !== 'function') {
+    window.setTimeout(() => {
+        const target = byId(targetId) || byId(`brief-${targetId}`);
+        if (!target) {
             return;
         }
-        if (controller.revealCase(anchorId, 'anchor_navigation')) {
-            revealed = true;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        target.classList.remove('is-target-highlight');
+        void target.offsetWidth; // trigger reflow
+        target.classList.add('is-target-highlight');
+
+        // Also check if it's a recruiter card to expand it
+        if (target.classList.contains('section-recruiter-card')) {
+            target.classList.add('is-expanded');
         }
-    });
-    return revealed;
+
+        const showcaseId = target.closest('.service-section')?.id || '';
+        trackSelectContent({
+            contentType: 'hash_target_reveal',
+            itemId: targetId,
+            itemName: target.querySelector('.card-title, .section-recruiter-card-title')?.textContent?.trim() || targetId,
+            sectionName: 'service_section',
+            interactionAction: 'reveal_target',
+            elementType: 'section',
+            elementLabel: 'HASH_TARGET_REVEAL',
+            trigger_source: triggerSource,
+            showcase_id: showcaseId
+        });
+    }, 100);
 }
 
 function renderContact() {
@@ -1911,7 +1814,6 @@ function renderNavigation() {
                 subLink.addEventListener('click', () => {
                     const target = normalizeHashTarget(caseItem.target);
                     const targetId = target.replace(/^#/, '');
-                    ensureCaseCardVisible(targetId);
                     trackSelectContent({
                         contentType: 'navigation_case',
                         itemId: targetId || 'unknown_case_target',
@@ -3191,42 +3093,6 @@ function setupMermaidModal() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const revealHashTarget = (hashValue, triggerSource = 'hash_navigation') => {
-        const targetId = String(hashValue || '').replace(/^#/, '').trim();
-        if (!targetId) {
-            return;
-        }
-        const revealed = ensureCaseCardVisible(targetId);
-        if (!revealed) {
-            return;
-        }
-        window.setTimeout(() => {
-            const target = byId(targetId);
-            if (!target) {
-                return;
-            }
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            target.classList.remove('target-highlight');
-            void target.offsetWidth; // trigger reflow
-            target.classList.add('target-highlight');
-            setTimeout(() => target.classList.remove('target-highlight'), 1200);
-
-            const showcaseId = target.closest('.service-section')?.id || '';
-            trackSelectContent({
-                contentType: 'case_showcase_reveal',
-                itemId: targetId,
-                itemName: target.querySelector('.card-title')?.textContent?.trim() || targetId,
-                sectionName: 'service_section',
-                interactionAction: 'reveal_target',
-                elementType: 'section',
-                elementLabel: 'CASE_SHOWCASE_REVEAL',
-                trigger_source: triggerSource,
-                showcase_id: showcaseId
-            });
-        }, 0);
-    };
-
     setSystemInfo();
     setupAnalyticsLifecycle();
     setupK6OverviewModal();
@@ -3237,10 +3103,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderServiceSections();
     renderContact();
     renderNavigation();
-    revealHashTarget(window.location.hash, 'initial_hash');
-    window.addEventListener('hashchange', () => {
-        revealHashTarget(window.location.hash, 'hash_change');
-    });
     setupUptime();
     setupMobileNav();
 
@@ -3262,4 +3124,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setupMermaidModal();
     setupScrollSpy();
+
+    if (window.location.hash) {
+        revealHashTarget(window.location.hash, 'page_load');
+    }
+    window.addEventListener('hashchange', () => {
+        revealHashTarget(window.location.hash, 'hash_change');
+    });
 });

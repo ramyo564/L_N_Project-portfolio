@@ -47,7 +47,7 @@ export const templateConfig = {
             },
             {
                 label: '검증',
-                value: 'Case Study 6건 + Code Path + Commit Trail + k6/Grafana Evidence'
+                value: 'Problem Solving 6건 + Code Path + Commit Trail + k6/Grafana Evidence'
             },
             {
                 label: '핵심 지표',
@@ -255,16 +255,6 @@ export const templateConfig = {
                     }
                 ]
             },
-            featuredCaseAnchors: [
-                'upgrade-todo-case-1',
-                'upgrade-todo-case-2',
-                'upgrade-todo-case-5'
-            ],
-            featuredCaseCount: 3,
-            featuredStateLabel: '대표 3건 우선 노출',
-            featuredToggleLabel: '전체 Case 1~6 보기',
-            featuredCollapseLabel: '대표 Case 3건만 보기',
-            theme: 'blue',
             cardVisualHeight: '300px',
             cardClass: 'problem-case-card',
             groups: [

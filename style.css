@@ -1,3 +1,13 @@
+/* Highlight Animation */
+@keyframes target-highlight-pulse {
+    0% { background-color: rgba(88, 166, 255, 0.4); box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.2); }
+    50% { background-color: rgba(88, 166, 255, 0.15); box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1); }
+    100% { background-color: transparent; box-shadow: none; }
+}
+.is-target-highlight {
+    animation: target-highlight-pulse 2s ease-out forwards;
+}
+
 :root {
     --bg-color: #0d1117;
     --panel-bg: #161b22;
@@ -698,14 +708,39 @@ body.modal-open {
     transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.section-recruiter-card[data-anchor-id] {
-    cursor: pointer;
+.section-recruiter-card-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin 0.3s ease-out;
+    opacity: 0;
 }
 
-.section-recruiter-card[data-anchor-id]:hover {
-    transform: translateY(-2px);
-    border-color: rgba(88, 166, 255, 0.65);
-    background: rgba(88, 166, 255, 0.12);
+.section-recruiter-card.is-expanded .section-recruiter-card-details {
+    max-height: 1000px;
+    opacity: 1;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.section-recruiter-card-toggle-hint {
+    font-family: var(--font-code);
+    font-size: 0.62rem;
+    color: var(--text-secondary);
+    margin-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.section-recruiter-card-toggle-hint::after {
+    content: "▼";
+    font-size: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.section-recruiter-card.is-expanded .section-recruiter-card-toggle-hint::after {
+    transform: rotate(180deg);
 }
 
 .section-recruiter-card-id {
