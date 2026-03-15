@@ -990,7 +990,7 @@ function buildCaseDetail(root, cards, selected) {
             </div>
             ${recruiterSummaryLines.length > 0 ? `
                 <div class="case-recruiter-summary-block">
-                    <p class="case-recruiter-kicker">RECRUITER_SUMMARY</p>
+                    <p class="case-recruiter-kicker">SUMMARY</p>
                     <ul class="case-recruiter-summary-list">
                         ${recruiterSummaryLines.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
                     </ul>

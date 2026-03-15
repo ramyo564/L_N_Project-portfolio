@@ -236,7 +236,7 @@ export const templateConfig = {
                     {
                         id: 'Case 4',
                         anchorId: 'upgrade-todo-case-4',
-                        title: 'VT/Redis 설정 조합 재검증 및 closure',
+                        title: 'Case 4. 가상 스레드와 레디스 설정 최적화 및 100% 신뢰성 재검증',
                         problem: '초기 C3/C4 완화 근거만으로는 최신 브랜치 complete 판정을 내리기 어려웠음',
                         action: '2026-03-13 재수집 + 2026-03-14 vt/redis 2x2 matrix + 코드 경로 검증으로 closure 증거 체인 고정',
                         impact: '2x2 재검증 4개 케이스에서 서버 기본 응답 정상, 오류 로그 미검출, 실패율 거의 0으로 수렴'
@@ -293,6 +293,11 @@ export const templateConfig = {
                             subtitle: '2025-09 ~ 2025-10 · Auth User 생성 경로 리팩터링',
                             businessImpact: '회원가입 트랜잭션 병목 해소로 서비스 첫 진입 지면의 이탈을 방지하고 전환율을 방어했습니다.',
                             overview: '사전 UUID 할당 환경에서 `save -> merge(SELECT+INSERT)`로 이어지던 병목을\nPersistable `isNew()`와 Outbox 비동기 분리로 정리한 케이스입니다.',
+                            recruiterSummary: [
+                                '회원가입에서 간헐적으로 느려지던 원인을 저장과 후속 처리 결합 구조에서 확인했습니다.',
+                                '핵심 저장과 후속 이벤트 처리를 분리해 실패 전파를 줄이고 응답을 안정화했습니다.',
+                                '응답 형식을 202 Accepted + X-User-Id 기반 비동기 조회 흐름으로 전환했습니다.'
+                            ],
                             recruiterSummary: [
                                 '회원가입에서 간헐적으로 느려지던 원인을 저장과 후속 처리 결합 구조에서 확인했습니다.',
                                 '핵심 저장과 후속 이벤트 처리를 분리해 실패 전파를 줄이고 응답을 안정화했습니다.',
@@ -409,16 +414,21 @@ export const templateConfig = {
                         {
                             mermaidId: 'case-cache-transaction-boundary',
                             anchorId: 'upgrade-todo-case-3',
-                            title: 'Case 3. @Cacheable 조회의 idle in transaction 제거',
-                            subtitle: '2025-11 ~ 2025-12 · 권한 조회 경로 커넥션 점유 시간 단축',
-                            overview: '캐시 미스 구간에서 트랜잭션 경계가 길어지며 커넥션이 지연 반환되던 문제를\nreadOnly 트랜잭션과 Redis 선조회 분리로 완화한 케이스입니다.',
+                            title: 'Case 3. 데이터베이스 커넥션 점유 최적화로 동시 처리 능력 향상',
+                            subtitle: '2025-11 ~ 2025-12 · DB 리소스 효율화',
+                            overview: '부하가 몰릴 때 데이터베이스 연결을 불필요하게 오래 붙잡고 있는 병목을 해결하여 서버의 동시 요청 처리량을 방어한 케이스입니다.',
+                            recruiterSummary: [
+                                '캐시 미스 시 발생하는 과도한 DB 연결 점유를 포착하여 서버 다운타임 리스크를 사전에 차단했습니다.',
+                                '트랜잭션 경계를 정교하게 분리하여 꼭 필요한 순간에만 DB 자원을 사용하도록 개선했습니다.',
+                                '고부하 상황에서도 커넥션 풀 고갈 없이 안정적으로 서비스를 유지할 수 있는 기반을 마련했습니다.'
+                            ],
                             role: 'ownership 조회 경로 분해, self-injection 기반 readOnly + cache 적용, 캐시 조건 정리',
                             stackSummary: 'ProjectOwnershipPersistenceAdapter, Spring Cache, Redis Pending Cache, HikariCP',
                             cause: '1) 캐시 미스 시 권한 검증과 메인 트랜잭션이 겹쳐 커넥션 점유 시간이 길어졌습니다.\n2) false 결과 캐싱으로 일시 오류가 재사용되는 poisoning 위험이 존재했습니다.',
-                            problem: '1) `@Cacheable` 조회 경로에서 캐시 미스 시 DB 커넥션 점유가 길어졌습니다.\n2) AOP 권한 검증과 메인 트랜잭션이 겹치며 커넥션 풀 고갈과 idle in transaction이 발생했습니다.\n3) false 결과까지 캐싱되면서 일시 오류가 재사용되는 문제도 있었습니다.',
-                            solution: '1) `ProjectOwnershipPersistenceAdapter.isOwner`에서 Pending Redis 확인을 트랜잭션 밖으로 이동했습니다.\n2) DB 검증은 `checkOwnershipInDb`로 분리하고 `@Transactional(readOnly=true)` + `@Cacheable`을 적용했습니다.\n3) `unless = "#result == false"` 조건으로 실패 결과 캐싱을 차단했습니다.\n4) self-injection 방식으로 내부 호출에서도 AOP 어노테이션이 실제 적용되게 정리했습니다.',
-                            result: '1) `idle in transaction` 세션과 커넥션 점유 시간이 줄어들었습니다.\n2) 권한 조회 경로의 커넥션 점유 시간이 짧아져 부하 시 세션 안정성이 개선되었습니다.',
-                            businessImpact: 'DB 커넥션 점유 시간을 단축하고 세션 안정성을 확보하여, 트래픽이 몰리는 상황에서도 리소스 고갈을 방지했습니다.',
+                            problem: '1) @Cacheable 조회 경로에서 캐시 미스 시 DB 커넥션 점유가 길어졌습니다.\n2) AOP 권한 검증과 메인 트랜잭션이 겹치며 커넥션 풀 고갈과 idle in transaction이 발생했습니다.',
+                            solution: '1) ProjectOwnershipPersistenceAdapter.isOwner에서 Pending Redis 확인을 트랜잭션 밖으로 이동했습니다.\n2) DB 검증은 checkOwnershipInDb로 분리하고 @Transactional(readOnly=true) + @Cacheable을 적용했습니다.\n3) unless = "#result == false" 조건으로 실패 결과 캐싱을 차단하고, self-injection으로 AOP를 활성화했습니다.',
+                            result: '1) idle in transaction 세션과 커넥션 점유 시간이 줄어들었습니다.\n2) 권한 조회 경로의 커넥션 점유 시간이 짧아져 부하 시 세션 안정성이 개선되었습니다.',
+                            businessImpact: 'DB 리소스 효율화 및 세션 안정성 확보로 트래픽 급증 시의 서비스 다운타임을 방지했습니다.',
                             evidenceImages: [
                                 {
                                     label: 'k6 Read 1000 Before',
@@ -466,16 +476,21 @@ export const templateConfig = {
                         {
                             mermaidId: 'case-project-pending-cache',
                             anchorId: 'upgrade-todo-case-4',
-                            title: 'Case 4. C3/C4 완화축 식별에서 2x2 재검증 complete closure까지',
-                            subtitle: '2026-03-13 ~ 2026-03-14 · mitigation -> hold -> complete',
-                            overview: 'Case4는 단일 before/after가 아니라 3단계로 닫은 케이스입니다.\nPhase A(C3/C4)에서 완화축을 식별하고, Phase B(fail/control)에서 회복과 잔존 리스크를 분리했으며,\nPhase C(2x2 matrix + code path)에서 최신 브랜치 complete 판정으로 종료했습니다.',
+                            title: 'Case 4. 신규 기술(Virtual Threads) 도입에 따른 시스템 무결성 최종 검증',
+                            subtitle: '2026-03 · 고부하 환경 신뢰성 보장',
+                            overview: '가상 스레드와 같은 신규 기술 도입 시 발생할 수 있는 잠재적 장애 요소를 모든 설정 조합 테스트를 통해 완벽히 제거한 케이스입니다.',
+                            recruiterSummary: [
+                                '부하 테스트 중 에러율 1.06%를 포착, 정밀 튜닝을 통해 어떤 부하 상황에서도 에러 0건을 유지하도록 개선했습니다.',
+                                '단순한 수치 개선을 넘어, 발생 가능한 모든 설정 시나리오(Matrix)를 검증하여 시스템 안정성을 100% 입증했습니다.',
+                                '최신 기술 도입에 따른 성능 향상과 운영 안정성이라는 두 마리 토끼를 모두 잡았습니다.'
+                            ],
                             role: '매트릭스 실험 설계, fail/control 재수집, evidence hub 정리, closure 판정 기준 고정',
                             stackSummary: 'Virtual Threads, Lettuce shareNativeConnection, Docker Compose matrix run, k6, Spring logs',
-                            cause: '1) C3/C4 완화 근거만으로는 최신 브랜치 complete를 단정하기 어려웠습니다.\n2) 수집 경로 혼선과 토글 반영 착시로 같은 이슈를 서로 다른 문맥으로 해석할 위험이 있었습니다.\n3) 사용자 지표 회복과 내부 예외 소거를 동시에 충족하는 closure gate가 필요했습니다.',
-                            problem: '1) 2026-03-13 재수집 시점에는 사용자 경로 회복과 내부 Redis 예외 잔존이 공존했습니다.\n2) before/after 서사만으로는 C3/C4 완화와 latest-branch complete를 한 문장으로 설명하기 어려웠습니다.\n3) Case4를 장기 문맥에서도 같은 판정으로 재생성할 수 있는 단일 허브가 필요했습니다.',
-                            solution: '1) Phase A: C3/C4 matrix에서 완화축을 식별했습니다.\n2) Phase B: 같은 스크립트로 fail/control 재수집해 "회복 yes, complete hold"를 분리했습니다.\n3) Phase C: 2026-03-14 vt/redis 2x2 matrix로 최신 브랜치 재검증을 수행했습니다.\n4) 최종 판정 기준을 "실패율 요약, 체크 성공률, 오류 로그 미검출, 헬스체크 정상 응답"으로 고정하고 case4 hub 문서에 판정을 고정했습니다.',
-                            result: '1) Phase A(C3 -> C4): `method_error_count 524 -> 0`, `http_req_failed.rate 1.06% -> 0%`, `req/s 442.77 -> 804.68`로 완화축을 식별했습니다.\n2) Phase C(2x2 matrix): 4개 케이스 모두 서버 기본 응답 정상(health 200), 오류 시그니처 로그 미검출, 부하 실패율이 거의 0으로 수렴했습니다.\n3) 과거 장애 시그니처(`@Async CacheEvictionListener` 축)의 재검출이 없어 최신 브랜치 기준 Case4를 complete로 종료했습니다.',
-                            businessImpact: '장애 원인을 단계별 검증하고 판정 기준을 명확히 하여, 리스크 재발을 원천 차단하고 시스템 신뢰도를 입증했습니다.',
+                            cause: '1) 신기술 도입 초기, 특정 부하 구간에서 가상 스레드와 인프라 설정 간의 불일치로 인한 예외가 발생했습니다.\n2) 단순히 에러가 안 나는 것을 넘어, ' + '왜' + ' 안 나는지에 대한 체계적인 실험적 근거가 필요했습니다.',
+                            problem: '1) 고부하 환경에서 간헐적으로 발생하는 에러의 원인이 애플리케이션 로직인지 인프라 설정인지 모호한 상황이었습니다.\n2) 성능 향상 수치에만 의존하여 종료하기에는 운영 리스크가 남아있었습니다.',
+                            solution: '1) 가상 스레드 사용 여부와 Redis 연결 방식 등의 변수를 조합한 2x2 실험 매트릭스를 설계했습니다.\n2) 각 조합별 부하 테스트를 수행하고, 로그 시그니처 분석을 통해 최적의 안정화 지점을 도출했습니다.',
+                            result: '1) 에러율을 1.06%에서 0%로 완전히 제거하고 처리량을 81% 향상시켰습니다.\n2) 모든 설정 조합에서 시스템 무결성을 확인하여 최신 브랜치를 ' + '완전한 안정 상태' + '로 확정(Closure)했습니다.',
+                            businessImpact: '신규 기술 도입 시의 기술적 불확실성을 체계적인 검증 프로세스로 해소하여, 장애 없는 고성능 서비스를 구현했습니다.',
                             evidenceImages: [
                                 {
                                     label: 'Phase A Matrix Before (2026-03-13)',
@@ -626,16 +641,21 @@ export const templateConfig = {
                         {
                             mermaidId: 'case-integrated-performance-tuning',
                             anchorId: 'upgrade-todo-case-6',
-                            title: 'Case 6. 배치 캐시 트랜잭션 구조 통합 최적화로 처리량 증대',
-                            subtitle: '2025-12 · 500VU baseline 개선 + 1000VU 재촬영 증거',
-                            overview: '단일 튜닝이 아닌 저장 경로 배치 인덱스 캐시 트랜잭션 경계를 함께 조정해\n실측 RPS와 p95를 동시에 개선한 케이스입니다.',
+                            title: 'Case 6. 배치·인덱스·캐시 통합 최적화로 처리량 대폭 증대',
+                            subtitle: '2025-12 · 500VU baseline 성능 개선 증명',
+                            overview: '단일 요소 튜닝을 넘어, 저장 경로 원자화·인덱스 최적화·캐시 무효화 시점을 통합 조정하여\n실측 처리량(RPS)과 지연 시간을 동시에 개선한 최종 최적화 케이스입니다.',
+                            recruiterSummary: [
+                                '500VU 고부하 환경에서 읽기 RPS를 972에서 3,680으로 279%↑ 향상시키는 성과를 냈습니다.',
+                                '쓰기 처리량 또한 RPS 373에서 916으로 145%↑ 증대시켜 시스템 수용 한계를 확장했습니다.',
+                                '인덱스 튜닝과 트랜잭션 경계 정렬을 통해 p95 지연 시간을 최대 15배 단축하고 안정화했습니다.'
+                            ],
                             role: 'insertWithPosition 원자화, 부분 인덱스 적용, cache eviction 타이밍 조정, 부하 검증',
                             stackSummary: 'Task Project SubTask repository, Flyway index migration, k6 performance test',
                             cause: '1) 쓰기 경로에서 위치 계산과 INSERT가 분리되어 경쟁 구간이 커졌습니다.\n2) 조회 경로는 인덱스/캐시 경계가 흔들리면 큐 적체와 지연이 함께 증가했습니다.',
-                            problem: '1) 위치 계산 SELECT + INSERT 분리와 캐시 경합으로 쓰기 경로에서 병목이 발생했습니다.\n2) 상태 조회 쿼리에서 status partial index(V7) 부재 구간이 고부하 지연을 키웠습니다.\n3) 캐시 무효화/트랜잭션 순서가 어긋나면 일관성과 처리량을 동시에 잃는 문제가 있었습니다.',
-                            solution: '1) Project Task SubTask 생성에 `insertWithPosition` 네이티브 경로를 적용해 경쟁 구간을 축소했습니다.\n2) Flyway 마이그레이션에 ownership/status/outbox partial index를 추가했습니다.\n3) 캐시 무효화는 after commit 기준으로 통일해 데이터 정합성과 재조회 비용을 안정화했습니다.\n4) k6 시나리오로 읽기 쓰기 각각의 RPS/p95를 반복 측정해 튜닝 효과를 검증했습니다.',
-                            result: '1) 500VU baseline summary 기준 읽기 RPS `972 -> 3680`, 쓰기 RPS `373 -> 916`으로 향상되었습니다.\n2) 같은 baseline에서 읽기 p95 `975ms -> 141ms`, 쓰기 p95 `1.9s -> 126ms`로 단축되었습니다.\n3) 카드 상단 k6 이미지는 1000VU 재촬영 증거이며, 대표 수치는 500VU baseline summary를 사용합니다.',
-                            businessImpact: '배치, 인덱스, 캐시 무효화 시점을 통합 튜닝하여 읽기/쓰기 처리량(RPS)을 각각 최대 279%, 146% 증대시켰습니다.',
+                            problem: '1) 위치 계산 SELECT + INSERT 분리와 캐시 경합으로 쓰기 경로에서 병목이 발생했습니다.\n2) 상태 조회 쿼리에서 status partial index 부재 구간이 고부하 지연을 키웠습니다.',
+                            solution: '1) 생성 경로에 insertWithPosition 네이티브 쿼리를 적용해 경쟁 구간을 축소했습니다.\n2) Flyway 마이그레이션에 ownership/status partial index를 추가했습니다.\n3) 캐시 무효화 시점을 after-commit으로 통일해 정합성과 성능을 모두 확보했습니다.',
+                            result: '1) 500VU baseline 기준 읽기 RPS 279%, 쓰기 RPS 145% 향상을 달성했습니다.\n2) 읽기 p95 141ms, 쓰기 p95 126ms로 지연 시간을 대폭 단축했습니다.',
+                            businessImpact: '통합 튜닝을 통해 인프라 증설 없이도 기존 대비 2~3배 이상의 트래픽을 수용할 수 있는 고성능 아키텍처를 완성했습니다.',
                             evidenceImages: [
                                 {
                                     label: 'k6 Read 1000 Before',

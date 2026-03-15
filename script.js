@@ -968,7 +968,7 @@ function createRecruiterCardSummary(card) {
 
     const kicker = document.createElement('p');
     kicker.className = 'card-recruiter-kicker';
-    kicker.textContent = 'RECRUITER_SUMMARY';
+    kicker.textContent = 'SUMMARY';
 
     const list = document.createElement('ul');
     list.className = 'card-recruiter-list';
