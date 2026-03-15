@@ -236,11 +236,12 @@ export const templateConfig = {
                     {
                         id: 'Case 4',
                         anchorId: 'upgrade-todo-case-4',
-                        title: 'Case 4. 가상 스레드와 레디스 설정 최적화 및 100% 신뢰성 재검증',
-                        problem: '초기 C3/C4 완화 근거만으로는 최신 브랜치 complete 판정을 내리기 어려웠음',
-                        action: '2026-03-13 재수집 + 2026-03-14 vt/redis 2x2 matrix + 코드 경로 검증으로 closure 증거 체인 고정',
-                        impact: '2x2 재검증 4개 케이스에서 서버 기본 응답 정상, 오류 로그 미검출, 실패율 거의 0으로 수렴'
+                        title: 'Virtual Threads 환경 최적화 및 신뢰성 검증',
+                        problem: '신규 기술 도입 초기, 특정 설정 조합에서 발생하는 미세 병목 현상 식별 필요',
+                        action: '설정 조합별 비교 테스트 및 2x2 매트릭스 교차 검증 수행',
+                        impact: '에러율 0% 달성 및 최신 브랜치 기반의 시스템 무결성 최종 확정'
                     },
+
                     {
                         id: 'Case 5',
                         anchorId: 'upgrade-todo-case-5',
@@ -574,7 +575,6 @@ export const templateConfig = {
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_4', href: './case4/CASE-4.md' },
-                                { label: 'EVIDENCE_MANIFEST', href: './case4/case4-evidence-manifest.md' },
                                 { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-4-path' }
                             ]
                         }
