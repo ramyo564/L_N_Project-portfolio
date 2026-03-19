@@ -1459,7 +1459,15 @@ function createCardLinks(card) {
         }
 
         // GA4 Event Tracking
-        link.addEventListener('click', () => {
+        link.addEventListener('click', (e) => {
+            if (originalHref === '#k6-overview') {
+                e.preventDefault();
+                if (typeof openK6OverviewModal === 'function') {
+                    const hero = templateConfig.hero || {};
+                    openK6OverviewModal(hero.k6Overview, item.label || 'K6_TEST_ENVIRONMENT');
+                }
+            }
+
             trackSelectContent({
                 contentType: 'case_link',
                 itemId: card.title || 'unknown_case',

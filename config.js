@@ -643,7 +643,7 @@ export const templateConfig = {
                             anchorId: 'upgrade-todo-case-6',
                             title: 'Case 6. 배치·인덱스·캐시 통합 최적화로 처리량 대폭 증대',
                             subtitle: '2025-12 · 500VU baseline 성능 개선 증명',
-                            overview: '단일 요소 튜닝을 넘어, 저장 경로 원자화·인덱스 최적화·캐시 무효화 시점을 통합 조정하여\n실측 처리량(RPS)과 지연 시간을 동시에 개선한 최종 최적화 케이스입니다.',
+                            overview: '단일 요소 튜닝을 넘어, 저장 경로 원자화·인덱스 최적화·캐시 무효화 시점을 통합 조정하여\n실측 처리량(RPS)과 지연 시간을 동시에 개선한 최종 최적화 케이스입니다.\n\n처리량을 대폭 개선한 시점에서 임계치를 확인하기 위해 1000VU 고부하 실험을 진행, 최종적으로 초기 실험 단계인 500VU 상태(Before)와 현재 최적화 상태(After) 를 비교하여 폭발적 처리량 향상 ➡️ 500VU BEFORE/CURRENT 보기 버튼으로 확인가능',
                             recruiterSummary: [
                                 '500VU 고부하 환경에서 읽기 RPS를 972에서 3,680으로 279%↑ 향상시키는 성과를 냈습니다.',
                                 '쓰기 처리량 또한 RPS 373에서 916으로 145%↑ 증대시켜 시스템 수용 한계를 확장했습니다.',
@@ -717,6 +717,7 @@ export const templateConfig = {
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_6', href: './case6/CASE-6.md' },
+                                { label: '500VU BEFORE/CURRENT 보기', href: '#k6-overview' },
                                 { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-6-path' }
                             ]
                         }
