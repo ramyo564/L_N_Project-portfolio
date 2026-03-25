@@ -597,15 +597,19 @@ function setupEvidenceModalControls() {
 
 function parseCaseNumber(card) {
     const title = String(card?.title || '');
-    const titleMatch = title.match(/Case\s*(\d+)/i);
+    const titleMatch = title.match(/Case\s*([0-9a-zA-Z]+)/i);
     if (titleMatch) {
-        return Number.parseInt(titleMatch[1], 10);
+        const val = titleMatch[1];
+        const num = Number.parseInt(val, 10);
+        return Number.isFinite(num) ? num : val;
     }
 
     const anchorId = String(card?.anchorId || '');
-    const anchorMatch = anchorId.match(/case-(\d+)/i);
+    const anchorMatch = anchorId.match(/case-([0-9a-zA-Z]+)/i);
     if (anchorMatch) {
-        return Number.parseInt(anchorMatch[1], 10);
+        const val = anchorMatch[1];
+        const num = Number.parseInt(val, 10);
+        return Number.isFinite(num) ? num : val;
     }
 
     return null;
@@ -1093,19 +1097,22 @@ function setupInteractionTracking() {
         }
 
         if (kind === 'case_list_card') {
-            const caseNumber = Number.parseInt(trigger.dataset.caseNumber || '', 10);
+            const caseIdRaw = String(trigger.dataset.caseNumber || '');
+            const parsedNum = Number.parseInt(caseIdRaw, 10);
+            const caseNumber = Number.isFinite(parsedNum) ? parsedNum : caseIdRaw;
+
             const caseTitle = trigger.dataset.caseTitle || `CASE ${caseNumber}`;
             trackSelectContent({
                 contentType: 'navigation_case',
-                itemId: Number.isFinite(caseNumber) ? `case_${caseNumber}` : 'unknown_case',
+                itemId: caseNumber ? `case_${caseNumber}` : 'unknown_case',
                 itemName: caseTitle,
                 sectionName: 'case_list',
                 interactionAction: 'open_case',
                 elementType: 'card_link',
-                elementLabel: Number.isFinite(caseNumber) ? `CASE_${caseNumber}` : 'CASE_UNKNOWN',
+                elementLabel: caseNumber ? `CASE_${caseNumber}` : 'CASE_UNKNOWN',
                 linkUrl: href,
                 linkType: detectLinkType(href),
-                value: Number.isFinite(caseNumber) ? caseNumber : undefined
+                value: typeof caseNumber === 'number' ? caseNumber : undefined
             });
             return;
         }
@@ -1211,8 +1218,11 @@ function init() {
         return;
     }
 
-    const caseParam = Number.parseInt(new URLSearchParams(window.location.search).get('case') || '', 10);
-    const selected = cards.find((item) => item.caseNumber === caseParam);
+    const caseParamRaw = new URLSearchParams(window.location.search).get('case') || '';
+    const caseParamNum = Number.parseInt(caseParamRaw, 10);
+    const caseParam = Number.isFinite(caseParamNum) ? caseParamNum : caseParamRaw;
+
+    const selected = cards.find((item) => String(item.caseNumber) === String(caseParam));
 
     if (!selected) {
         buildCaseList(root, cards);
