@@ -415,7 +415,10 @@ function updateEvidenceModalView() {
 
     elements.image.src = item.href;
     elements.image.alt = item.alt || item.label || 'Evidence image';
-    elements.title.textContent = `${item.pair} · ${item.label}`;
+    const titleText = (item.pair && item.label && item.pair.toUpperCase() === item.label.toUpperCase())
+        ? item.label
+        : `${item.pair} · ${item.label}`;
+    elements.title.textContent = titleText;
     elements.counter.textContent = `${evidenceModalState.currentIndex + 1} / ${items.length}`;
 
     const phaseClass = ['is-before', 'is-after', 'is-other'];

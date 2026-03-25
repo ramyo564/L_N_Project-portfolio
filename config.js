@@ -210,6 +210,14 @@ export const templateConfig = {
                 ],
                 cases: [
                     {
+                        id: 'Case B',
+                        anchorId: 'upgrade-todo-case-B',
+                        title: '트랜잭션 분리와 JPA 튜닝을 통한 커넥션 안정화',
+                        problem: 'JPA merge(SELECT+INSERT)와 Redis I/O 결합으로 인한 Idle in transaction 및 커넥션 풀 고갈 위험',
+                        action: 'Persistable isNew() INSERT 경로 강제 및 조회 트랜잭션/캐시 경계 분리로 커넥션 점유 시간 최소화',
+                        impact: '읽기/쓰기 양방향 트랜잭션 점유 시간 단축으로 고부하 환경 세션 안정성 및 동시 처리 능력 확보'
+                    },
+                    {
                         id: 'Case 1',
                         anchorId: 'upgrade-todo-case-1',
                         title: 'UUIDv7 merge 제거와 회원가입 트랜잭션 안정화',
@@ -302,11 +310,6 @@ export const templateConfig = {
                             subtitle: '2025-09 ~ 2025-10 · Auth User 생성 경로 리팩터링',
                             businessImpact: '회원가입 트랜잭션 병목 해소로 서비스 첫 진입 지면의 이탈을 방지하고 전환율을 방어했습니다.',
                             overview: '사전 UUID 할당 환경에서 `save -> merge(SELECT+INSERT)`로 이어지던 병목을\nPersistable `isNew()`와 Outbox 비동기 분리로 정리한 케이스입니다.',
-                            recruiterSummary: [
-                                '회원가입에서 간헐적으로 느려지던 원인을 저장과 후속 처리 결합 구조에서 확인했습니다.',
-                                '핵심 저장과 후속 이벤트 처리를 분리해 실패 전파를 줄이고 응답을 안정화했습니다.',
-                                '응답 형식을 202 Accepted + X-User-Id 기반 비동기 조회 흐름으로 전환했습니다.'
-                            ],
                             recruiterSummary: [
                                 '회원가입에서 간헐적으로 느려지던 원인을 저장과 후속 처리 결합 구조에서 확인했습니다.',
                                 '핵심 저장과 후속 이벤트 처리를 분리해 실패 전파를 줄이고 응답을 안정화했습니다.',
@@ -420,6 +423,62 @@ export const templateConfig = {
                     title: 'CACHE / CONSISTENCY',
                     desc: '트랜잭션 경계 명확화와 비동기 간극 대응',
                     cards: [
+                        {
+                            mermaidId: 'case-b-database-optimization',
+                            anchorId: 'upgrade-todo-case-B',
+                            title: 'Case B. 트랜잭션 경계 분리와 영속성(JPA) 튜닝을 통한 DB 커넥션 안정화',
+                            subtitle: '2025.09 ~ 2025.12 · 데이터베이스 세션 효율화 및 커넥션 풀 고갈 방지',
+                            businessImpact: '대용량 트래픽 상황에서도 DB 커넥션 풀 고갈을 원천 차단하고, 회원가입 및 조회 트랜잭션의 병목을 해소하여 서비스 다운타임을 방지했습니다.',
+                            overview: 'UUIDv7 엔티티의 JPA merge 제거와 조회 트랜잭션 경량화를 통합하여 DB 리소스 사용률을 최적화한 케이스입니다.',
+                            recruiterSummary: [
+                                'UUIDv7 엔티티의 JPA merge(SELECT+INSERT) 병목을 Persistable 구현과 비동기 Outbox 패턴으로 해결해 쓰기 지연을 방지했습니다.',
+                                '캐시 조회 중 발생하는 Idle in transaction 문제를 해결하기 위해, 트랜잭션 경계를 엄격히 분리하고 Redis Pending Cache를 도입했습니다.',
+                                '불필요한 DB 커넥션 점유 시간을 대폭 줄여, 고부하 환경에서도 커넥션 풀(HikariCP) 고갈 없이 안정적인 세션 관리 능력을 확보했습니다.'
+                            ],
+                            role: 'JPA 영속성 컨텍스트 동작 제어, 트랜잭션 경계 설계, Redis Pending Cache 시스템 도입',
+                            stackSummary: 'Spring Data JPA (Hibernate), Persistable, Outbox Pattern, Redis Cache, HikariCP',
+                            cause: '1) UUID 사전 할당 시 JPA merge 로직에 따른 불필요한 SELECT 발생 및 락 대기 누적.\n2) 캐시 미스 시 조회 트랜잭션이 DB 커넥션을 점유(Idle in Tx)하여 커넥션 풀 고갈 유발.',
+                            problem: '트래픽 유입 시, UUIDv7 엔티티의 JPA merge로 인한 불필요한 SELECT 쿼리 발생과, 트랜잭션 내부에서 Redis I/O가 결합되면서 DB 커넥션 반환이 지연되는(Idle in transaction) 병목 현상이 발견되었습니다. 이로 인해 HikariCP 커넥션 풀이 빠르게 고갈될 위험이 있었습니다.',
+                            solution: '첫째, Persistable.isNew()를 구현해 사전 할당된 UUID의 INSERT 전용 경로를 강제하여 쓰기 지연을 없앴습니다. \n둘째, 조회 로직에서 캐시 미스 시 발생하는 트랜잭션 결합을 끊어내고, readOnly 경계 설정 및 Redis Pending Cache를 도입해 커넥션 점유 시간을 최소화했습니다.',
+                            result: '읽기/쓰기 양방향에서 트랜잭션이 DB 커넥션을 물고 있는 시간을 대폭 단축하여, 고부하 환경에서도 커넥션 풀(HikariCP) 고갈 없이 안정적인 세션 관리와 동시 처리 능력을 확보했습니다.',
+                            evidenceImages: [
+                                {
+                                    label: 'Before: JPA merge(SELECT+INSERT)로 인한 비효율 발생',
+                                    src: './case1/before/case1-hibernate-before.png',
+                                    pairKey: 'case-b-jpa-outbox'
+                                },
+                                {
+                                    label: 'After: Persistable 구현으로 INSERT 전용 경로 강제',
+                                    src: './case1/after/case1-hibernate-after.png',
+                                    pairKey: 'case-b-jpa-outbox'
+                                }
+                            ],
+                            extraEvidenceImages: [
+                                {
+                                    label: 'Before: Redis I/O 및 트랜잭션 결합으로 인한 Idle in transaction',
+                                    src: './case3/before/case3-pg_stat_idle_transaction-before.png',
+                                    phase: 'before',
+                                    pairKey: 'case-b-connection'
+                                },
+                                {
+                                    label: 'After: 트랜잭션 경계 분리 및 Redis Pending Cache 도입 후 안정화',
+                                    src: './case3/after/case3-pg_stat_idle_transaction-after.png',
+                                    phase: 'after',
+                                    pairKey: 'case-b-connection'
+                                }
+                            ],
+                            skills: ['Spring Data JPA', 'Persistable', 'Outbox Pattern', 'HikariCP Tuning', 'Redis Cache aside'],
+                            highlights: [
+                                'Persistable isNew forces insert path even with pre-assigned UUID',
+                                'readOnly transaction boundary prevents unnecessary DB connection hold',
+                                'Redis Pending Cache prevents concurrent DB access during cache misses',
+                                'Outbox pattern decouples write transactions from messaging latency'
+                            ],
+                            links: [
+                                { label: 'EVIDENCE_CASE_B', href: './case-B/CASE-B.md' },
+                                { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-1-path' }
+                            ]
+                        },
                         {
                             mermaidId: 'case-cache-transaction-boundary',
                             anchorId: 'upgrade-todo-case-3',

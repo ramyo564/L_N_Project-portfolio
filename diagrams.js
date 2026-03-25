@@ -390,5 +390,38 @@ export const diagrams = {
         class Start,A1,A2,A3,A4 b
         class B1,B2,B3 o
         class R1,R2 g
+    `,
+    'case-b-database-optimization': `
+        graph TB
+        subgraph Integrated_Before ["BEFORE: Inefficient Resource Management"]
+            direction TB
+            B1[Client Request] --> B2[Registration Flow]
+            B2 --> B3["JPA merge (SELECT + INSERT)"]
+            B3 --> B4[Monolithic Transaction holds DB Connection]
+            
+            B5[Cache Miss Search] --> B6["@Cacheable inside @Transactional"]
+            B6 --> B7[Redis I/O + DB Query during same Tx]
+            B7 --> B8[HikariCP Exhaustion / Idle in Tx]
+        end
+
+        subgraph Integrated_After ["AFTER: Optimized JPA & Connection Lifecycle"]
+            direction TB
+            A1[Client Request] --> A2[AuthUserEntity Persistable isNew]
+            A2 --> A3[Direct INSERT path / Selective Outbox Save]
+            A3 --> A4[Domain Tx Release -> Async Outbox Processing]
+            
+            A5[Cache Miss Search] --> A6["Pending Cache Check (No Tx)"]
+            A6 --> A7["checkOwnershipInDb (readOnly Tx)"]
+            A7 --> A8[Fast Connection Release / Stable Pool]
+        end
+
+        Integrated_Before -.->|Optimization Strategy| Integrated_After
+
+        classDef b fill:#161b22,stroke:#58a6ff,color:#c9d1d9
+        classDef o fill:#161b22,stroke:#d29922,color:#c9d1d9
+        classDef g fill:#161b22,stroke:#238636,color:#c9d1d9
+        class B1,B2,B3,B4,B5,B6,B7,B8 o
+        class A1,A2,A3,A4,A5,A6,A7 b
+        class A8 g
     `
 };
