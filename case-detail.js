@@ -759,7 +759,11 @@ function collectCaseCards() {
         });
     });
 
-    return cards.sort((a, b) => a.caseNumber - b.caseNumber);
+    return cards.sort((a, b) => {
+        const valA = String(a.caseNumber);
+        const valB = String(b.caseNumber);
+        return valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+    });
 }
 
 function buildEvidencePairs(items) {

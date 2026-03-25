@@ -184,12 +184,14 @@ function inferDestinationPageType(destinationUrl) {
 
 function parseCaseDetailNumber(href) {
     const text = String(href || '').trim();
-    const match = text.match(/(?:^|\/)case(\d+)\/CASE-\d+\.md$/i);
+    // Support numeric case/CASE-N.md AND alphanumeric case-A/CASE-A.md
+    const match = text.match(/(?:^|\/)case(?:-?)([0-9a-zA-Z]+)\/CASE-([0-9a-zA-Z]+)\.md$/i);
     if (!match) {
         return null;
     }
-    const caseNumber = Number.parseInt(match[1], 10);
-    return Number.isFinite(caseNumber) ? caseNumber : null;
+    const val = match[1];
+    const num = Number.parseInt(val, 10);
+    return Number.isFinite(num) ? num : val;
 }
 
 function toCaseReviewLink(href) {
