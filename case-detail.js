@@ -1,4 +1,17 @@
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
 import { templateConfig } from './config.js';
+
+mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    fontFamily: 'Inter',
+    flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'linear'
+    }
+});
 
 const analyticsSession = {
     id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
@@ -999,6 +1012,12 @@ function buildCaseDetail(root, cards, selected) {
                 <span class="case-chip">${escapeHtml(groupTitle)}</span>
                 <span class="case-chip">${escapeHtml(card?.stackSummary || 'Stack summary 없음')}</span>
             </div>
+            ${(card?.mermaidId && !card?.hideReviewDiagram) ? `
+                <div class="case-review-diagram-area">
+                    <p class="section-kicker">ARCHITECTURE_VIEW</p>
+                    <div id="case-mermaid-container" class="mermaid" data-mermaid-id="${escapeHtml(card.mermaidId)}"></div>
+                </div>
+            ` : ''}
             ${recruiterSummaryLines.length > 0 ? `
                 <div class="case-recruiter-summary-block">
                     <p class="case-recruiter-kicker">SUMMARY</p>
@@ -1244,6 +1263,21 @@ function init() {
 
     buildCaseDetail(root, cards, selected);
     rebuildEvidenceModalItems();
+
+    // 다이어그램 렌더링 실행
+    const diagramContainer = byId('case-mermaid-container');
+    if (diagramContainer && !selected.card?.hideReviewDiagram) {
+        const mermaidId = diagramContainer.getAttribute('data-mermaid-id');
+        const diagrams = templateConfig.diagrams ?? {};
+        if (mermaidId && diagrams[mermaidId]) {
+            diagramContainer.innerHTML = diagrams[mermaidId];
+            mermaid.run({ querySelector: '#case-mermaid-container' }).catch(err => {
+                console.error('Mermaid render failed in detail page:', err);
+                diagramContainer.innerHTML = `<p style="color:#ffb4b4;">Diagram render failed: ${mermaidId}</p>`;
+            });
+        }
+    }
+
     analyticsSession.pageType = 'case_detail';
     analyticsSession.caseNumber = selected.caseNumber;
     analyticsSession.caseTitle = selected.card?.title || `Case ${selected.caseNumber}`;

@@ -423,5 +423,40 @@ export const diagrams = {
         class B1,B2,B3,B4,B5,B6,B7,B8 o
         class A1,A2,A3,A4,A5,A6,A7 b
         class A8 g
+    `,
+    'case-c-auth-optimization': `
+        graph TB
+        subgraph Integrated_Before ["BEFORE: Coupled & Redundant Auth"]
+            direction TB
+            B1[Client Request] --> B2[JwtFilter: loadUserByUsername]
+            B2 --> B3["Query: auth_user (1st)"]
+            B3 --> B4[Controller Handler]
+            B4 --> B5[ProjectAccessService: isOwner]
+            B5 --> B6["Query: project (2nd)"]
+            B5 --> B7["Query: project_active (3rd)"]
+            
+            B8[Social Login] --> B9[Tight Coupling with Vendor API]
+        end
+
+        subgraph Integrated_After ["AFTER: Unified Gate & OAuth2 Strategy"]
+            direction TB
+            A1[Client Request] --> A2["JwtFilter: Extract userId from Claims"]
+            A2 --> A3[Bypass auth_user Query]
+            A3 --> A4["@CheckProjectAccess (AOP Gate)"]
+            A4 --> A5["Single Query: isOwnerAndActive (1st)"]
+            
+            A6[Social Login] --> A7["OAuth2UserInfo Interface (DIP)"]
+            A7 --> A8[Google/Kakao/Naver Strategy]
+            A8 --> A9[Decoupled Domain Logic]
+        end
+
+        Integrated_Before -.->|Optimization & Abstraction| Integrated_After
+
+        classDef b fill:#161b22,stroke:#58a6ff,color:#c9d1d9
+        classDef o fill:#161b22,stroke:#d29922,color:#c9d1d9
+        classDef g fill:#161b22,stroke:#238636,color:#c9d1d9
+        class B1,B2,B3,B4,B5,B6,B7,B8,B9 o
+        class A1,A2,A3,A4,A5,A6,A7,A8 b
+        class A9 g
     `
 };

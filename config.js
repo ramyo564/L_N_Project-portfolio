@@ -226,12 +226,12 @@ export const templateConfig = {
                         impact: 'merge 경로 제거, 회원가입 응답을 202 Accepted + X-User-Id 흐름으로 전환'
                     },
                     {
-                        id: 'Case 2',
-                        anchorId: 'upgrade-todo-case-2',
-                        title: '인증/권한 경로 최적화 (3→1)',
-                        problem: 'JWT 인증/권한 검증에서 사용자·소유권 조회가 반복',
-                        action: 'JWT Claims + AOP 단일 권한게이트로 검증 경로 수렴',
-                        impact: '대표 단일 요청 기본 게이트 3 -> 1, JWT Claims + AOP 게이트'
+                        id: 'Case C',
+                        anchorId: 'upgrade-todo-case-C',
+                        title: '인증/권한 게이트 단일화 및 OAuth2 추상화',
+                        problem: '인증 N+1 쿼리 병목(3회→1회) 및 소셜 로그인 채널 확장에 따른 도메인 결합도 증가',
+                        action: 'JWT Claims 기반 인증 필터 최적화, AOP 선행 검증 도입 및 OAuth2 인터페이스 기반 추상화 설계',
+                        impact: '권한 게이트 단축으로 응답성 확보 및 신규 소셜 채널 추가 시 코드 수정 없는 확장성(OCP) 실현'
                     },
                     {
                         id: 'Case 3',
@@ -366,54 +366,51 @@ export const templateConfig = {
                             ]
                         },
                         {
-                            mermaidId: 'case-auth-nplus1-collapse',
-                            anchorId: 'upgrade-todo-case-2',
-                            title: 'Case 2. JWT Claims + AOP 권한게이트로 인증 N+1 경로 축소',
-                            subtitle: '2025-11 · 인증 필터와 프로젝트 접근 검증 최적화',
-                            overview: '요청마다 반복되던 auth_user 조회와 project 검증 쿼리를\nJWT Claims 기반 인증 + 단일 권한게이트로 정리한 케이스입니다.',
+                            mermaidId: 'case-c-auth-optimization',
+                            hideReviewDiagram: true,
+                            anchorId: 'upgrade-todo-case-C',
+                            title: 'Case C. 단일 권한 게이트 구축 및 소셜 로그인 통합을 통한 인증 아키텍처 최적화',
+                            subtitle: '2025.09 ~ 2025.11 · 도메인 결합도 완화 및 인증 쿼리 병목 해소',
+                            businessImpact: '대표 단일 요청의 권한 검증 게이트를 3단계에서 1단계로 축소하여 고부하 환경에서도 지연 없는 응답을 보장하고, 확장성 높은 다중 소셜 로그인 아키텍처를 완성했습니다.',
+                            overview: 'JWT Claims 기반 인증과 AOP 권한 게이트를 통합하고, OAuth2 인터페이스 기반 추상화로 다중 소셜 로그인 확장성을 확보한 케이스입니다.',
                             recruiterSummary: [
-                                '인증 성공 이후에도 같은 사용자/권한 정보를 반복 조회해 응답이 느려지는 문제가 있었습니다.',
-                                '검증 경로를 한 곳으로 모아 중복 확인을 제거하고 요청당 기본 비용을 낮췄습니다.',
-                                '대표 단일 요청 기본 권한 게이트를 3 -> 1로 줄였습니다.'
+                                '불필요하게 반복되던 권한 검증 로직을 JWT Claims와 AOP 기반의 단일 게이트로 통합하여 쿼리 횟수를 3회에서 1회로 줄였습니다.',
+                                'DI(의존성 주입) 및 DIP(의존성 역전 원칙)를 적용해 Google, Kakao, Naver 등 다중 소셜 로그인 구조를 추상화하여 도메인 결합도를 낮췄습니다.',
+                                '외부 벤더사의 변경이나 추가에도 핵심 비즈니스 로직이 영향받지 않는 유연하고 확장성 높은 인증 아키텍처를 확립했습니다.'
                             ],
-                            role: 'JwtAuthenticationFilter 최적화, @CheckProjectAccess 경계 정리, ownership 쿼리 단일화',
-                            stackSummary: 'JwtAuthenticationFilter, ProjectAccessAspect, ProjectOwnershipPersistenceAdapter',
-                            cause: '1) JWT 인증 요청마다 사용자 재조회가 발생해 요청당 기본 쿼리 비용이 누적됐습니다.\n2) 프로젝트 접근 검증이 핸들러마다 중복 호출되어 읽기 경로 부하가 커졌습니다.',
-                            problem: '1) JWT 인증 요청마다 DB에서 사용자 정보를 재조회해 auth_user 반복 쿼리가 누적되었습니다.\n2) project 접근 검증에서 소유권/활성 상태 확인이 요청 경로마다 중복 실행되었습니다.\n3) 고부하 테스트에서 인증 경로가 쿼리 부하를 키우는 병목으로 작동했습니다.',
-                            solution: '1) `JwtAuthenticationFilter`에서 `jwtProvider.getClaimsFromAccessToken` 기반으로 userId/email을 바로 추출했습니다.\n2) `AuthTokenCachePort`를 적용해 토큰 캐시 HIT 시 JWT 파싱도 생략하도록 구성했습니다.\n3) 컨트롤러에 `@CheckProjectAccess`를 적용하고 `ProjectAccessAspect`에서 선행 검증하도록 통일했습니다.\n4) ownership 검증은 `isOwnerAndActive` 경로로 수렴시켜 중복 검증 비용을 줄였습니다.',
-                            result: '1) 대표 단일 요청 기본 권한 게이트를 `3 -> 1`로 줄였습니다.\n2) JWT Claims + AOP 구조로 인증/권한 검증의 경계가 명확해져 고부하 시 응답 안정성이 개선되었습니다.',
-                            businessImpact: '대표 단일 요청의 권한 검증 게이트를 3단계에서 1단계로 축소하여, 고부하 환경에서도 안정적인 응답 속도를 유지했습니다.',
+                            role: '인증 필터 최적화, AOP 권한 게이트 설계, OAuth2 공급자 추상화 및 DI 구조 구현',
+                            stackSummary: 'Spring Security, JWT Claims, AOP, OAuth2, DI/DIP Architecture',
+                            cause: '1) JWT 인증 시마다 발생하는 사용자 재조회와 중복된 권한 검증 쿼리가 성능 병목을 유발.\n2) 소셜 로그인 채널 확장 시 도메인 로직과 외부 벤더 API 간의 강한 결합 발생.',
+                            problem: '모든 핵심 API 요청마다 AuthUser 조회 및 Project 검증 쿼리가 중복 발생(총 3회)하여 DB 부하를 가중시켰고, 소셜 로그인 벤더사마다 다른 응답 규격이 도메인 코드를 복잡하게 제작했습니다.',
+                            solution: '첫째, JWT Claims에서 직접 식별자를 추출하고 AOP 선행 검증을 도입해 인증 쿼리를 3회에서 1회로 최적화했습니다. 둘째, OAuth2UserInfo 인터페이스 기반 추상화를 통해 Google/Kakao/Naver 등 다중 채널을 전략 패턴으로 통합 관리하여 계층 간 결합을 해소했습니다.',
+                            result: '권한 게이트 단축으로 고부하 테스트 시 인증 병목을 제거했으며, OCP를 준수하는 확장 가능한 소셜 로그인 아키텍처를 구축해 신규 채널 추가 비용을 최소화했습니다.',
                             evidenceImages: [
                                 {
-                                    label: 'k6 Read 1000 Before',
-                                    src: './case2/before/case2-k6-read-1000-before.png',
-                                    alt: 'k6 read before case2'
+                                    label: 'BEFORE: Coupled & Redundant Auth',
+                                    src: './case-C/before_arch.png',
+                                    pairKey: '[아키텍처 최적화] 권한 검증 및 소셜 로그인 통합 전/후 구조도 비교'
                                 },
                                 {
-                                    label: 'k6 Read 1000 After',
-                                    src: './case2/after/case2-k6-read-1000-after.png',
-                                    alt: 'k6 read after case2'
+                                    label: 'AFTER: Unified Gate & OAuth2 Strategy',
+                                    src: './case-C/after_arch.png',
+                                    pairKey: '[아키텍처 최적화] 권한 검증 및 소셜 로그인 통합 전/후 구조도 비교'
                                 }
                             ],
                             extraEvidenceImages: [
-                                { label: 'Hibernate Queries Before', src: './case2/before/case2-hibernate-queries-before.png' },
-                                { label: 'Hibernate Queries After', src: './case2/after/case2-hibernate-queries-after.png' },
-                                { label: 'Redis Empty Before', src: './case2/before/case2-redis-empty-before.png', pairKey: 'redis auth token' },
-                                { label: 'Redis Key After', src: './case2/after/case2-redis-key-after.png', pairKey: 'redis auth token' },
-                                { label: 'Grafana Slow Query Before', src: './case2/before/case2-grafana-slowQuery-before.png' },
-                                { label: 'Grafana Slow Query After', src: './case2/after/case2-grafana-slowQuery-after.png' },
-                                { label: 'Grafana Postgres Before', src: './case2/before/case2-grafana-postgres-before.png' },
-                                { label: 'Grafana Postgres After', src: './case2/after/case2-grafana-postgres-after.png' }
+                                { label: 'Before: Redundant Auth Queries (3x)', src: './case2/before/case2-hibernate-queries-before.png', pairKey: '[인증 쿼리 최적화] API 호출 시 발생하는 Hibernate 쿼리 횟수 감소' },
+                                { label: 'After: Optimized Unified Query (1x)', src: './case2/after/case2-hibernate-queries-after.png', pairKey: '[인증 쿼리 최적화] API 호출 시 발생하는 Hibernate 쿼리 횟수 감소' },
+                                { label: 'Before: Auth Bottleneck (Slow Response)', src: './case2/before/case2-grafana-slowQuery-before.png', pairKey: '[최종 임팩트] 권한 게이트 단축으로 인한 인증 병목 제거 및 응답 시간 안정화' },
+                                { label: 'After: Stabilized Response Time', src: './case2/after/case2-grafana-slowQuery-after.png', pairKey: '[최종 임팩트] 권한 게이트 단축으로 인한 인증 병목 제거 및 응답 시간 안정화' }
                             ],
-                            skills: ['JWT Claims', 'AOP Authorization', 'Query Reduction', 'Security Optimization'],
+                            skills: ['JWT Claims', 'AOP Authorization', 'OAuth2/OIDC', 'DIP Design', 'Structural Optimization'],
                             highlights: [
                                 'JWT claims supply principal without per-request auth_user lookup',
-                                'Auth token cache avoids repeated parsing and context rebuild',
-                                'AOP CheckProjectAccess centralizes authorization gate',
-                                'Ownership validation converges to one repository predicate'
+                                'AOP @CheckProjectAccess centralizes authorization gate',
+                                'DIP-based OAuth2UserInfo interface decouples vendor specifics',
+                                'Unified gate achieves 3:1 reduction in per-request database calls'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_2', href: './case2/CASE-2.md' },
+                                { label: 'EVIDENCE_CASE_C', href: './case-C/CASE-C.md' },
                                 { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-2-path' }
                             ]
                         }
