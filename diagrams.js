@@ -361,5 +361,34 @@ export const diagrams = {
         classDef g fill:#161b22,stroke:#238636,color:#c9d1d9
         class Start,P1,P2,P3,P4,P5 b
         class ResultRead,ResultWrite g
+    `,
+
+    'case-integrated-ramp-up-tuning': `
+        graph TB
+        subgraph Discovery["병목 발견 (1000VU Ramp-up)"]
+            Start[Virtual Threads 1000VU k6 Test] --> B1[API Thread Blocking Bottleneck]
+            B1 --> B2[Redis & RabbitMQ Sync Publish Delay]
+            B1 --> B3[Non-atomic Save Path Contention]
+        end
+
+        subgraph Resolution["통합 최적화 (Resolution)"]
+            B2 --> A1[Grafana Matrix Testing & Monitoring]
+            A1 --> A2[RabbitMQ Async Publisher Decorator]
+            
+            B3 --> A3[insertWithPosition Native Query]
+            A3 --> A4[Flyway Partial Index Migration]
+        end
+
+        subgraph Impact["결과 (Impact)"]
+            A2 --> R1[Failed Rate 0% & p95 488ms -> 124ms]
+            A4 --> R2[Read RPS +279% & Write RPS +145%]
+        end
+
+        classDef b fill:#161b22,stroke:#58a6ff,color:#c9d1d9
+        classDef o fill:#161b22,stroke:#d29922,color:#c9d1d9
+        classDef g fill:#161b22,stroke:#238636,color:#c9d1d9
+        class Start,A1,A2,A3,A4 b
+        class B1,B2,B3 o
+        class R1,R2 g
     `
 };
