@@ -24,7 +24,7 @@
   <rect class="bg" x="0" y="0" width="1200" height="660"></rect>
   <text x="60" y="72" class="tag">BEFORE · COUPLED AI FLOW</text>
   <text x="60" y="118" class="title">AI analysis and task creation share one request path</text>
-  <text x="60" y="154" class="subtitle">A slow LLM call can hold the same Spring request thread that also handles feedback and rerequest.</text>
+  <text x="60" y="154" class="subtitle">흐름: 같은 Spring 요청 스레드가 LLM 응답을 기다리며 분석과 Task 생성이 함께 지연됩니다.</text>
 
   <rect x="70" y="200" width="530" height="360" class="node"></rect>
   <text x="110" y="250" class="node-title">Spring Core + AI Orchestration</text>
@@ -47,5 +47,5 @@
   <path class="arrow-soft" d="M 600 415 L 730 455"></path>
   <path class="arrow" d="M 600 470 L 700 470"></path>
 
-  <text x="60" y="612" class="note">Bottleneck: AI delay and core work share the same request boundary.</text>
+  <text x="60" y="612" class="note">병목: AI 지연과 코어 작업이 같은 요청 경계를 공유합니다.</text>
 </svg>

@@ -28,7 +28,7 @@
   <rect class="bg" x="0" y="0" width="1200" height="660"></rect>
   <text x="60" y="72" class="tag">AFTER · SEPARATED AI BOUNDARY</text>
   <text x="60" y="118" class="title">FastAPI handles AI work while Spring handles core work</text>
-  <text x="60" y="154" class="subtitle">Redis keeps session / latest / quota / history so the analysis can resume safely after interruption.</text>
+  <text x="60" y="154" class="subtitle">흐름: FastAPI가 LLM을 호출하고 Redis에 상태를 저장한 뒤 Spring으로 Task를 넘깁니다.</text>
 
   <rect x="70" y="200" width="300" height="220" class="node"></rect>
   <text x="220" y="248" text-anchor="middle" class="node-title">FastAPI AI Service</text>
@@ -55,5 +55,5 @@
   <path class="arrow-accent" d="M 370 220 L 835 220"></path>
   <path class="arrow" d="M 370 410 L 460 445"></path>
 
-  <text x="60" y="612" class="note">AI latency stays inside the AI boundary, so the core service does not wait on the model call.</text>
+  <text x="60" y="612" class="note">AI 지연은 AI 경계 안에 머물고, 코어 서비스는 별도 경로에서 계속 동작합니다.</text>
 </svg>

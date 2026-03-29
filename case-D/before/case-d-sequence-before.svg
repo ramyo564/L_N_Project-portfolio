@@ -11,7 +11,7 @@
       .subtitle { font: 500 18px 'Inter', 'Segoe UI', sans-serif; fill: #8b949e; }
       .tag { font: 700 14px 'Inter', 'Segoe UI', sans-serif; fill: #ff7b72; letter-spacing: 0.18em; }
       .step { fill: #161b22; stroke: #f0883e; stroke-width: 2.5; rx: 22; }
-      .step-title { font: 700 22px 'Inter', 'Segoe UI', sans-serif; fill: #f0f6fc; }
+      .step-title { font: 700 21px 'Inter', 'Segoe UI', sans-serif; fill: #f0f6fc; }
       .step-text { font: 500 16px 'Inter', 'Segoe UI', sans-serif; fill: #c9d1d9; }
       .arrow { stroke: #f0883e; stroke-width: 4; fill: none; marker-end: url(#arrow); }
       .arrow-flow { stroke: #f0883e; stroke-width: 3; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
@@ -22,42 +22,43 @@
   <rect class="bg" x="0" y="0" width="1200" height="660"></rect>
   <text x="60" y="72" class="tag">BEFORE · BLOCKED SEQUENCE</text>
   <text x="60" y="116" class="title">Request thread waits until AI work finishes</text>
+  <text x="60" y="152" class="subtitle">흐름: 브라우저 요청이 같은 Spring 스레드에서 AI 응답을 기다리며 다음 단계가 막힙니다.</text>
 
   <!-- Row 1 -->
-  <rect x="50" y="155" width="320" height="125" class="step"></rect>
-  <text x="210" y="195" text-anchor="middle" class="step-title">1. Browser</text>
-  <text x="210" y="230" text-anchor="middle" class="step-text">User submits failed TODO</text>
-  <text x="210" y="260" text-anchor="middle" class="step-text">Single request enters Spring</text>
+  <rect x="50" y="180" width="320" height="125" class="step"></rect>
+  <text x="210" y="209" text-anchor="middle" class="step-title">1. Browser</text>
+  <text x="210" y="242" text-anchor="middle" class="step-text">실패한 TODO 제출</text>
+  <text x="210" y="270" text-anchor="middle" class="step-text">같은 Spring 요청 진입</text>
 
-  <rect x="430" y="155" width="320" height="125" class="step"></rect>
-  <text x="590" y="195" text-anchor="middle" class="step-title">2. Spring waits</text>
-  <text x="590" y="230" text-anchor="middle" class="step-text">Analyze / recommend</text>
-  <text x="590" y="260" text-anchor="middle" class="step-text">LLM call blocks the thread</text>
+  <rect x="430" y="180" width="320" height="125" class="step"></rect>
+  <text x="590" y="209" text-anchor="middle" class="step-title">2. Spring waits</text>
+  <text x="590" y="242" text-anchor="middle" class="step-text">분석·추천 수행</text>
+  <text x="590" y="270" text-anchor="middle" class="step-text">LLM 응답 대기</text>
 
-  <rect x="810" y="155" width="320" height="125" class="step"></rect>
-  <text x="970" y="195" text-anchor="middle" class="step-title">3. Feedback</text>
-  <text x="970" y="230" text-anchor="middle" class="step-text">Rerequest stays inside</text>
-  <text x="970" y="260" text-anchor="middle" class="step-text">the same call path</text>
+  <rect x="810" y="180" width="320" height="125" class="step"></rect>
+  <text x="970" y="209" text-anchor="middle" class="step-title">3. Feedback</text>
+  <text x="970" y="242" text-anchor="middle" class="step-text">재요청도 같은 경로</text>
+  <text x="970" y="270" text-anchor="middle" class="step-text">응답이 끝나야 진행</text>
 
   <!-- Row 2 -->
-  <rect x="50" y="335" width="320" height="125" class="step"></rect>
-  <text x="210" y="375" text-anchor="middle" class="step-title">4. Task create</text>
-  <text x="210" y="410" text-anchor="middle" class="step-text">Task is created only after</text>
-  <text x="210" y="435" text-anchor="middle" class="step-text">the AI wait finishes</text>
+  <rect x="50" y="360" width="320" height="125" class="step"></rect>
+  <text x="210" y="389" text-anchor="middle" class="step-title">4. Task create</text>
+  <text x="210" y="422" text-anchor="middle" class="step-text">AI 대기 후 생성</text>
+  <text x="210" y="450" text-anchor="middle" class="step-text">후속 작업도 지연</text>
 
-  <rect x="430" y="335" width="320" height="125" class="step"></rect>
-  <text x="590" y="375" text-anchor="middle" class="step-title">5. Delay spreads</text>
-  <text x="590" y="410" text-anchor="middle" class="step-text">Core work and AI work</text>
-  <text x="590" y="435" text-anchor="middle" class="step-text">share the same boundary</text>
+  <rect x="430" y="360" width="320" height="125" class="step"></rect>
+  <text x="590" y="389" text-anchor="middle" class="step-title">5. Delay spreads</text>
+  <text x="590" y="422" text-anchor="middle" class="step-text">코어 작업과 AI 작업</text>
+  <text x="590" y="450" text-anchor="middle" class="step-text">같은 경계를 공유</text>
 
   <!-- Arrows -->
-  <path class="arrow" d="M 372 217.5 L 428 217.5"></path>
-  <path class="arrow" d="M 752 217.5 L 808 217.5"></path>
+  <path class="arrow" d="M 372 242.5 L 428 242.5"></path>
+  <path class="arrow" d="M 752 242.5 L 808 242.5"></path>
   
   <!-- Flow Connector -->
-  <path class="arrow-flow" d="M 970 282 C 970 310, 210 305, 210 333"></path>
+  <path class="arrow-flow" d="M 970 305 C 970 350, 320 350, 210 360"></path>
 
-  <path class="arrow" d="M 372 397.5 L 428 397.5"></path>
+  <path class="arrow" d="M 372 422.5 L 428 422.5"></path>
 
-  <text x="60" y="596" class="note">Bottleneck: one blocked request keeps the entire user flow waiting.</text>
+  <text x="60" y="596" class="note">병목: 한 요청이 끝날 때까지 후속 작업도 함께 대기합니다.</text>
 </svg>
