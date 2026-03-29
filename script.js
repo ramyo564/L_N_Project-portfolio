@@ -2558,12 +2558,121 @@ function setupExtraEvidenceModal() {
             }
         }
         let isZoomed = false;
+        let previewBaseWidth = 0;
+        let previewBaseHeight = 0;
+        let isPanning = false;
+        let panPointerId = null;
+        let panStartX = 0;
+        let panStartY = 0;
+        let panStartScrollLeft = 0;
+        let panStartScrollTop = 0;
+        let suppressNextPreviewClick = false;
+        const PAN_THRESHOLD = 4;
         const thumbButtons = [];
+
+        const clearPreviewSizing = () => {
+            isPanning = false;
+            panPointerId = null;
+            suppressNextPreviewClick = false;
+            previewBaseWidth = 0;
+            previewBaseHeight = 0;
+            previewImage.style.width = '';
+            previewImage.style.height = '';
+            previewImage.classList.remove('is-zoomed');
+            previewImageWrap.classList.remove('is-zoomed');
+            previewImageWrap.classList.remove('is-panning');
+            previewImageWrap.scrollLeft = 0;
+            previewImageWrap.scrollTop = 0;
+            zoomButton.textContent = 'ZOOM';
+        };
+
+        const centerPreviewScroll = () => {
+            const maxLeft = Math.max(0, previewImageWrap.scrollWidth - previewImageWrap.clientWidth);
+            const maxTop = Math.max(0, previewImageWrap.scrollHeight - previewImageWrap.clientHeight);
+            previewImageWrap.scrollLeft = maxLeft > 0 ? Math.floor(maxLeft / 2) : 0;
+            previewImageWrap.scrollTop = maxTop > 0 ? Math.floor(maxTop / 2) : 0;
+        };
+
+        const applyPreviewSizing = () => {
+            previewImage.classList.toggle('is-zoomed', isZoomed);
+            previewImageWrap.classList.toggle('is-zoomed', isZoomed);
+            zoomButton.textContent = isZoomed ? 'RESET_ZOOM' : 'ZOOM';
+
+            if (!previewBaseWidth || !previewBaseHeight) {
+                if (!isZoomed) {
+                    previewImage.style.width = '';
+                    previewImage.style.height = '';
+                    previewImageWrap.scrollLeft = 0;
+                    previewImageWrap.scrollTop = 0;
+                }
+                return;
+            }
+
+            const scale = isZoomed ? 1.8 : 1;
+            previewImage.style.width = `${Math.max(1, Math.round(previewBaseWidth * scale))}px`;
+            previewImage.style.height = `${Math.max(1, Math.round(previewBaseHeight * scale))}px`;
+
+            if (isZoomed) {
+                window.requestAnimationFrame(centerPreviewScroll);
+            } else {
+                previewImageWrap.scrollLeft = 0;
+                previewImageWrap.scrollTop = 0;
+            }
+        };
+
+        const endPreviewPan = () => {
+            if (!isPanning) {
+                return;
+            }
+
+            isPanning = false;
+            previewImageWrap.classList.remove('is-panning');
+
+            if (panPointerId !== null && previewImageWrap.hasPointerCapture(panPointerId)) {
+                try {
+                    previewImageWrap.releasePointerCapture(panPointerId);
+                } catch {
+                    // Ignore release errors if the pointer capture already ended.
+                }
+            }
+
+            panPointerId = null;
+
+            if (suppressNextPreviewClick) {
+                window.setTimeout(() => {
+                    suppressNextPreviewClick = false;
+                }, 0);
+            }
+        };
+
+        const measurePreviewSizing = () => {
+            if (!previewImage.complete || previewImage.naturalWidth <= 0 || previewImage.naturalHeight <= 0) {
+                return false;
+            }
+
+            const rect = previewImage.getBoundingClientRect();
+            if (rect.width <= 0 || rect.height <= 0) {
+                return false;
+            }
+
+            previewBaseWidth = rect.width;
+            previewBaseHeight = rect.height;
+            applyPreviewSizing();
+            return true;
+        };
+
+        const schedulePreviewSizing = () => {
+            window.requestAnimationFrame(() => {
+                window.requestAnimationFrame(measurePreviewSizing);
+            });
+        };
+
+        previewImage.addEventListener('load', schedulePreviewSizing);
+        previewImage.addEventListener('dragstart', (event) => event.preventDefault());
 
         const setZoom = (nextZoom) => {
             isZoomed = nextZoom;
-            previewImage.classList.toggle('is-zoomed', isZoomed);
-            zoomButton.textContent = isZoomed ? 'RESET_ZOOM' : 'ZOOM';
+            applyPreviewSizing();
         };
 
         const setActive = (index, shouldTrack = false) => {
@@ -2572,11 +2681,12 @@ function setupExtraEvidenceModal() {
             if (!activeItem) {
                 return;
             }
+            isZoomed = false;
+            clearPreviewSizing();
             previewImage.src = activeItem.src;
             previewImage.alt = activeItem.alt;
             previewCaption.textContent = `[${activeItem.phase.toUpperCase()}] ${activeItem.label}`;
             originalLink.href = activeItem.src;
-            setZoom(false);
 
             thumbButtons.forEach((button) => {
                 const buttonIndex = Number(button.dataset.index || '-1');
@@ -2595,6 +2705,10 @@ function setupExtraEvidenceModal() {
                     modalName: 'extra_evidence_modal',
                     evidence_phase: activeItem.phase || 'unknown'
                 });
+            }
+
+            if (modal.classList.contains('is-open')) {
+                schedulePreviewSizing();
             }
         };
 
@@ -2690,6 +2804,10 @@ function setupExtraEvidenceModal() {
             });
         });
         previewImageWrap.addEventListener('click', () => {
+            if (suppressNextPreviewClick) {
+                suppressNextPreviewClick = false;
+                return;
+            }
             const nextZoom = !isZoomed;
             setZoom(nextZoom);
             trackSelectContent({
@@ -2702,6 +2820,50 @@ function setupExtraEvidenceModal() {
                 elementLabel: 'PREVIEW_IMAGE',
                 modalName: 'extra_evidence_modal'
             });
+        });
+
+        previewImageWrap.addEventListener('pointerdown', (event) => {
+            if (!isZoomed || event.button !== 0) {
+                return;
+            }
+
+            isPanning = true;
+            panPointerId = event.pointerId;
+            panStartX = event.clientX;
+            panStartY = event.clientY;
+            panStartScrollLeft = previewImageWrap.scrollLeft;
+            panStartScrollTop = previewImageWrap.scrollTop;
+            previewImageWrap.classList.add('is-panning');
+
+            if (previewImageWrap.setPointerCapture) {
+                previewImageWrap.setPointerCapture(event.pointerId);
+            }
+
+            event.preventDefault();
+        });
+
+        previewImageWrap.addEventListener('pointermove', (event) => {
+            if (!isPanning || event.pointerId !== panPointerId) {
+                return;
+            }
+
+            const deltaX = event.clientX - panStartX;
+            const deltaY = event.clientY - panStartY;
+            if (Math.abs(deltaX) > PAN_THRESHOLD || Math.abs(deltaY) > PAN_THRESHOLD) {
+                suppressNextPreviewClick = true;
+            }
+
+            previewImageWrap.scrollLeft = panStartScrollLeft - deltaX;
+            previewImageWrap.scrollTop = panStartScrollTop - deltaY;
+            event.preventDefault();
+        });
+
+        previewImageWrap.addEventListener('pointerup', endPreviewPan);
+        previewImageWrap.addEventListener('pointercancel', endPreviewPan);
+        previewImageWrap.addEventListener('pointerleave', (event) => {
+            if (isPanning && event.pointerId === panPointerId && !(event.buttons & 1)) {
+                endPreviewPan();
+            }
         });
 
         originalLink.addEventListener('click', () => {
@@ -2732,6 +2894,7 @@ function setupExtraEvidenceModal() {
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         syncModalBodyLock();
+        schedulePreviewSizing();
 
         trackSelectContent({
             contentType: 'extra_evidence',

@@ -1788,6 +1788,7 @@ body.modal-open {
 .extra-evidence-preview-image-wrap {
     flex: 1;
     min-height: 280px;
+    min-width: 0;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background: #0a1019;
@@ -1799,15 +1800,29 @@ body.modal-open {
 }
 
 .extra-evidence-preview-image {
+    display: block;
     max-width: 100%;
     max-height: 100%;
+    width: auto;
+    height: auto;
     object-fit: contain;
-    transition: transform 0.2s ease;
-    transform-origin: center center;
 }
 
 .extra-evidence-preview-image.is-zoomed {
-    transform: scale(1.8);
+    max-width: none;
+    max-height: none;
+}
+
+.extra-evidence-preview-image-wrap.is-zoomed {
+    align-items: flex-start;
+    justify-content: flex-start;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.extra-evidence-preview-image-wrap.is-panning {
+    cursor: grabbing;
 }
 
 .extra-evidence-preview-caption {
@@ -2584,4 +2599,3 @@ body.modal-open {
     color: #10b981;
     font-weight: 600;
 }
-

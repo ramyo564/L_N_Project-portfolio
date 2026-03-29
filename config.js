@@ -277,7 +277,7 @@ export const templateConfig = {
                             role: '1000VU 부하 테스트 설계 및 병목 추적, RabbitMQ 비동기 데코레이터 구현, DB 인덱스 및 원자적 쿼리 통합 튜닝',
                             stackSummary: 'Virtual Threads, RabbitMQ (Async Publisher), Flyway index migration, k6, Grafana',
                             cause: 'Virtual Threads(가상 스레드) 도입 후 시스템 한계점을 명확히 파악하기 위해 부하 테스트를 진행한 결과, DB가 아닌 Redis 및 RabbitMQ 동기 발행(convertAndSend) 구간과 저장 경로의 원자성 부족이 주요 한계로 드러났습니다.',
-                            problem: '1000VU 점진 유입 부하 시, DB 커넥션은 안정적이었으나 오히려 Redis 호출 구간과 요청 스레드가 RabbitMQ 동기 발행 대기를 직접 부담하는 과정에서 API 스레드 블로킹이 발생했습니다. 여기에 저장 경로의 경쟁(원자성 부족)이 겹치면서 응답 지연과 실패(failed rate 0.93%)가 발생하는 쓰기 성능 한계가 발견되었습니다.',
+                            problem: '성능 개선 후 부하를 올려 1000VU 점진 부하 시, DB 커넥션은 안정적이었으나 오히려 Redis 호출 구간과 요청 스레드가 RabbitMQ 동기 발행 대기를 직접 부담하는 과정에서 API 스레드 블로킹이 발생했습니다. 여기에 저장 경로의 경쟁(원자성 부족)이 겹치면서 응답 지연과 실패(failed rate 0.93%)가 발생하는 쓰기 성능 한계가 발견되었습니다.',
                             solution: '가상 스레드 사용 여부와 인프라 설정 조합의 매트릭스 실험을 진행하고, Grafana 모니터링 지표를 분석하여 안정화 지점을 철저히 검증했습니다.\n\nRabbitMQ 동기 발행을 전용 executor 기반 비동기 데코레이터로 분리하여 API 응답 경로의 블로킹을 근본적으로 해소했습니다.\n\n원자성을 보장하는 insertWithPosition 네이티브 쿼리와 Flyway 인덱스 최적화를 통합 적용해 병목을 제거했습니다.',
                             result: '통합 튜닝의 결과로 http.req failed.rate 0.93% -> 0% 개선 및 p95 응답 지연을 488ms에서 124ms로 단축했습니다. 또한 500VU Baseline 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916) 대폭 향상을 달성했습니다.',
                             evidenceImages: [
