@@ -1929,56 +1929,104 @@ body.modal-open {
 .k6-overview-layout {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 1.25rem;
+}
+
+.k6-overview-body-cols {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.k6-overview-col-side,
+.k6-overview-col-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
 }
 
 .k6-overview-summary-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.65rem;
+    gap: 0.8rem;
+    padding: 0.2rem;
+    background: rgba(88, 166, 255, 0.05);
+    border: 1px solid rgba(88, 166, 255, 0.15);
+    border-radius: 12px;
 }
 
 .k6-overview-summary-item {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 0.64rem 0.72rem;
+    border: none;
+    background: transparent;
+    padding: 0.8rem 1rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.k6-overview-summary-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 1px;
+    background: var(--border-color);
+    opacity: 0.5;
 }
 
 .k6-overview-summary-label {
     font-family: var(--font-code);
-    font-size: 0.65rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.32rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
 }
 
 .k6-overview-summary-value {
     font-family: var(--font-code);
-    font-size: 0.78rem;
-    color: var(--text-primary);
-    line-height: 1.5;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.25;
 }
 
 .k6-overview-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
 }
 
 .k6-overview-card {
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 0.68rem 0.74rem;
+    background: rgba(0, 0, 0, 0.24);
+    padding: 0.9rem 1rem;
     min-width: 0;
+    transition: border-color 0.2s ease;
+}
+
+.k6-overview-card:hover {
+    border-color: rgba(88, 166, 255, 0.3);
 }
 
 .k6-overview-card-title {
     font-family: var(--font-code);
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
     color: var(--accent-blue);
-    margin-bottom: 0.42rem;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.k6-overview-card-title::before {
+    content: "•";
+    color: var(--accent-blue);
 }
 
 .k6-overview-list {
@@ -2164,9 +2212,22 @@ body.modal-open {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .k6-overview-summary-grid,
+    .k6-overview-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+    }
+
+    .k6-overview-summary-item:not(:last-child)::after {
+        display: none;
+    }
+
+    .k6-overview-body-cols {
+        grid-template-columns: 1fr;
+    }
+
     .k6-overview-cards-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        display: flex;
+        flex-direction: column;
     }
 
     .section-recruiter-card-grid {
@@ -2457,9 +2518,14 @@ body.modal-open {
     }
 
     .k6-overview-summary-grid,
-    .k6-overview-cards-grid,
+    .k6-overview-body-cols,
     .k6-overview-compare-body {
         grid-template-columns: 1fr;
+    }
+
+    .k6-overview-cards-grid {
+        display: flex;
+        flex-direction: column;
     }
 
     .k6-overview-figure img {

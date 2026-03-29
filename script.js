@@ -2229,26 +2229,34 @@ function setupK6OverviewModal() {
         );
         layout.appendChild(summaryGrid);
 
-        const cardsGrid = document.createElement('section');
-        cardsGrid.className = 'k6-overview-cards-grid';
+        const bodyCols = document.createElement('div');
+        bodyCols.className = 'k6-overview-body-cols';
 
+        const sideCol = document.createElement('aside');
+        sideCol.className = 'k6-overview-col-side';
+
+        const mainCol = document.createElement('main');
+        mainCol.className = 'k6-overview-col-main';
+
+        // Sidebar content: HW and Protocol
         if (hardwareRows.length > 0) {
             const hardwareLines = hardwareRows.map((item) => `${item.label || 'ITEM'}: ${item.value || 'N/A'}`);
-            cardsGrid.appendChild(createListCard('HW / ENVIRONMENT', hardwareLines));
+            sideCol.appendChild(createListCard('HW / ENVIRONMENT', hardwareLines));
         }
         if (measurementProtocol.length > 0) {
-            cardsGrid.appendChild(createListCard('MEASUREMENT_PROTOCOL', measurementProtocol, true));
+            sideCol.appendChild(createListCard('MEASUREMENT_PROTOCOL', measurementProtocol, true));
         }
+
+        // Main content: Results and DB Estimation
         if (resultInterpretation.length > 0) {
-            cardsGrid.appendChild(createListCard('RESULT_INTERPRETATION', resultInterpretation));
+            mainCol.appendChild(createListCard('RESULT_INTERPRETATION', resultInterpretation));
         }
         if (keyMetrics.length > 0) {
-            cardsGrid.appendChild(createListCard(overview.keyMetricsTitle || 'MEASURED_RESULT', keyMetrics));
+            mainCol.appendChild(createListCard(overview.keyMetricsTitle || 'MEASURED_RESULT', keyMetrics));
         }
         if (dbRows.length > 0) {
-            cardsGrid.appendChild(createListCard('DB_ROW_ESTIMATION', dbRows, true));
+            mainCol.appendChild(createListCard('DB_ROW_ESTIMATION', dbRows, true));
         }
-        layout.appendChild(cardsGrid);
 
         if (comparisons.length > 0) {
             const compareSection = document.createElement('section');
@@ -2367,8 +2375,11 @@ function setupK6OverviewModal() {
                 compareSection.appendChild(compareCard);
             });
 
-            layout.appendChild(compareSection);
+            mainCol.appendChild(compareSection);
         }
+
+        bodyCols.append(sideCol, mainCol);
+        layout.appendChild(bodyCols);
 
         if (links.length > 0) {
             const linkRow = document.createElement('section');
