@@ -4,6 +4,13 @@
     50% { background-color: rgba(88, 166, 255, 0.15); box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1); }
     100% { background-color: transparent; box-shadow: none; }
 }
+
+@keyframes hero-button-pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.4); }
+    70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(88, 166, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(88, 166, 255, 0); }
+}
+
 .is-target-highlight {
     animation: target-highlight-pulse 2s ease-out forwards;
 }
@@ -579,22 +586,43 @@ body.modal-open {
 }
 
 .hero-action-btn {
-    border: 1px solid rgba(88, 166, 255, 0.5);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(88, 166, 255, 0.6);
     border-radius: 6px;
-    background: rgba(88, 166, 255, 0.12);
-    color: var(--accent-blue);
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.22), rgba(88, 166, 255, 0.1));
+    color: #ffffff;
     font-family: var(--font-code);
     font-size: 0.74rem;
+    font-weight: 700;
     line-height: 1;
-    padding: 0.56rem 0.78rem;
+    padding: 0.65rem 0.9rem;
     cursor: pointer;
-    transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 15px rgba(88, 166, 255, 0.15);
+    animation: hero-button-pulse 3s infinite;
+    overflow: hidden;
+}
+
+.hero-action-btn::before {
+    content: "📊";
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 4px rgba(88, 166, 255, 0.6));
 }
 
 .hero-action-btn:hover {
     color: #ffffff;
     border-color: var(--accent-blue);
-    background: rgba(88, 166, 255, 0.2);
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.35), rgba(88, 166, 255, 0.15));
+    box-shadow: 0 0 20px rgba(88, 166, 255, 0.4);
+    transform: translateY(-1px) scale(1.03);
+    animation-play-state: paused;
+}
+
+.hero-action-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .skill-grid {

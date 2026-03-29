@@ -39,7 +39,7 @@ export const templateConfig = {
             { label: 'READ p95 (500VU)', value: '975ms -> 141ms', delta: '-86%' }
         ],
         diagramNote: '세부 코드 경로와 증거 체인은 아래 CODE_EVIDENCE_MAP에서 확인 가능합니다.',
-        k6ButtonLabel: '500VU BEFORE/CURRENT 증거 보기',
+        k6ButtonLabel: '성능 비교 : 500VU BEFORE/CURRENT',
         metrics: [
             {
                 label: '요약',
