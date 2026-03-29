@@ -1797,6 +1797,8 @@ body.modal-open {
     align-items: center;
     justify-content: center;
     cursor: zoom-in;
+    touch-action: none;
+    user-select: none;
 }
 
 .extra-evidence-preview-image {
@@ -1817,8 +1819,6 @@ body.modal-open {
     align-items: flex-start;
     justify-content: flex-start;
     cursor: grab;
-    touch-action: none;
-    user-select: none;
 }
 
 .extra-evidence-preview-image-wrap.is-panning {

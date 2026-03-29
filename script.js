@@ -429,6 +429,36 @@ function syncModalBodyLock() {
     document.body.classList.toggle('modal-open', hasOpenModal);
 }
 
+function getModalReturnFocusTarget(modal) {
+    const activeElement = document.activeElement;
+    if (!(activeElement instanceof HTMLElement)) {
+        return null;
+    }
+    if (activeElement === document.body || activeElement === document.documentElement) {
+        return null;
+    }
+    if (modal.contains(activeElement)) {
+        return null;
+    }
+    return activeElement;
+}
+
+function restoreModalFocus(target) {
+    if (target instanceof HTMLElement && target.isConnected && typeof target.focus === 'function') {
+        try {
+            target.focus({ preventScroll: true });
+            return;
+        } catch {
+            target.focus();
+            return;
+        }
+    }
+
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
+}
+
 function setupUptime() {
     const uptimeElement = byId('uptime');
     if (!uptimeElement) {
@@ -2079,6 +2109,7 @@ function setupK6OverviewModal() {
     }
 
     let activeLabel = 'K6_TEST_ENVIRONMENT';
+    let returnFocusTarget = null;
 
     const durationToSeconds = (durationToken) => {
         const text = String(durationToken || '').trim().toLowerCase();
@@ -2169,6 +2200,11 @@ function setupK6OverviewModal() {
             : 0;
 
         modal.classList.remove('is-open');
+        if (wasOpen) {
+            restoreModalFocus(returnFocusTarget);
+        }
+        returnFocusTarget = null;
+        modal.inert = true;
         modal.setAttribute('aria-hidden', 'true');
         modalContent.replaceChildren();
         analyticsSession.k6OverviewModalOpenedAt = 0;
@@ -2195,6 +2231,8 @@ function setupK6OverviewModal() {
             return;
         }
 
+        returnFocusTarget = getModalReturnFocusTarget(modal);
+        modal.inert = false;
         const profile = String(overview.profile || '').trim();
         const totalDurationSeconds = profile
             .split(',')
@@ -2457,6 +2495,7 @@ function setupExtraEvidenceModal() {
     }
 
     let activeCaseId = 'unknown_case';
+    let returnFocusTarget = null;
 
     const closeModal = () => {
         const wasOpen = modal.classList.contains('is-open');
@@ -2465,6 +2504,11 @@ function setupExtraEvidenceModal() {
             ? Math.max(0, Date.now() - analyticsSession.extraEvidenceModalOpenedAt)
             : 0;
         modal.classList.remove('is-open');
+        if (wasOpen) {
+            restoreModalFocus(returnFocusTarget);
+        }
+        returnFocusTarget = null;
+        modal.inert = true;
         modal.setAttribute('aria-hidden', 'true');
         modalContent.replaceChildren();
         syncModalBodyLock();
@@ -2498,6 +2542,8 @@ function setupExtraEvidenceModal() {
         const caseId = String(options.caseId || 'unknown_case').trim();
         activeCaseId = caseId;
         analyticsSession.extraEvidenceModalOpenedAt = Date.now();
+        returnFocusTarget = getModalReturnFocusTarget(modal);
+        modal.inert = false;
         modalTitle.textContent = heading
             ? heading
             : 'Extra Images · EXTRA_IMAGES';
@@ -2560,19 +2606,30 @@ function setupExtraEvidenceModal() {
         let isZoomed = false;
         let previewBaseWidth = 0;
         let previewBaseHeight = 0;
+        const PREVIEW_ZOOM_SCALE = 1.8;
         let isPanning = false;
         let panPointerId = null;
         let panStartX = 0;
         let panStartY = 0;
         let panStartScrollLeft = 0;
         let panStartScrollTop = 0;
+        let pendingTouchPan = false;
+        let touchStartImageRect = null;
+        let touchStartWrapRect = null;
         let suppressNextPreviewClick = false;
         const PAN_THRESHOLD = 4;
         const thumbButtons = [];
 
+        const resetTouchGesture = () => {
+            pendingTouchPan = false;
+            touchStartImageRect = null;
+            touchStartWrapRect = null;
+        };
+
         const clearPreviewSizing = () => {
             isPanning = false;
             panPointerId = null;
+            resetTouchGesture();
             suppressNextPreviewClick = false;
             previewBaseWidth = 0;
             previewBaseHeight = 0;
@@ -2593,7 +2650,8 @@ function setupExtraEvidenceModal() {
             previewImageWrap.scrollTop = maxTop > 0 ? Math.floor(maxTop / 2) : 0;
         };
 
-        const applyPreviewSizing = () => {
+        const applyPreviewSizing = (options = {}) => {
+            const shouldCenter = options.center !== false;
             previewImage.classList.toggle('is-zoomed', isZoomed);
             previewImageWrap.classList.toggle('is-zoomed', isZoomed);
             zoomButton.textContent = isZoomed ? 'RESET_ZOOM' : 'ZOOM';
@@ -2608,16 +2666,72 @@ function setupExtraEvidenceModal() {
                 return;
             }
 
-            const scale = isZoomed ? 1.8 : 1;
+            const scale = isZoomed ? PREVIEW_ZOOM_SCALE : 1;
             previewImage.style.width = `${Math.max(1, Math.round(previewBaseWidth * scale))}px`;
             previewImage.style.height = `${Math.max(1, Math.round(previewBaseHeight * scale))}px`;
 
-            if (isZoomed) {
+            if (isZoomed && shouldCenter) {
                 window.requestAnimationFrame(centerPreviewScroll);
-            } else {
+            } else if (!isZoomed) {
                 previewImageWrap.scrollLeft = 0;
                 previewImageWrap.scrollTop = 0;
             }
+        };
+
+        const startPreviewPan = (event, initialScrollLeft = previewImageWrap.scrollLeft, initialScrollTop = previewImageWrap.scrollTop) => {
+            isPanning = true;
+            panPointerId = event.pointerId;
+            panStartX = event.clientX;
+            panStartY = event.clientY;
+            panStartScrollLeft = Math.max(0, initialScrollLeft);
+            panStartScrollTop = Math.max(0, initialScrollTop);
+            previewImageWrap.scrollLeft = panStartScrollLeft;
+            previewImageWrap.scrollTop = panStartScrollTop;
+            previewImageWrap.classList.add('is-panning');
+
+            if (previewImageWrap.setPointerCapture) {
+                previewImageWrap.setPointerCapture(event.pointerId);
+            }
+        };
+
+        const beginAutoZoomPan = (event) => {
+            if (
+                !touchStartImageRect ||
+                !touchStartWrapRect ||
+                !previewBaseWidth ||
+                !previewBaseHeight
+            ) {
+                return false;
+            }
+
+            if (!isZoomed) {
+                isZoomed = true;
+                applyPreviewSizing({ center: false });
+            }
+
+            const touchXInImage = Math.min(
+                touchStartImageRect.width,
+                Math.max(0, event.clientX - touchStartImageRect.left),
+            );
+            const touchYInImage = Math.min(
+                touchStartImageRect.height,
+                Math.max(0, event.clientY - touchStartImageRect.top),
+            );
+            const touchXInWrap = event.clientX - touchStartWrapRect.left;
+            const touchYInWrap = event.clientY - touchStartWrapRect.top;
+            const nextScrollLeft = Math.max(
+                0,
+                Math.round(touchXInImage * PREVIEW_ZOOM_SCALE - touchXInWrap),
+            );
+            const nextScrollTop = Math.max(
+                0,
+                Math.round(touchYInImage * PREVIEW_ZOOM_SCALE - touchYInWrap),
+            );
+
+            suppressNextPreviewClick = true;
+            startPreviewPan(event, nextScrollLeft, nextScrollTop);
+            resetTouchGesture();
+            return true;
         };
 
         const endPreviewPan = () => {
@@ -2670,9 +2784,9 @@ function setupExtraEvidenceModal() {
         previewImage.addEventListener('load', schedulePreviewSizing);
         previewImage.addEventListener('dragstart', (event) => event.preventDefault());
 
-        const setZoom = (nextZoom) => {
+        const setZoom = (nextZoom, options = {}) => {
             isZoomed = nextZoom;
-            applyPreviewSizing();
+            applyPreviewSizing(options);
         };
 
         const setActive = (index, shouldTrack = false) => {
@@ -2823,46 +2937,74 @@ function setupExtraEvidenceModal() {
         });
 
         previewImageWrap.addEventListener('pointerdown', (event) => {
-            if (!isZoomed || event.button !== 0) {
+            if (event.button !== 0) {
                 return;
             }
 
-            isPanning = true;
-            panPointerId = event.pointerId;
-            panStartX = event.clientX;
-            panStartY = event.clientY;
-            panStartScrollLeft = previewImageWrap.scrollLeft;
-            panStartScrollTop = previewImageWrap.scrollTop;
-            previewImageWrap.classList.add('is-panning');
-
-            if (previewImageWrap.setPointerCapture) {
-                previewImageWrap.setPointerCapture(event.pointerId);
+            if (isZoomed) {
+                startPreviewPan(event);
+                event.preventDefault();
+                return;
             }
 
-            event.preventDefault();
+            if (event.pointerType === 'touch') {
+                pendingTouchPan = true;
+                panPointerId = event.pointerId;
+                panStartX = event.clientX;
+                panStartY = event.clientY;
+                touchStartImageRect = previewImage.getBoundingClientRect();
+                touchStartWrapRect = previewImageWrap.getBoundingClientRect();
+            }
         });
 
         previewImageWrap.addEventListener('pointermove', (event) => {
-            if (!isPanning || event.pointerId !== panPointerId) {
+            if (isPanning) {
+                if (event.pointerId !== panPointerId) {
+                    return;
+                }
+
+                const deltaX = event.clientX - panStartX;
+                const deltaY = event.clientY - panStartY;
+                if (Math.abs(deltaX) > PAN_THRESHOLD || Math.abs(deltaY) > PAN_THRESHOLD) {
+                    suppressNextPreviewClick = true;
+                }
+                previewImageWrap.scrollLeft = panStartScrollLeft - deltaX;
+                previewImageWrap.scrollTop = panStartScrollTop - deltaY;
+                event.preventDefault();
+                return;
+            }
+
+            if (!pendingTouchPan || event.pointerId !== panPointerId || event.pointerType !== 'touch') {
                 return;
             }
 
             const deltaX = event.clientX - panStartX;
             const deltaY = event.clientY - panStartY;
-            if (Math.abs(deltaX) > PAN_THRESHOLD || Math.abs(deltaY) > PAN_THRESHOLD) {
-                suppressNextPreviewClick = true;
+            if (Math.abs(deltaX) <= PAN_THRESHOLD && Math.abs(deltaY) <= PAN_THRESHOLD) {
+                return;
             }
 
-            previewImageWrap.scrollLeft = panStartScrollLeft - deltaX;
-            previewImageWrap.scrollTop = panStartScrollTop - deltaY;
+            beginAutoZoomPan(event);
             event.preventDefault();
         });
 
-        previewImageWrap.addEventListener('pointerup', endPreviewPan);
-        previewImageWrap.addEventListener('pointercancel', endPreviewPan);
+        const endPreviewInteraction = () => {
+            const wasPanning = isPanning;
+            endPreviewPan();
+            resetTouchGesture();
+            if (!wasPanning) {
+                panPointerId = null;
+            }
+        };
+
+        previewImageWrap.addEventListener('pointerup', endPreviewInteraction);
+        previewImageWrap.addEventListener('pointercancel', endPreviewInteraction);
         previewImageWrap.addEventListener('pointerleave', (event) => {
-            if (isPanning && event.pointerId === panPointerId && !(event.buttons & 1)) {
-                endPreviewPan();
+            if (event.pointerId !== panPointerId) {
+                return;
+            }
+            if (isPanning && !(event.buttons & 1)) {
+                endPreviewInteraction();
             }
         });
 
@@ -2973,6 +3115,7 @@ function setupMermaidModal() {
     let panStartScrollLeft = 0;
     let panStartScrollTop = 0;
     let activeMermaidId = 'unknown_diagram';
+    let returnFocusTarget = null;
 
     let controls = modal.querySelector('.mermaid-modal-controls');
     if (!controls) {
@@ -3052,6 +3195,11 @@ function setupMermaidModal() {
             ? Math.max(0, Date.now() - analyticsSession.mermaidModalOpenedAt)
             : 0;
         modal.classList.remove('is-open');
+        if (wasOpen) {
+            restoreModalFocus(returnFocusTarget);
+        }
+        returnFocusTarget = null;
+        modal.inert = true;
         modal.setAttribute('aria-hidden', 'true');
         modalContent.replaceChildren();
         endPan();
@@ -3087,6 +3235,9 @@ function setupMermaidModal() {
         if (!sourceSvg) {
             return;
         }
+
+        returnFocusTarget = getModalReturnFocusTarget(modal);
+        modal.inert = false;
 
         const clonedSvg = sourceSvg.cloneNode(true);
         clonedSvg.style.maxWidth = 'none';
