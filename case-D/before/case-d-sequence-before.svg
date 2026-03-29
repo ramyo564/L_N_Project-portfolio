@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" role="img" aria-labelledby="title desc">
+  <title id="title">Case D Before Sequence</title>
+  <desc id="desc">Blocking request-thread sequence before Redis-backed handoff.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#f0883e"></path>
+    </marker>
+    <style>
+      .bg { fill: #0d1117; }
+      .title { font: 700 32px 'Inter', 'Segoe UI', sans-serif; fill: #f0f6fc; letter-spacing: 0.04em; }
+      .subtitle { font: 500 18px 'Inter', 'Segoe UI', sans-serif; fill: #8b949e; }
+      .tag { font: 700 14px 'Inter', 'Segoe UI', sans-serif; fill: #ff7b72; letter-spacing: 0.18em; }
+      .step { fill: #161b22; stroke: #f0883e; stroke-width: 2.5; rx: 22; }
+      .step-title { font: 700 22px 'Inter', 'Segoe UI', sans-serif; fill: #f0f6fc; }
+      .step-text { font: 500 16px 'Inter', 'Segoe UI', sans-serif; fill: #c9d1d9; }
+      .arrow { stroke: #f0883e; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .arrow-flow { stroke: #f0883e; stroke-width: 3; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+      .note { font: 600 18px 'Inter', 'Segoe UI', sans-serif; fill: #ffa657; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="660"></rect>
+  <text x="60" y="72" class="tag">BEFORE · BLOCKED SEQUENCE</text>
+  <text x="60" y="116" class="title">Request thread waits until AI work finishes</text>
+
+  <!-- Row 1 -->
+  <rect x="50" y="155" width="320" height="125" class="step"></rect>
+  <text x="210" y="195" text-anchor="middle" class="step-title">1. Browser</text>
+  <text x="210" y="230" text-anchor="middle" class="step-text">User submits failed TODO</text>
+  <text x="210" y="260" text-anchor="middle" class="step-text">Single request enters Spring</text>
+
+  <rect x="430" y="155" width="320" height="125" class="step"></rect>
+  <text x="590" y="195" text-anchor="middle" class="step-title">2. Spring waits</text>
+  <text x="590" y="230" text-anchor="middle" class="step-text">Analyze / recommend</text>
+  <text x="590" y="260" text-anchor="middle" class="step-text">LLM call blocks the thread</text>
+
+  <rect x="810" y="155" width="320" height="125" class="step"></rect>
+  <text x="970" y="195" text-anchor="middle" class="step-title">3. Feedback</text>
+  <text x="970" y="230" text-anchor="middle" class="step-text">Rerequest stays inside</text>
+  <text x="970" y="260" text-anchor="middle" class="step-text">the same call path</text>
+
+  <!-- Row 2 -->
+  <rect x="50" y="335" width="320" height="125" class="step"></rect>
+  <text x="210" y="375" text-anchor="middle" class="step-title">4. Task create</text>
+  <text x="210" y="410" text-anchor="middle" class="step-text">Task is created only after</text>
+  <text x="210" y="435" text-anchor="middle" class="step-text">the AI wait finishes</text>
+
+  <rect x="430" y="335" width="320" height="125" class="step"></rect>
+  <text x="590" y="375" text-anchor="middle" class="step-title">5. Delay spreads</text>
+  <text x="590" y="410" text-anchor="middle" class="step-text">Core work and AI work</text>
+  <text x="590" y="435" text-anchor="middle" class="step-text">share the same boundary</text>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M 372 217.5 L 428 217.5"></path>
+  <path class="arrow" d="M 752 217.5 L 808 217.5"></path>
+  
+  <!-- Flow Connector -->
+  <path class="arrow-flow" d="M 970 282 C 970 310, 210 305, 210 333"></path>
+
+  <path class="arrow" d="M 372 397.5 L 428 397.5"></path>
+
+  <text x="60" y="596" class="note">Bottleneck: one blocked request keeps the entire user flow waiting.</text>
+</svg>

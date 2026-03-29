@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" role="img" aria-labelledby="title desc">
+  <title id="title">Case D Before Architecture</title>
+  <desc id="desc">Coupled AI request flow before separating FastAPI AI service from Spring core service.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#f0883e"></path>
+    </marker>
+    <style>
+      .bg { fill: #0d1117; }
+      .title { font: 700 34px 'Inter', 'Segoe UI', sans-serif; fill: #f0f6fc; letter-spacing: 0.04em; }
+      .subtitle { font: 500 18px 'Inter', 'Segoe UI', sans-serif; fill: #8b949e; }
+      .tag { font: 700 14px 'Inter', 'Segoe UI', sans-serif; fill: #ff7b72; letter-spacing: 0.18em; }
+      .node { fill: #161b22; stroke: #f0883e; stroke-width: 2.5; rx: 24; }
+      .node-soft { fill: #161b22; stroke: #58a6ff; stroke-width: 2.5; rx: 24; }
+      .node-dashed { fill: #161b22; stroke: #7d8590; stroke-width: 2.5; stroke-dasharray: 10 10; rx: 24; }
+      .node-title { font: 700 24px 'Inter', 'Segoe UI', sans-serif; fill: #f0f6fc; }
+      .node-text { font: 500 18px 'Inter', 'Segoe UI', sans-serif; fill: #c9d1d9; }
+      .note { font: 600 18px 'Inter', 'Segoe UI', sans-serif; fill: #ffa657; }
+      .arrow { stroke: #f0883e; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #58a6ff; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="660"></rect>
+  <text x="60" y="72" class="tag">BEFORE · COUPLED AI FLOW</text>
+  <text x="60" y="118" class="title">AI analysis and task creation share one request path</text>
+  <text x="60" y="154" class="subtitle">A slow LLM call can hold the same Spring request thread that also handles feedback and rerequest.</text>
+
+  <rect x="70" y="200" width="530" height="360" class="node"></rect>
+  <text x="110" y="250" class="node-title">Spring Core + AI Orchestration</text>
+  <text x="110" y="300" class="node-text">Analyze failure</text>
+  <text x="110" y="340" class="node-text">Recommend plan</text>
+  <text x="110" y="380" class="node-text">Feedback / rerequest</text>
+  <text x="110" y="420" class="node-text">Create task</text>
+  <text x="110" y="475" class="node-text">Same thread waits for LLM response</text>
+
+  <rect x="700" y="208" width="420" height="124" class="node-soft"></rect>
+  <text x="910" y="258" text-anchor="middle" class="node-title">LLM API</text>
+  <text x="910" y="292" text-anchor="middle" class="node-text">External latency</text>
+
+  <rect x="730" y="390" width="360" height="130" class="node-dashed"></rect>
+  <text x="910" y="440" text-anchor="middle" class="node-title">Redis</text>
+  <text x="910" y="472" text-anchor="middle" class="node-text">Ad hoc state</text>
+  <text x="910" y="500" text-anchor="middle" class="node-text">No latest pointer</text>
+
+  <path class="arrow" d="M 600 325 L 700 270"></path>
+  <path class="arrow-soft" d="M 600 415 L 730 455"></path>
+  <path class="arrow" d="M 600 470 L 700 470"></path>
+
+  <text x="60" y="612" class="note">Bottleneck: AI delay and core work share the same request boundary.</text>
+</svg>

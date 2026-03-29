@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" role="img" aria-labelledby="title desc">
+  <title id="title">Case D After Architecture</title>
+  <desc id="desc">Separated AI orchestration after splitting FastAPI AI service from Spring core service.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#58a6ff"></path>
+    </marker>
+    <marker id="arrow-orange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#f0883e"></path>
+    </marker>
+    <style>
+      .bg { fill: #0d1117; }
+      .title { font: 700 34px 'Inter', 'Segoe UI', sans-serif; fill: #f0f6fc; letter-spacing: 0.04em; }
+      .subtitle { font: 500 18px 'Inter', 'Segoe UI', sans-serif; fill: #8b949e; }
+      .tag { font: 700 14px 'Inter', 'Segoe UI', sans-serif; fill: #58a6ff; letter-spacing: 0.18em; }
+      .node { fill: #161b22; stroke: #58a6ff; stroke-width: 2.5; rx: 24; }
+      .node-soft { fill: #161b22; stroke: #58a6ff; stroke-width: 2.5; rx: 24; }
+      .node-accent { fill: #161b22; stroke: #f0883e; stroke-width: 2.5; rx: 24; }
+      .node-muted { fill: #161b22; stroke: #30363d; stroke-width: 2.5; rx: 24; }
+      .node-title { font: 700 24px 'Inter', 'Segoe UI', sans-serif; fill: #f0f6fc; }
+      .node-text { font: 500 18px 'Inter', 'Segoe UI', sans-serif; fill: #c9d1d9; }
+      .note { font: 600 18px 'Inter', 'Segoe UI', sans-serif; fill: #7ee787; }
+      .arrow { stroke: #58a6ff; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .arrow-accent { stroke: #f0883e; stroke-width: 4; fill: none; marker-end: url(#arrow-orange); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="660"></rect>
+  <text x="60" y="72" class="tag">AFTER · SEPARATED AI BOUNDARY</text>
+  <text x="60" y="118" class="title">FastAPI handles AI work while Spring handles core work</text>
+  <text x="60" y="154" class="subtitle">Redis keeps session / latest / quota / history so the analysis can resume safely after interruption.</text>
+
+  <rect x="70" y="200" width="300" height="220" class="node"></rect>
+  <text x="220" y="248" text-anchor="middle" class="node-title">FastAPI AI Service</text>
+  <text x="220" y="292" text-anchor="middle" class="node-text">Failure analysis</text>
+  <text x="220" y="328" text-anchor="middle" class="node-text">Recommendation</text>
+  <text x="220" y="364" text-anchor="middle" class="node-text">Feedback / rerequest</text>
+
+  <rect x="460" y="250" width="280" height="110" class="node-soft"></rect>
+  <text x="600" y="293" text-anchor="middle" class="node-title">LLM API</text>
+  <text x="600" y="326" text-anchor="middle" class="node-text">External latency</text>
+
+  <rect x="835" y="200" width="295" height="220" class="node-accent"></rect>
+  <text x="982.5" y="248" text-anchor="middle" class="node-title">Spring Core Service</text>
+  <text x="982.5" y="292" text-anchor="middle" class="node-text">Task API</text>
+  <text x="982.5" y="328" text-anchor="middle" class="node-text">Domain / Auth</text>
+  <text x="982.5" y="364" text-anchor="middle" class="node-text">Task persistence</text>
+
+  <rect x="460" y="380" width="280" height="130" class="node-muted"></rect>
+  <text x="600" y="422" text-anchor="middle" class="node-title">Redis</text>
+  <text x="600" y="456" text-anchor="middle" class="node-text">session / latest</text>
+  <text x="600" y="484" text-anchor="middle" class="node-text">quota / history</text>
+
+  <path class="arrow" d="M 370 305 L 460 305"></path>
+  <path class="arrow-accent" d="M 370 220 L 835 220"></path>
+  <path class="arrow" d="M 370 410 L 460 445"></path>
+
+  <text x="60" y="612" class="note">AI latency stays inside the AI boundary, so the core service does not wait on the model call.</text>
+</svg>
