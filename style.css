@@ -1071,11 +1071,10 @@ body.modal-open {
     font-size: 0.79rem;
     color: var(--text-secondary);
     line-height: 1.38;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .card-narrative {

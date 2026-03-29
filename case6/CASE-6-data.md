@@ -1,14 +1,14 @@
 # CASE 6 Data Pack
 
 > 범위: `/home/yohan/Git-U/L_N_Project-portfolio/case6`
-> 비교축 A: `500VU benchmark summary` 기준 대표 KPI
+> 비교축 A: `초기 테스트(500VU) summary` 기준 대표 KPI
 > 비교축 B: `1000VU case-local before/after 캡처` 기준 구조 증거
 > 목적: Case 6 이미지를 다시 열지 않고도, 이력서/포트폴리오/면접 문구를 바로 뽑아 쓸 수 있게 정규화한 데이터 자산
 
 ## 사용 규칙
 
-1. 이 케이스의 본체는 `500VU benchmark`다. `1000VU case-local`은 상세 구조 증거로 쓴다.
-2. `500VU benchmark`와 `1000VU case-local` 수치는 같은 문장에 섞지 않는다.
+1. 이 케이스의 본체는 `초기 테스트(500VU)`다. `1000VU case-local`은 상세 구조 증거로 쓴다.
+2. `초기 테스트(500VU)`와 `1000VU case-local` 수치는 같은 문장에 섞지 않는다.
 3. `read`는 `summary.json`이 canonical이고, `write`는 `after summary.json` + `Grafana/k6` 조합이 canonical이다.
 4. `write before`에는 이 폴더에 별도 `summary.json`이 없다. before write 숫자는 `Grafana`와 `report.html`을 보조로 쓴다.
 5. `checks`는 read case에서 negative assertion이 섞여 있으므로, headline KPI로 쓰지 않는다.
@@ -17,7 +17,7 @@
 
 ## 0) Source Priority
 
-1. `CASE-6.md`의 `500VU benchmark` 요약
+1. `CASE-6.md`의 `초기 테스트(500VU)` 요약
 2. `summary.json`의 case-local raw 수치
 3. `k6/Grafana screenshot`의 사람 눈 기준 수치
 4. `Hibernate / EXPLAIN / pg_indexes` 구조 증거
@@ -25,8 +25,8 @@
 
 ## 1) Headline-ready claim slots
 
-- `500VU benchmark에서 read RPS 972 -> 3,680, write RPS 373 -> 916`
-- `500VU benchmark에서 read p95 975ms -> 141ms, write p95 1.9s -> 126ms`
+- `초기 테스트(500VU)에서 read RPS 972 -> 3,680, write RPS 373 -> 916`
+- `초기 테스트(500VU)에서 read p95 975ms -> 141ms, write p95 1.9s -> 126ms`
 - `1000VU case-local read에서 p95 683.435ms -> 301.152ms, req/s 1.206k -> 2.152k`
 - `1000VU case-local write after에서 p95 123.796ms, req/s 1.012k`
 - `insertWithPosition + partial indexes + after-commit 정리로 고부하 경로를 안정화`
@@ -34,17 +34,17 @@
 
 ## 2) 이미지 인벤토리
 
-### 2-1. 500VU benchmark summary
+### 2-1. 초기 테스트(500VU) summary
 
-> 이 수치는 `CASE-6.md`의 결과 섹션에 정리된 benchmark 대표값이다.  
-> 이 폴더에는 해당 benchmark의 별도 before/after 이미지가 없으므로, summary-only 기준으로 쓴다.
+> 이 수치는 `CASE-6.md`의 결과 섹션에 정리된 대표값이다.
+> 이 폴더에는 해당 테스트의 별도 before/after 이미지가 없으므로, summary-only 기준으로 쓴다.
 
 | metric | before | after | 메모 |
 |---|---:|---:|---|
-| Read RPS | `972` | `3,680` | benchmark 대표 KPI |
-| Write RPS | `373` | `916` | benchmark 대표 KPI |
-| Read p95 | `975ms` | `141ms` | benchmark latency |
-| Write p95 | `1.9s` | `126ms` | benchmark latency |
+| Read RPS | `972` | `3,680` | 대표 KPI |
+| Write RPS | `373` | `916` | 대표 KPI |
+| Read p95 | `975ms` | `141ms` | latency |
+| Write p95 | `1.9s` | `126ms` | latency |
 
 ### 2-2. 1000VU read path
 
@@ -135,9 +135,9 @@
 | `after/mvc-task-subtask-fixed-user-load-test-summary.json` | `0` | `123.79575859999997ms` | `1011.895809867784/s` | `1` | `841470 / 0` | `1000` |
 
 > 주의: `write before`는 별도 raw summary JSON이 이 폴더에 없다.  
-> 따라서 write before의 정량 문장은 `Grafana screenshot`과 `CASE-6.md`의 benchmark summary를 기준으로 쓰는 것이 안전하다.
+> 따라서 write before의 정량 문장은 `Grafana screenshot`과 `CASE-6.md`의 초기 테스트(500VU) summary를 기준으로 쓰는 것이 안전하다.
 
-### 3-5. 500VU benchmark canonical
+### 3-5. 초기 테스트(500VU) canonical
 
 - `Read RPS`: `972 -> 3,680`
 - `Write RPS`: `373 -> 916`
@@ -146,9 +146,9 @@
 
 ## 4) 추천 문구 템플릿
 
-### 4-1. Benchmark 중심
+### 4-1. 초기 테스트(500VU) 중심
 
-`[JDBC Batch + Partial Index + 원자적 INSERT 통합 튜닝] 500VU benchmark에서 read RPS 972 -> 3,680, write RPS 373 -> 916, read p95 975ms -> 141ms, write p95 1.9s -> 126ms로 개선`
+`[JDBC Batch + Partial Index + 원자적 INSERT 통합 튜닝] 초기 테스트(500VU)에서 read RPS 972 -> 3,680, write RPS 373 -> 916, read p95 975ms -> 141ms, write p95 1.9s -> 126ms로 개선`
 
 ### 4-2. Case-local read/write 중심
 
@@ -160,4 +160,4 @@
 
 ## 5) 한 줄 결론
 
-Case 6는 `500VU benchmark`에서 대표 성능을 크게 끌어올리고, `1000VU case-local`에서는 atomic INSERT, partial index, after-commit 정리를 통해 read/write 경로를 구조적으로 안정화한 사례다.
+Case 6는 `초기 테스트(500VU)`에서 대표 성능을 크게 끌어올리고, `1000VU case-local`에서는 atomic INSERT, partial index, after-commit 정리를 통해 read/write 경로를 구조적으로 안정화한 사례다.

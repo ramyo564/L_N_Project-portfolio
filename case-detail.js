@@ -720,7 +720,9 @@ function normalizeEvidenceItems(items) {
             label: item.label || 'EVIDENCE',
             src: item.src,
             alt: item.alt || item.label || 'evidence image',
-            phase: detectEvidencePhase(item),
+            phase: ['before', 'after', 'other'].includes(String(item.phase || '').toLowerCase())
+                ? String(item.phase).toLowerCase()
+                : detectEvidencePhase(item),
             pairKey: item.pairKey || '',
             missingBeforeReason: item.missingBeforeReason || '',
             missingAfterReason: item.missingAfterReason || ''
@@ -823,6 +825,7 @@ function buildEvidencePairs(items) {
 
 function sanitizePairTitle(label) {
     const cleaned = normalizeEvidenceLabel(label || '')
+        .replace(/^(?:pair\s*\d+\s*(?:[·:\/-]\s*)?)+/g, '')
         .replace(/\b(before|after)\b/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();

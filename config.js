@@ -16,7 +16,7 @@ export const templateConfig = {
             'Reliability: http_req_failed 0.93% → 0.0% (Failed Rate Zero)',
             'Throughput: Read RPS +137%↑, Write RPS +350%↑ 달성',
             'Latency: Write p95 3.4s → 126ms (15배 개선)',
-            'Baseline: 500VU 고부하 환경 실측 증거 기반'
+            '초기 테스트(500VU) 실측 증거 기반'
         ],
         summaryRows: [
             {
@@ -56,12 +56,12 @@ export const templateConfig = {
             },
             {
                 label: '핵심 지표',
-                value: 'http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms',
+                value: '1000VU 쓰기 Ramp-up 안정성: http_req_failed.rate 0.93% -> 0%, p95 2.3s -> 124ms',
                 kind: 'metric'
             },
             {
                 label: '핵심 지표',
-                value: 'read p95 975ms -> 141ms, read RPS 972 -> 3680, write RPS 373 -> 916',
+                value: '초기 테스트(500VU) 대비 read p95 975ms -> 141ms, read RPS 972 -> 3680, write RPS 373 -> 916',
                 kind: 'metric'
             }
         ],
@@ -212,7 +212,7 @@ export const templateConfig = {
                     {
                         id: 'Case A',
                         anchorId: 'upgrade-todo-case-A',
-                        title: '램프업(Ramp-up) 부하 테스트 기반 통합 성능 최적화',
+                        title: '대용량 램프업(Ramp-up) 부하 테스트 기반 통합 성능 최적화',
                         problem: '가상 스레드 환경에서 1000VU 테스트 시 Redis/RabbitMQ 동기 발행 대기로 인한 응답 실패(0.93%) 및 지연 발생',
                         action: '가상 스레드 매트릭스 검증, 전용 executor 기반 비동기 분리, 인덱스 및 원자적 쿼리 통합 튜닝 적용',
                         impact: '실전 부하 환경에서 실패율 0% 달성 및 주요 지표 대폭 향상'
@@ -266,68 +266,75 @@ export const templateConfig = {
                             mermaidId: 'case-integrated-ramp-up-tuning',
                             anchorId: 'upgrade-todo-case-A',
                             title: 'Case A. 대용량 트래픽 램프업(Ramp-up) 부하 테스트 기반 통합 성능 최적화',
-                            subtitle: '2025-12 ~ 2026-03 · 대규모 부하 성능 검증 및 아키텍처 한계 돌파',
+                            subtitle: '2025-12 ~ 2026-03 · 1000VU 쓰기 Ramp-up 통합 최적화',
                             businessImpact: '인프라 증설 없이 고부하(1000VU) 환경에서 실패율 0%를 달성하고, 기존 대비 2~3배 이상의 폭발적인 트래픽을 수용할 수 있는 고성능 아키텍처를 완성했습니다.',
-                            overview: '가상 스레드 도입 후 1000VU Ramp-up 부하 테스트를 통해 Redis와 RabbitMQ 동기 발행 구간의 스레드 블로킹을 식별하고, 비동기 처리 및 인덱스 튜닝으로 성능 한계를 돌파한 통합 최적화 사례입니다.',
+                            overview: '가상 스레드 도입 후 1000VU 쓰기 Ramp-up에서 요청 스레드의 동기 발행과 저장 경로 경합을 순차적으로 제거해, 실패율과 tail latency를 동시에 안정화한 통합 성능 최적화 사례입니다.',
                             recruiterSummary: [
-                                '10분간 1000명의 유저가 점진 유입되는(Ramp-up) k6 부하 테스트로 DB가 아닌 Redis 및 RabbitMQ 구간의 API 스레드 블로킹 병목(failed rate 0.93%)을 추적했습니다.',
-                                'RabbitMQ 동기 발행을 비동기 데코레이터로 분리하고, 원자적 쿼리(InsertWithPosition)와 인덱스 최적화를 통합 적용했습니다.',
-                                'http_req_failed.rate를 0%로 낮추고 p95 응답 지연을 1/4 수준으로 단축했으며, 읽기/쓰기 처리량을 2~3배 이상 확장했습니다.'
+                                'RabbitMQ 발행을 전용 executor 기반 비동기 데코레이터로 분리해 1000VU 쓰기에서 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms를 달성했습니다.',
+                                '원자성을 보장하는 insertWithPosition과 Flyway 인덱스 최적화를 통합 적용해 1000VU 쓰기 p95 2.3s -> 124ms로 단축했습니다.',
+                                '초기 테스트(500VU) 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916)로 처리량을 크게 끌어올렸습니다.',
+                                '가상 스레드 매트릭스로 VT 자체가 아니라 요청 스레드 블로킹과 저장 경로 경쟁이 원인임을 교차 검증했습니다.'
                             ],
                             role: '1000VU 부하 테스트 설계 및 병목 추적, RabbitMQ 비동기 데코레이터 구현, DB 인덱스 및 원자적 쿼리 통합 튜닝',
                             stackSummary: 'Virtual Threads, RabbitMQ (Async Publisher), Flyway index migration, k6, Grafana',
-                            cause: 'Virtual Threads(가상 스레드) 도입 후 시스템 한계점을 명확히 파악하기 위해 부하 테스트를 진행한 결과, DB가 아닌 Redis 및 RabbitMQ 동기 발행(convertAndSend) 구간과 저장 경로의 원자성 부족이 주요 한계로 드러났습니다.',
-                            problem: '성능 개선 후 부하를 올려 1000VU 점진 부하 시, DB 커넥션은 안정적이었으나 오히려 Redis 호출 구간과 요청 스레드가 RabbitMQ 동기 발행 대기를 직접 부담하는 과정에서 API 스레드 블로킹이 발생했습니다. 여기에 저장 경로의 경쟁(원자성 부족)이 겹치면서 응답 지연과 실패(failed rate 0.93%)가 발생하는 쓰기 성능 한계가 발견되었습니다.',
-                            solution: '가상 스레드 사용 여부와 인프라 설정 조합의 매트릭스 실험을 진행하고, Grafana 모니터링 지표를 분석하여 안정화 지점을 철저히 검증했습니다.\n\nRabbitMQ 동기 발행을 전용 executor 기반 비동기 데코레이터로 분리하여 API 응답 경로의 블로킹을 근본적으로 해소했습니다.\n\n원자성을 보장하는 insertWithPosition 네이티브 쿼리와 Flyway 인덱스 최적화를 통합 적용해 병목을 제거했습니다.',
-                            result: '통합 튜닝의 결과로 http.req failed.rate 0.93% -> 0% 개선 및 p95 응답 지연을 488ms에서 124ms로 단축했습니다. 또한 500VU Baseline 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916) 대폭 향상을 달성했습니다.',
+                            cause: '가상 스레드 도입 후 1000VU 쓰기 Ramp-up을 수행한 결과, 요청 스레드의 RabbitMQ 동기 발행 구간과 저장 경로의 원자성 부족이 동시에 드러났습니다.',
+                            problem: '1000VU 쓰기 Ramp-up에서는 요청 스레드가 RabbitMQ 동기 발행 대기를 직접 부담하면서 실패율 0.93%와 초기 지연이 발생했고, 이어지는 저장 경로에서는 위치 계산과 INSERT 분리, 인덱스 미정리로 추가 tail latency가 남아 있었습니다.',
+                            solution: '가상 스레드 매트릭스로 VT 자체를 배제한 뒤, RabbitMQ 발행을 전용 executor 기반 비동기 데코레이터로 분리하고, insertWithPosition과 Flyway 인덱스 최적화를 통합 적용해 저장 경로의 경쟁을 제거했습니다.',
+                            result: 'RabbitMQ 동기 발행 블로킹을 비동기 데코레이터로 분리해 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms를 달성했습니다.\n원자적 INSERT와 partial index 튜닝으로 1000VU 쓰기 p95 2.3s -> 124ms로 단축했습니다.\n초기 테스트(500VU) 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916) 향상을 달성했습니다.',
                             evidenceImages: [
                                 {
-                                    label: '[성과] 1000VU Ramp-up 부하 테스트 (RPS 2~3배 향상)',
-                                    src: './case6/before/case6-k6-write-1000-before.png',
-                                    alt: '1000VU Ramp-up baseline k6 graph showing 0.93% failure rate',
-                                    pairKey: 'impact-ramp-up'
+                                    label: 'RabbitMQ sync publish on request thread',
+                                    src: './case5/before/case5-k6-write-1000-before.png',
+                                    alt: 'RabbitMQ synchronous publish on the request thread',
+                                    phase: 'before',
+                                    pairKey: 'case-5-messaging-async'
                                 },
                                 {
-                                    label: 'After: 1000VU (실패율 0%, 안정적인 그래프)',
+                                    label: 'Async publisher split',
+                                    src: './case5/after/case6-k6-write-1000-backup.png',
+                                    alt: 'Async publisher split',
+                                    phase: 'after',
+                                    pairKey: 'case-5-messaging-async'
+                                },
+                                {
+                                    label: 'DB path contention',
+                                    src: './case6/before/case6-k6-write-1000-before.png',
+                                    alt: 'DB path contention',
+                                    phase: 'before',
+                                    pairKey: 'case-6-db-path'
+                                },
+                                {
+                                    label: 'Atomic INSERT + index tuning',
                                     src: './case6/after/case6-k6-write-1000-after.png',
-                                    alt: '1000VU Ramp-up after tuning k6 graph showing 0% failure rate',
-                                    pairKey: 'impact-ramp-up'
+                                    alt: 'Atomic INSERT and index tuning',
+                                    phase: 'after',
+                                    pairKey: 'case-6-db-path'
                                 }
                             ],
                             extraEvidenceImages: [
                                 {
-                                    label: '[병목 추적] 가상 스레드 매트릭스 및 RMQ 블로킹 식별',
-                                    src: './case4/after/case4-phase-c-matrix-after-2026-03-14.svg',
+                                    label: 'Supplementary · Case 4 BEFORE: VT matrix validation',
+                                    src: './case4/before/case4-phase-a-matrix-before-2026-03-13.svg',
                                     phase: 'before',
-                                    pairKey: 'investigation-bottleneck'
+                                    pairKey: 'case-4-vt-validation'
                                 },
                                 {
-                                    label: '원인: RabbitMQ 동기 발행으로 인한 API 스레드 블로킹',
-                                    src: './case5/before/case5-grafana-rabbitmq-message-processing-before.png',
+                                    label: 'Supplementary · Case 4 AFTER: VT root cause ruled out',
+                                    src: './case4/after/case4-phase-c-matrix-after-2026-03-14.svg',
                                     phase: 'after',
-                                    pairKey: 'investigation-bottleneck'
-                                },
-                                {
-                                    label: '[DB 최적화 전/후] 원자적 쿼리 및 부분 인덱스 도입',
-                                    src: './case6/before/case6-grafana-write-response-time-before.png',
-                                    pairKey: 'resolution-db-tuning'
-                                },
-                                {
-                                    label: 'After: 쓰기 지연 시간 바닥에 밀착 및 안정화',
-                                    src: './case6/after/case6-grafana-write-response-time-after.png',
-                                    pairKey: 'resolution-db-tuning'
+                                    pairKey: 'case-4-vt-validation'
                                 }
                             ],
                             skills: ['1000VU Ramp-up', 'Matrix Testing', 'Bottleneck Tracing', 'Integrated Optimization'],
                             highlights: [
-                                'Ramp-up test identified hidden thread blocking beyond DB capacity',
-                                '2x2 Matrix eliminated VT as the primary cause of failures',
-                                'Async decorator resolved RabbitMQ channel contention blocking',
+                                'Request-thread RabbitMQ synchronous publish blocking resolved',
+                                'Remaining DB path contention resolved',
+                                '2x2 Matrix ruled out VT as the primary failure cause',
                                 'Integrated tuning achieved 0% error rate at peak 1000VU load'
                             ],
                             links: [
                                 { label: 'EVIDENCE_CASE_A', href: './case-A/CASE-A.md' },
-                                { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-6-path' }
+                                { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-5' }
                             ]
                         },
                         {
@@ -523,10 +530,10 @@ export const legacyCases = [
         ]
     },
     {
-        title: 'Legacy Case 6. 배치·인덱스·캐시 통합 최적화로 처리량 대폭 증대',
+        title: '배치·인덱스·캐시 통합 최적화로 처리량 대폭 증대',
         mermaidId: 'case-integrated-performance-tuning',
         anchorId: 'upgrade-todo-case-6',
-        subtitle: '2025-12 · 500VU baseline 성능 개선 증명',
+        subtitle: '2025-12 · 초기 테스트(500VU) 성능 개선 증명',
         overview: '단일 요소 튜닝을 넘어, 저장 경로 원자화·인덱스 최적화·캐시 무효화 시점을 통합 조정하여 실측 처리량을 대폭 향상시킨 최종 최적화 케이스입니다.',
         skills: ['Load Testing', 'Index Tuning', 'Atomic Insert', 'Cache and Tx Order'],
         links: [
