@@ -13,9 +13,9 @@ export const templateConfig = {
         diagramId: 'architecture',
         headline: '성능 병목 재현 및 단계적 아키텍처 튜닝을 통한 고부하 처리 역량 입증',
         headlineItems: [
-            'Reliability: http_req_failed 0.93% → 0% (Failed Rate Zero)',
-            'Throughput: Read RPS 279%↑, Write RPS 145%↑ 달성',
-            'Latency: Write p95 1.9s → 126ms (15배 개선)',
+            'Reliability: http_req_failed 0.93% → 0.0% (Failed Rate Zero)',
+            'Throughput: Read RPS +137%↑, Write RPS +350%↑ 달성',
+            'Latency: Write p95 3.4s → 126ms (15배 개선)',
             'Baseline: 500VU 고부하 환경 실측 증거 기반'
         ],
         summaryRows: [
@@ -34,9 +34,9 @@ export const templateConfig = {
         ],
         kpiCards: [
             { label: 'AUTH GATE QUERY', value: '3 -> 1', delta: '-67%' },
-            { label: 'FAILED RATE (1000VU)', value: '0.93% -> 0%', delta: '-100%' },
-            { label: 'WRITE p95 (500VU)', value: '1.9s -> 126ms', delta: '-93%' },
-            { label: 'READ p95 (500VU)', value: '975ms -> 141ms', delta: '-86%' }
+            { label: 'FAILED RATE (500VU)', value: '0.93% -> 0.0%' },
+            { label: 'WRITE p95 (500VU)', value: '3.4s -> 126ms', delta: '-96%' },
+            { label: 'READ p95 (500VU)', value: '712ms -> 141ms', delta: '-80%' }
         ],
         diagramNote: '세부 코드 경로와 증거 체인은 아래 CODE_EVIDENCE_MAP에서 확인 가능합니다.',
         k6ButtonLabel: '성능 비교 : 500VU BEFORE/CURRENT',
@@ -81,9 +81,9 @@ export const templateConfig = {
                 '지표 정의: p95(지연 상위 5% 경계), RPS(초당 처리량), 에러율(요청 실패 비율).'
             ],
             resultInterpretation: [
-                'WRITE p95 1.9s -> 126ms: 체감 지연이 크게 줄어 고부하 구간의 응답 안정성이 향상.',
-                'READ p95 975ms -> 141ms: 권한/조회 경로 병목 완화로 tail latency가 낮아짐.',
-                'READ RPS 972 -> 3680, WRITE RPS 373 -> 916: 동일 VU에서 처리량 한계가 확장됨.'
+                'WRITE p95 3.4s -> 126ms, p99 4.2s -> 226ms: 체감 지연이 크게 줄어 고부하 구간의 응답 안정성이 향상.',
+                'READ p95 712ms -> 141ms, p99 1.1s -> 159ms: 권한/조회 경로 병목 완화로 tail latency가 낮아짐.',
+                'READ RPS 1.55k/s -> 3.68k/s, WRITE RPS 203.7/s -> 915.7/s: 동일 VU에서 처리량 한계가 확장됨.'
             ],
             dbRowEstimation: [
                 'WRITE setup: TOTAL_USERS=1000 기준 회원가입 row 생성(유저/인증 row).',
