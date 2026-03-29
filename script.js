@@ -2583,10 +2583,31 @@ function setupExtraEvidenceModal() {
         const previewActions = document.createElement('div');
         previewActions.className = 'extra-evidence-preview-actions';
 
-        const zoomButton = document.createElement('button');
-        zoomButton.className = 'extra-evidence-zoom-btn';
-        zoomButton.type = 'button';
-        zoomButton.textContent = 'ZOOM';
+        const zoomControls = document.createElement('div');
+        zoomControls.className = 'extra-evidence-zoom-controls';
+
+        const zoomOutBtn = document.createElement('button');
+        zoomOutBtn.className = 'extra-evidence-zoom-btn is-icon';
+        zoomOutBtn.type = 'button';
+        zoomOutBtn.textContent = '-';
+        zoomOutBtn.setAttribute('aria-label', 'Zoom out');
+
+        const zoomResetBtn = document.createElement('button');
+        zoomResetBtn.className = 'extra-evidence-zoom-btn is-text';
+        zoomResetBtn.type = 'button';
+        zoomResetBtn.textContent = 'RESET';
+
+        const zoomInBtn = document.createElement('button');
+        zoomInBtn.className = 'extra-evidence-zoom-btn is-icon';
+        zoomInBtn.type = 'button';
+        zoomInBtn.textContent = '+';
+        zoomInBtn.setAttribute('aria-label', 'Zoom in');
+
+        const zoomValueText = document.createElement('span');
+        zoomValueText.className = 'extra-evidence-zoom-value';
+        zoomValueText.textContent = '100%';
+
+        zoomControls.append(zoomOutBtn, zoomResetBtn, zoomInBtn, zoomValueText);
 
         const originalLink = document.createElement('a');
         originalLink.className = 'extra-evidence-open-original';
@@ -2603,10 +2624,12 @@ function setupExtraEvidenceModal() {
                 activeIndex = matchIndex;
             }
         }
-        let isZoomed = false;
+        const ZOOM_MIN = 0.5;
+        const ZOOM_MAX = 4.0;
+        const ZOOM_STEP = 0.15;
+        let zoomLevel = 1.0;
         let previewBaseWidth = 0;
         let previewBaseHeight = 0;
-        const PREVIEW_ZOOM_SCALE = 1.8;
         let isPanning = false;
         let panPointerId = null;
         let panStartX = 0;
@@ -2640,7 +2663,7 @@ function setupExtraEvidenceModal() {
             previewImageWrap.classList.remove('is-panning');
             previewImageWrap.scrollLeft = 0;
             previewImageWrap.scrollTop = 0;
-            zoomButton.textContent = 'ZOOM';
+            zoomValueText.textContent = '100%';
         };
 
         const centerPreviewScroll = () => {
@@ -2652,12 +2675,14 @@ function setupExtraEvidenceModal() {
 
         const applyPreviewSizing = (options = {}) => {
             const shouldCenter = options.center !== false;
+            const isZoomed = zoomLevel > ZOOM_MIN;
+            const isScaled = true;
             previewImage.classList.toggle('is-zoomed', isZoomed);
-            previewImageWrap.classList.toggle('is-zoomed', isZoomed);
-            zoomButton.textContent = isZoomed ? 'RESET_ZOOM' : 'ZOOM';
+            previewImageWrap.classList.toggle('is-zoomed', isScaled);
+            zoomValueText.textContent = `${Math.round(zoomLevel * 100)}%`;
 
             if (!previewBaseWidth || !previewBaseHeight) {
-                if (!isZoomed) {
+                if (!isScaled) {
                     previewImage.style.width = '';
                     previewImage.style.height = '';
                     previewImageWrap.scrollLeft = 0;
@@ -2666,13 +2691,12 @@ function setupExtraEvidenceModal() {
                 return;
             }
 
-            const scale = isZoomed ? PREVIEW_ZOOM_SCALE : 1;
-            previewImage.style.width = `${Math.max(1, Math.round(previewBaseWidth * scale))}px`;
-            previewImage.style.height = `${Math.max(1, Math.round(previewBaseHeight * scale))}px`;
+            previewImage.style.width = `${Math.max(1, Math.round(previewBaseWidth * zoomLevel))}px`;
+            previewImage.style.height = `${Math.max(1, Math.round(previewBaseHeight * zoomLevel))}px`;
 
-            if (isZoomed && shouldCenter) {
+            if (isScaled && shouldCenter) {
                 window.requestAnimationFrame(centerPreviewScroll);
-            } else if (!isZoomed) {
+            } else if (!isScaled) {
                 previewImageWrap.scrollLeft = 0;
                 previewImageWrap.scrollTop = 0;
             }
@@ -2694,45 +2718,7 @@ function setupExtraEvidenceModal() {
             }
         };
 
-        const beginAutoZoomPan = (event) => {
-            if (
-                !touchStartImageRect ||
-                !touchStartWrapRect ||
-                !previewBaseWidth ||
-                !previewBaseHeight
-            ) {
-                return false;
-            }
-
-            if (!isZoomed) {
-                isZoomed = true;
-                applyPreviewSizing({ center: false });
-            }
-
-            const touchXInImage = Math.min(
-                touchStartImageRect.width,
-                Math.max(0, event.clientX - touchStartImageRect.left),
-            );
-            const touchYInImage = Math.min(
-                touchStartImageRect.height,
-                Math.max(0, event.clientY - touchStartImageRect.top),
-            );
-            const touchXInWrap = event.clientX - touchStartWrapRect.left;
-            const touchYInWrap = event.clientY - touchStartWrapRect.top;
-            const nextScrollLeft = Math.max(
-                0,
-                Math.round(touchXInImage * PREVIEW_ZOOM_SCALE - touchXInWrap),
-            );
-            const nextScrollTop = Math.max(
-                0,
-                Math.round(touchYInImage * PREVIEW_ZOOM_SCALE - touchYInWrap),
-            );
-
-            suppressNextPreviewClick = true;
-            startPreviewPan(event, nextScrollLeft, nextScrollTop);
-            resetTouchGesture();
-            return true;
-        };
+        // beginAutoZoomPan functionality removed for native scroll zoom
 
         const endPreviewPan = () => {
             if (!isPanning) {
@@ -2784,8 +2770,8 @@ function setupExtraEvidenceModal() {
         previewImage.addEventListener('load', schedulePreviewSizing);
         previewImage.addEventListener('dragstart', (event) => event.preventDefault());
 
-        const setZoom = (nextZoom, options = {}) => {
-            isZoomed = nextZoom;
+        const setZoom = (nextZoomLevel, options = {}) => {
+            zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, nextZoomLevel));
             applyPreviewSizing(options);
         };
 
@@ -2795,8 +2781,9 @@ function setupExtraEvidenceModal() {
             if (!activeItem) {
                 return;
             }
-            isZoomed = false;
             clearPreviewSizing();
+            zoomLevel = 2.0;
+            zoomValueText.textContent = '200%';
             previewImage.src = activeItem.src;
             previewImage.alt = activeItem.alt;
             previewCaption.textContent = `[${activeItem.phase.toUpperCase()}] ${activeItem.label}`;
@@ -2903,58 +2890,59 @@ function setupExtraEvidenceModal() {
             pairList.appendChild(card);
         });
 
-        zoomButton.addEventListener('click', () => {
-            const nextZoom = !isZoomed;
-            setZoom(nextZoom);
+        const trackZoom = (actionLabel) => {
             trackSelectContent({
                 contentType: 'extra_evidence_zoom',
                 itemId: caseId,
                 itemName: sortedItems[activeIndex]?.label || 'unknown_evidence',
                 sectionName: 'extra_evidence_modal',
-                interactionAction: nextZoom ? 'zoom_in' : 'zoom_reset',
+                interactionAction: actionLabel,
                 elementType: 'button',
-                elementLabel: 'ZOOM',
+                elementLabel: 'ZOOM_CONTROL',
                 modalName: 'extra_evidence_modal'
             });
+        };
+
+        zoomOutBtn.addEventListener('click', () => {
+            setZoom(zoomLevel - ZOOM_STEP);
+            trackZoom('zoom_out');
         });
+
+        zoomResetBtn.addEventListener('click', () => {
+            setZoom(1.0);
+            trackZoom('zoom_reset');
+        });
+
+        zoomInBtn.addEventListener('click', () => {
+            setZoom(zoomLevel + ZOOM_STEP);
+            trackZoom('zoom_in');
+        });
+
         previewImageWrap.addEventListener('click', () => {
             if (suppressNextPreviewClick) {
                 suppressNextPreviewClick = false;
-                return;
             }
-            const nextZoom = !isZoomed;
-            setZoom(nextZoom);
-            trackSelectContent({
-                contentType: 'extra_evidence_zoom',
-                itemId: caseId,
-                itemName: sortedItems[activeIndex]?.label || 'unknown_evidence',
-                sectionName: 'extra_evidence_modal',
-                interactionAction: nextZoom ? 'zoom_in' : 'zoom_reset',
-                elementType: 'image',
-                elementLabel: 'PREVIEW_IMAGE',
-                modalName: 'extra_evidence_modal'
-            });
         });
+
+        previewImageWrap.addEventListener('dblclick', () => {
+            const nextZoom = zoomLevel > 1.0 ? 1.0 : 2.0;
+            setZoom(nextZoom);
+            trackZoom(nextZoom > 1.0 ? 'zoom_in_double' : 'zoom_reset_double');
+        });
+
+        previewImageWrap.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? -1 : 1;
+            setZoom(zoomLevel + (delta * ZOOM_STEP * 1.5));
+        }, { passive: false });
 
         previewImageWrap.addEventListener('pointerdown', (event) => {
             if (event.button !== 0) {
                 return;
             }
 
-            if (isZoomed) {
-                startPreviewPan(event);
-                event.preventDefault();
-                return;
-            }
-
-            if (event.pointerType === 'touch') {
-                pendingTouchPan = true;
-                panPointerId = event.pointerId;
-                panStartX = event.clientX;
-                panStartY = event.clientY;
-                touchStartImageRect = previewImage.getBoundingClientRect();
-                touchStartWrapRect = previewImageWrap.getBoundingClientRect();
-            }
+            startPreviewPan(event);
+            event.preventDefault();
         });
 
         previewImageWrap.addEventListener('pointermove', (event) => {
@@ -2971,21 +2959,7 @@ function setupExtraEvidenceModal() {
                 previewImageWrap.scrollLeft = panStartScrollLeft - deltaX;
                 previewImageWrap.scrollTop = panStartScrollTop - deltaY;
                 event.preventDefault();
-                return;
             }
-
-            if (!pendingTouchPan || event.pointerId !== panPointerId || event.pointerType !== 'touch') {
-                return;
-            }
-
-            const deltaX = event.clientX - panStartX;
-            const deltaY = event.clientY - panStartY;
-            if (Math.abs(deltaX) <= PAN_THRESHOLD && Math.abs(deltaY) <= PAN_THRESHOLD) {
-                return;
-            }
-
-            beginAutoZoomPan(event);
-            event.preventDefault();
         });
 
         const endPreviewInteraction = () => {
@@ -3026,8 +3000,8 @@ function setupExtraEvidenceModal() {
         });
 
         previewImageWrap.appendChild(previewImage);
-        previewActions.append(zoomButton, originalLink);
-        preview.append(previewImageWrap, previewCaption, previewActions);
+        previewActions.append(zoomControls, originalLink);
+        preview.append(previewActions, previewImageWrap, previewCaption);
 
         listPanel.appendChild(pairList);
         layout.append(listPanel, preview);

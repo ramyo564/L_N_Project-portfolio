@@ -1833,11 +1833,12 @@ body.modal-open {
 }
 
 .extra-evidence-preview-actions {
-    margin-top: 0.55rem;
+    margin-bottom: 0.55rem;
     display: flex;
     gap: 0.5rem;
     align-items: center;
     flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 .extra-evidence-zoom-btn,
@@ -1862,10 +1863,45 @@ body.modal-open {
     background: rgba(88, 166, 255, 0.2);
 }
 
+.extra-evidence-zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(88, 166, 255, 0.25);
+    border-radius: 6px;
+    padding: 0.15rem;
+}
+
 .extra-evidence-zoom-btn {
+    border: none;
+    border-radius: 4px;
+    background: transparent;
     color: var(--accent-blue);
-    border-color: rgba(88, 166, 255, 0.5);
-    background: rgba(88, 166, 255, 0.12);
+}
+
+.extra-evidence-zoom-btn.is-icon {
+    min-width: 28px;
+    padding: 0.35rem;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.extra-evidence-zoom-btn.is-text {
+    padding: 0.35rem 0.5rem;
+}
+
+.extra-evidence-zoom-btn:hover {
+    background: rgba(88, 166, 255, 0.15);
+}
+
+.extra-evidence-zoom-value {
+    color: var(--text-secondary);
+    font-family: var(--font-code);
+    font-size: 0.7rem;
+    padding: 0 0.4rem;
+    min-width: 46px;
+    text-align: center;
 }
 
 .extra-evidence-open-original {
