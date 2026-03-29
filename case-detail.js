@@ -1044,7 +1044,9 @@ function normalizeEvidenceItems(items) {
 }
 
 function isCaseDetailLink(href) {
-    return /(?:^|\/)case\d+\/CASE-\d+\.md$/i.test(String(href || '').trim());
+    const text = String(href || '').trim();
+    const match = text.match(/(?:^|\/)case-([0-9a-zA-Z]+)\/CASE-([0-9a-zA-Z]+)\.md$/i);
+    return Boolean(match && String(match[1]).toLowerCase() === String(match[2]).toLowerCase());
 }
 
 function isPerformanceEvidenceLink(label, href) {
@@ -1059,9 +1061,12 @@ function isPerformanceEvidenceLink(label, href) {
 function parseCaseQueryFromHref(href) {
     try {
         const targetUrl = new URL(String(href || ''), window.location.href);
-        const raw = targetUrl.searchParams.get('case') || '';
+        const raw = String(targetUrl.searchParams.get('case') || '').trim();
+        if (!raw) {
+            return null;
+        }
         const value = Number.parseInt(raw, 10);
-        return Number.isFinite(value) ? value : null;
+        return Number.isFinite(value) && String(value) === raw ? value : raw;
     } catch (_error) {
         return null;
     }

@@ -58,6 +58,37 @@ export const diagrams = {
             class Browser,API,FAPI,WORKER accent
         `,
 
+    'case-d-ai-orchestration': `
+            flowchart LR
+            User[User / Browser] --> A0
+
+            subgraph AI [FastAPI AI Service]
+                A0[AI Orchestrator]
+                A1[Failure analysis]
+                A2[Recommendation]
+                A3[Feedback / Rerequest]
+            end
+
+            subgraph CORE [Spring Core Service]
+                T1[Task API]
+                T2[Domain / Auth]
+            end
+
+            REDIS[(Redis session / latest / quota / history)]
+            LLM[LLM API]
+
+            A0 --> REDIS
+            A0 --> LLM
+            A0 -->|selected plan| T1
+            T1 --> T2
+
+            classDef default fill:#161b22,stroke:#30363d,color:#c9d1d9
+            classDef accent fill:#161b22,stroke:#58a6ff,color:#58a6ff
+            classDef state fill:#161b22,stroke:#f0883e,color:#f0f6fc
+            class User,A0,A1,A2,A3,T1 accent
+            class REDIS state
+        `,
+
     'upgrade-todo-problem-overview': `
         graph LR
         Resume[Resume Life Navigation Section] --> SelectOne[Select One Bottleneck]

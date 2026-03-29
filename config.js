@@ -200,7 +200,7 @@ export const templateConfig = {
             id: 'upgrade-todo-cases',
             title: 'LIFE_NAVIGATION_TROUBLESHOOTING_CASES',
             navLabel: 'CASES',
-            sectionLead: '핵심 성능 개선 및 아키텍처 최적화 사례를 1분 요약과 상세 증거로 구성했습니다.',
+            sectionLead: '핵심 성능 개선, 인증 아키텍처 최적화 및 AI 서비스 분리 사례를 1분 요약과 상세 증거로 구성했습니다.',
             recruiterBrief: {
                 kicker: 'QUICK_BRIEF',
                 title: '1분 요약으로 먼저 보는 핵심 변화',
@@ -234,6 +234,14 @@ export const templateConfig = {
                         impact: '권한 게이트 단축으로 응답성 확보 및 확장성(OCP) 실현'
                     },
                     {
+                        id: 'Case D',
+                        anchorId: 'upgrade-todo-case-D',
+                        title: 'AI 오케스트레이션 파이프라인 구축 및 서비스 경계 분리',
+                        problem: '실패 분석, 추천, 피드백, 재요청, Task 생성이 한 요청 흐름에 섞여 AI 지연이 메인 서비스에 전파될 위험 존재',
+                        action: 'FastAPI AI 서비스와 Spring 코어를 분리하고 Redis로 세션·최신 포인터·Quota·재요청 이력을 제어하는 구조로 재편',
+                        impact: '외부 LLM 지연에 따른 장애 전파를 격리하고, 브라우저 종료 후에도 복구 가능한 분석 흐름을 확보'
+                    },
+                    {
                         id: 'Architecture',
                         title: '시스템 전체 아키텍처 및 설계 의도',
                         problem: '프로젝트의 전체적인 서비스 구조와 레이어별 설계 의도를 파악하기 위해 아키텍처 페이지로 이동합니다.',
@@ -260,7 +268,7 @@ export const templateConfig = {
             groups: [
                 {
                     title: 'CORE PERFORMANCE & ARCHITECTURE CASES',
-                    desc: '대규모 부하 안정성 확보, DB 커넥션 최적화 및 확장 가능한 인증 시스템 설계',
+                    desc: '대규모 부하 안정성 확보, DB 커넥션 최적화 및 인증·AI 서비스 분리 설계',
                     cards: [
                         {
                             mermaidId: 'case-integrated-ramp-up-tuning',
@@ -441,9 +449,67 @@ export const templateConfig = {
                                 { label: 'EVIDENCE_CASE_C', href: './case-C/CASE-C.md' },
                                 { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-2-path' }
                             ]
+                        },
+                        {
+                            mermaidId: 'case-d-ai-orchestration',
+                            anchorId: 'upgrade-todo-case-D',
+                            title: 'Case D. AI 오케스트레이션 파이프라인 구축 및 서비스 경계 분리',
+                            subtitle: '2026.01 ~ 2026.03 · FastAPI AI 서비스 분리와 Redis 상태 기반 Loose Coupling',
+                            businessImpact: '외부 LLM 지연에 따른 장애 전파를 격리해 코어 서비스의 응답성을 유지하고, 세션 복구가 가능한 AI 워크플로우를 구현했습니다.',
+                            overview: '실패한 TODO를 분류·추천·피드백·재요청 흐름으로 오케스트레이션하고, Redis 상태로 분석 세션을 Stateful하게 관리하면서 Spring Task handoff로 두 서비스 간 느슨한 결합을 구현한 사례입니다.',
+                            recruiterSummary: [
+                                '실패한 TODO를 분류·추천·피드백·재요청 흐름으로 연결해 AI 오케스트레이션 파이프라인을 구성했습니다.',
+                                'FastAPI AI 서비스와 Spring 코어 서비스를 분리해, 외부 LLM 지연이 핵심 트랜잭션으로 번지는 것을 격리했습니다.',
+                                'Redis 세션, 최신 포인터, Quota, 재요청 이력을 관리해 브라우저 종료 후에도 분석을 이어갈 수 있게 했습니다.',
+                                '추천 선택 결과는 Spring Task 생성으로 넘겨 실제 업무 실행으로 연결했습니다.'
+                            ],
+                            role: 'AI 파이프라인 제어, Redis 상태 설계, Spring Task handoff',
+                            stackSummary: 'FastAPI, Spring Boot 3.5, Redis, Qdrant, Gemini API, Loosely Coupled Architecture',
+                            cause: '1) 실패 분석, 추천, 피드백, 재요청, Task 생성이 한 사용자 흐름에 섞여 결합도가 높아짐.\n2) 외부 LLM 응답 대기가 길어질 경우 코어 서비스 응답성까지 함께 흔들릴 수 있었음.\n3) 중단 후 재개 시 최신 분석 세션을 복구할 상태 저장소가 필요했음.',
+                            problem: '실패한 TODO와 업무 습관을 분석해 실행 계획으로 바꾸는 AI 흐름이 단일 요청 경로에 묶여 있어, LLM 응답이 지연되면 분석과 핵심 로직 처리가 함께 흔들릴 수 있는 구조였습니다. 또한 세션을 닫았다가 다시 돌아와도 최신 분석 상태를 이어 받을 수 있는 복구 경로가 필요했습니다.',
+                            solution: 'FastAPI와 Spring의 책임을 분리하고, Redis에 session/latest/quota/history를 저장해 상태를 복구 가능하게 만들었습니다. 선택된 추천은 Spring Task로 넘기는 후속 흐름으로 연결해 AI 추론과 업무 실행을 느슨하게 결합했습니다.',
+                            result: '외부 LLM 지연에 따른 장애 전파를 격리해 코어 서비스 응답성을 지켰고, 분류→추천→피드백→재요청→Task 생성의 흐름이 독립적으로 이어지도록 정리했습니다. 향후 worker split과 개인화 추천 고도화로 확장하기 쉬운 서비스 경계도 확보했습니다.',
+                            evidenceImages: [
+                                {
+                                    label: 'Before: Coupled AI orchestration',
+                                    src: './case-D/before/case-d-architecture-before.svg',
+                                    phase: 'before',
+                                    pairKey: 'case-d-architecture'
+                                },
+                                {
+                                    label: 'After: Separated AI boundary',
+                                    src: './case-D/after/case-d-architecture-after.svg',
+                                    phase: 'after',
+                                    pairKey: 'case-d-architecture'
+                                }
+                            ],
+                            extraEvidenceImages: [
+                                {
+                                    label: 'Before: Blocking request-thread sequence',
+                                    src: './case-D/before/case-d-sequence-before.svg',
+                                    phase: 'before',
+                                    pairKey: 'case-d-sequence'
+                                },
+                                {
+                                    label: 'After: Redis-backed async handoff sequence',
+                                    src: './case-D/after/case-d-sequence-after.svg',
+                                    phase: 'after',
+                                    pairKey: 'case-d-sequence'
+                                }
+                            ],
+                            skills: ['AI Orchestration', 'FastAPI', 'Spring Boot', 'Redis Session Control', 'Service Boundary Design'],
+                            highlights: [
+                                'Failure analysis -> recommendation -> feedback -> rerequest pipeline',
+                                'Redis latest pointer restores the active session',
+                                'Selected recommendation becomes a Spring Task',
+                                'FastAPI handles AI work while Spring handles core work'
+                            ],
+                            links: [
+                                { label: 'EVIDENCE_CASE_D', href: './case-D/CASE-D.md' }
+                            ]
                         }
                     ]
-                }
+                },
             ]
         }
     ],
