@@ -992,6 +992,7 @@ function normalizeEvidenceLabel(label) {
         .toLowerCase()
         .replace(/\bbefore\b|\bafter\b/g, ' ')
         .replace(/\([^)]*\)/g, ' ')
+        .replace(/[:：]+/g, ' ')
         .replace(/[_-]+/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -1033,7 +1034,8 @@ function normalizeEvidenceItems(items) {
         .map((item) => ({
             label: item.label || 'EVIDENCE',
             src: item.src,
-            alt: item.alt || item.label || 'evidence image',
+            alt: item.alt || item.caption || item.label || 'evidence image',
+            caption: item.caption || item.description || '',
             phase: ['before', 'after', 'other'].includes(String(item.phase || '').toLowerCase())
                 ? String(item.phase).toLowerCase()
                 : detectEvidencePhase(item),
@@ -1147,6 +1149,7 @@ function sanitizePairTitle(label) {
         .replace(/^(?:pair\s*\d+\s*(?:[·:\/-]\s*)?)+/g, '')
         .replace(/\b(before|after)\b/g, ' ')
         .replace(/\s+/g, ' ')
+        .replace(/^[\s:·\/-]+/g, '')
         .trim();
     if (!cleaned) {
         return '';
@@ -1185,12 +1188,12 @@ function buildEvidenceSlotHtml(item, phase, missingReason, options = {}) {
         >
             <span class="case-evidence-phase-badge ${toneClass}">${phaseLabel}</span>
             <img loading="lazy" src="${escapeHtml(item.src)}" alt="${escapeHtml(item.alt)}">
-            <span class="case-evidence-slot-caption">${escapeHtml(item.label)}</span>
+            <span class="case-evidence-slot-caption">${escapeHtml(item.caption || item.label)}</span>
         </a>
     `;
 }
 
-function buildEvidencePairsHtml(items, tier) {
+function buildEvidencePairsHtml(items, tier, startIndex = 1) {
     if (items.length === 0) {
         return '<p class="case-review-empty">등록된 이미지 증거가 없습니다.</p>';
     }
@@ -1206,10 +1209,11 @@ function buildEvidencePairsHtml(items, tier) {
                 const pairTitle = sanitizePairTitle(pair.before?.label || pair.after?.label || pair.key) || `PAIR ${index + 1}`;
                 const missingBeforeReason = !pair.before ? pair.after?.missingBeforeReason : '';
                 const missingAfterReason = !pair.after ? pair.before?.missingAfterReason : '';
+                const pairNumber = startIndex + index;
 
                 return `
                 <article class="case-evidence-pair-card">
-                    <p class="case-evidence-pair-title">PAIR ${index + 1} · ${escapeHtml(pairTitle)}</p>
+                    <p class="case-evidence-pair-title">PAIR ${pairNumber} · ${escapeHtml(pairTitle)}</p>
                     <div class="case-evidence-frame">
                         ${buildEvidenceSlotHtml(pair.before, 'before', missingBeforeReason, { pairTitle, pairIndex: index + 1, tier })}
                         ${buildEvidenceSlotHtml(pair.after, 'after', missingAfterReason, { pairTitle, pairIndex: index + 1, tier })}
@@ -1279,6 +1283,7 @@ function buildCaseDetail(root, cards, selected) {
 
     const coreEvidence = normalizeEvidenceItems(card?.evidenceImages);
     const extraEvidence = normalizeEvidenceItems(card?.extraEvidenceImages);
+    const corePairCount = buildEvidencePairs(coreEvidence).length;
     const allEvidence = coreEvidence.concat(extraEvidence);
     const missingReasons = Array.from(new Set(
         allEvidence
@@ -1393,9 +1398,9 @@ function buildCaseDetail(root, cards, selected) {
         <section class="case-review-panel">
             <p class="section-kicker">EVIDENCE_AT_A_GLANCE</p>
             <h2>핵심 증거 (Before/After Frame)</h2>
-            ${buildEvidencePairsHtml(coreEvidence, 'core')}
+            ${buildEvidencePairsHtml(coreEvidence, 'core', 1)}
             <h2 class="case-section-subtitle">보조 증거</h2>
-            ${buildEvidencePairsHtml(extraEvidence, 'extra')}
+            ${buildEvidencePairsHtml(extraEvidence, 'extra', corePairCount + 1)}
             ${missingReasons.length > 0 ? `
                 <div class="case-note-box">
                     <h3>N/A / 단측 증거 사유</h3>
