@@ -29,7 +29,7 @@ Persistable `isNew()`와 Outbox 비동기 분리로 정리했다.
 
 - 회원가입 응답 `200 -> 202`
 - After 응답에서 `X-User-Id` 헤더 확인
-- Hibernate SQL에서 `merge(SELECT+INSERT)` 제거
+- Hibernate SQL에서 `merge` 경로의 `SELECT + INSERT`가 사라지고 `INSERT` 전용 경로로 정리됨
 - Outbox 테이블과 RabbitMQ 큐를 통해 후속 처리 경로 분리 확인
 
 ## 사용한 증거

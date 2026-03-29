@@ -30,10 +30,12 @@
 
 ### 2-2. Hibernate SQL 경계
 
+> 포인트: before는 `SELECT + INSERT`가 함께 찍히는지, after는 `SELECT`가 빠지고 `INSERT`만 남는지를 보면 된다.
+
 | 이미지 | 읽히는 값 | 무엇을 증명하는가 | 메모 |
 |---|---|---|---|
-| `before/case1-hibernate-before.png` | `org.hibernate.SQL` 로그에서 `insert into users`, `insert into auth_user`, `select ... users` 패턴이 보임 | 저장/조회가 한 요청 흐름에 붙어 있던 before 경로 | 정량 KPI보다는 구조 증거 |
-| `after/case1-hibernate-after.png` | 동일 로그 스트림에서 `insert into users`, `insert into auth_user` 경로가 정리된 상태로 보임 | Persistable/Outbox 이후의 저장 경로 정리 | SQL 경계 증거 |
+| `before/case1-hibernate-before.png` | `org.hibernate.SQL` 로그에서 `insert into users`, `insert into auth_user`, `select ... users` 패턴이 보임 | merge 때문에 `SELECT`와 `INSERT`가 함께 찍히는 before 경로 | `SELECT가 왜 찍히는지`를 보는 구조 증거 |
+| `after/case1-hibernate-after.png` | 동일 로그 스트림에서 `insert into users`, `insert into auth_user` 경로가 정리된 상태로 보임 | Persistable/Outbox 이후의 `INSERT` 전용 저장 경로 | `SELECT가 빠졌는지`를 보는 SQL 경계 증거 |
 
 ### 2-3. Outbox 테이블
 

@@ -357,12 +357,12 @@ export const templateConfig = {
                             result: '읽기/쓰기 양방향에서 트랜잭션이 DB 커넥션을 물고 있는 시간을 대폭 단축하여, 고부하 환경에서도 커넥션 풀(HikariCP) 고갈 없이 안정적인 세션 관리와 동시 처리 능력 확보했습니다.',
                             evidenceImages: [
                                 {
-                                    label: 'Before: JPA merge(SELECT+INSERT)로 인한 비효율 발생',
+                                    label: 'Before: merge 경로에서 SELECT와 INSERT가 함께 보이는 Hibernate SQL',
                                     src: './case1/before/case1-hibernate-before.png',
                                     pairKey: 'case-b-jpa-outbox'
                                 },
                                 {
-                                    label: 'After: Persistable 구현으로 INSERT 전용 경로 강제',
+                                    label: 'After: Persistable.isNew() 적용 후 INSERT 전용 경로로 정리된 Hibernate SQL',
                                     src: './case1/after/case1-hibernate-after.png',
                                     pairKey: 'case-b-jpa-outbox'
                                 }
