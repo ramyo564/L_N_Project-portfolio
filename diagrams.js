@@ -24,11 +24,19 @@ export const diagrams = {
             end
 
             subgraph Data [Data Layer]
+                PGB_API[PgBouncer API]
+                PGB_WORKER[PgBouncer Worker]
                 PG[(PostgreSQL)]
                 REDIS[(Redis)]
                 MQ((RabbitMQ todo.exchange))
                 QDRANT[(Qdrant)]
                 LLM[External LLM API]
+            end
+
+            subgraph Obs [Observability]
+                OTEL[OpenTelemetry]
+                PROM[Prometheus / Loki]
+                GRAFANA[Grafana]
             end
 
             Browser -->|HTTPS| CDN
@@ -39,9 +47,12 @@ export const diagrams = {
             API --> AUTH
             API --> REDIS
             API --> MQ
-            API --> PG
+            API --> PGB_API
+            PGB_API --> PG
+
             MQ -->|task events| WORKER
-            WORKER --> PG
+            WORKER --> PGB_WORKER
+            PGB_WORKER --> PG
             WORKER --> EVICT
             EVICT --> REDIS
 
@@ -53,9 +64,17 @@ export const diagrams = {
             RECO --> LLM
             FAPI -->|create selected tasks| API
 
+            API -.->|Traces/Metrics| OTEL
+            WORKER -.->|Traces/Metrics| OTEL
+            FAPI -.->|Traces/Metrics| OTEL
+            OTEL -.-> PROM
+            PROM -.-> GRAFANA
+
             classDef default fill:#161b22,stroke:#30363d,color:#c9d1d9
             classDef accent fill:#161b22,stroke:#58a6ff,color:#58a6ff
+            classDef obs fill:#161b22,stroke:#238636,color:#c9d1d9
             class Browser,API,FAPI,WORKER accent
+            class OTEL,PROM,GRAFANA obs
         `,
 
     'case-d-ai-orchestration': `
