@@ -417,8 +417,8 @@ export const templateConfig = {
                             role: '인증 필터 최적화, AOP 권한 게이트 설계, OAuth2 공급자 추상화 및 DI 구조 구현',
                             stackSummary: 'Spring Security, JWT Claims, AOP, OAuth2, DI/DIP Architecture',
                             cause: '1) JWT 인증 시마다 발생하는 사용자 재조회와 중복된 권한 검증 쿼리가 성능 병목을 유발.\n2) 소셜 로그인 채널 확장 시 도메인 로직과 외부 벤더 API 간의 강한 결합 발생.',
-                            problem: '모든 핵심 API 요청마다 AuthUser 조회 및 Project 검증 쿼리가 중복 발생(총 3회)하여 DB 부하를 가중시켰고, 소셜 로그인 벤더사마다 다른 응답 규격이 도메인 코드를 복잡하게 제작했습니다.',
-                            solution: '첫째, JWT Claims에서 직접 식별자를 추출하고 AOP 선행 검증을 도입해 인증 쿼리를 3회에서 1회로 최적화했습니다. 둘째, OAuth2UserInfo 인터페이스 기반 추상화를 통해 Google/Kakao/Naver 등 다중 채널을 전략 패턴으로 통합 관리하여 계층 간 결합을 해소했습니다.',
+                            problem: '모든 핵심 API 요청마다 AuthUser 조회 및 Project 검증 쿼리가 중복 발생(총 3회)하여 DB 부하를 가중시켰고, 소셜 로그인 벤더사마다 서로 다른 응답 규격이 도메인 로직 코드를 복잡하게 만들었습니다.',
+                            solution: '첫째, JWT Claims에서 직접 식별자를 추출하고 AOP 선행 검증을 도입해 인증 쿼리를 3회에서 1회로 최적화했습니다. \n둘째, OAuth2UserInfo 인터페이스 기반 추상화를 통해 Google/Kakao/Naver 등 다중 채널을 전략 패턴으로 통합 관리하여 계층 간 결합을 해소했습니다.',
                             result: '권한 게이트 단축으로 고부하 테스트 시 인증 병목을 제거했으며, OCP를 준수하는 확장 가능한 소셜 로그인 아키텍처를 구축해 신규 채널 추가 비용을 최소화했습니다.',
                             evidenceImages: [
                                 {
@@ -465,10 +465,10 @@ export const templateConfig = {
                             ],
                             role: 'AI 파이프라인 제어, Redis 상태 설계, Spring Task handoff',
                             stackSummary: 'FastAPI, Spring Boot 3.5, Redis, Qdrant, Gemini API, Loosely Coupled Architecture',
-                            cause: '1) 실패 분석, 추천, 피드백, 재요청, Task 생성이 한 사용자 흐름에 섞여 결합도가 높아짐.\n2) 외부 LLM 응답 대기가 길어질 경우 코어 서비스 응답성까지 함께 흔들릴 수 있었음.\n3) 중단 후 재개 시 최신 분석 세션을 복구할 상태 저장소가 필요했음.',
-                            problem: '실패한 TODO와 업무 습관을 분석해 실행 계획으로 바꾸는 AI 흐름이 단일 요청 경로에 묶여 있어, LLM 응답이 지연되면 분석과 핵심 로직 처리가 함께 흔들릴 수 있는 구조였습니다. 또한 세션을 닫았다가 다시 돌아와도 최신 분석 상태를 이어 받을 수 있는 복구 경로가 필요했습니다.',
-                            solution: 'FastAPI와 Spring의 책임을 분리하고, Redis에 session/latest/quota/history를 저장해 상태를 복구 가능하게 만들었습니다. 선택된 추천은 Spring Task로 넘기는 후속 흐름으로 연결해 AI 추론과 업무 실행을 느슨하게 결합했습니다.',
-                            result: '외부 LLM 지연에 따른 장애 전파를 격리해 코어 서비스 응답성을 지켰고, 분류→추천→피드백→재요청→Task 생성의 흐름이 독립적으로 이어지도록 정리했습니다. 향후 worker split과 개인화 추천 고도화로 확장하기 쉬운 서비스 경계도 확보했습니다.',
+                            cause: '1) 실패 분석, 추천, 피드백, 재요청, Task 생성이 한 사용자 흐름에 섞여 결합도가 높아짐.\n2) 외부 LLM 응답 대기가 길어질 경우 코어 서비스 응답성까지 함께 영향받음.\n3) 중단 후 재개 시 최신 분석 세션을 복구할 상태 저장소 없음.',
+                            problem: '실패한 TODO와 업무 습관을 분석해 실행 계획으로 바꾸는 AI 흐름이 단일 요청 경로에 묶여 있어, LLM 응답이 지연되면 분석과 핵심 로직 처리가 함께 영향받기 쉬운 구조였습니다. \n또한 세션을 닫았다가 다시 돌아와도 최신 분석 상태를 이어 받을 수 있는 복구 경로가 필요했습니다.',
+                            solution: 'FastAPI와 Spring의 책임을 분리하고, Redis에 session/latest/quota/history를 저장해 상태를 복구 가능하게 만들었습니다. \n선택된 추천은 Spring Task로 넘기는 후속 흐름으로 연결해 AI 추론과 업무 실행을 느슨하게 결합했습니다.',
+                            result: '외부 LLM 지연에 따른 장애 전파를 격리해 코어 서비스 응답성을 지켰고, 분류→추천→피드백→재요청→Task 생성의 흐름이 독립적으로 이어지도록 정리했습니다. \n향후 worker split과 개인화 추천 고도화로 확장하기 쉬운 서비스 경계도 확보했습니다.',
                             evidenceImages: [
                                 {
                                     label: 'Before: Coupled AI orchestration',
