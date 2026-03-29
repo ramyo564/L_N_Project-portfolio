@@ -472,12 +472,14 @@ export const templateConfig = {
                             evidenceImages: [
                                 {
                                     label: 'Before: Coupled AI orchestration',
+                                    caption: '분석, 추천, 피드백, 재요청이 하나의 요청 경로에 묶여 있는 구조',
                                     src: './case-D/before/case-d-architecture-before.svg',
                                     phase: 'before',
                                     pairKey: 'case-d-architecture'
                                 },
                                 {
                                     label: 'After: Separated AI boundary',
+                                    caption: 'FastAPI AI와 Spring 코어를 분리해 AI 지연을 격리한 구조',
                                     src: './case-D/after/case-d-architecture-after.svg',
                                     phase: 'after',
                                     pairKey: 'case-d-architecture'
@@ -486,12 +488,14 @@ export const templateConfig = {
                             extraEvidenceImages: [
                                 {
                                     label: 'Before: Blocking request-thread sequence',
+                                    caption: '요청 스레드가 LLM 응답을 기다리며 전체 흐름이 막히는 구조',
                                     src: './case-D/before/case-d-sequence-before.svg',
                                     phase: 'before',
                                     pairKey: 'case-d-sequence'
                                 },
                                 {
                                     label: 'After: Redis-backed async handoff sequence',
+                                    caption: 'Redis 상태를 거쳐 비동기로 Task를 넘기며 흐름을 분리한 구조',
                                     src: './case-D/after/case-d-sequence-after.svg',
                                     phase: 'after',
                                     pairKey: 'case-d-sequence'
