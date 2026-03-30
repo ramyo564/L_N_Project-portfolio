@@ -1,0 +1,370 @@
+@media (max-width: 1200px) {
+    .status-bar {
+        grid-template-columns: auto 1fr;
+    }
+
+    .time-display {
+        display: none;
+    }
+
+    .nav-links {
+        justify-self: center;
+    }
+
+    .service-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .skill-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #upgrade-todo-problem-solving {
+        grid-template-columns: 1fr;
+    }
+
+    #upgrade-todo-problem-solving .hero-message {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    #upgrade-todo-problem-solving .graph-container {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    #upgrade-todo-problem-solving .hero-actions {
+        grid-column: 1;
+        grid-row: 4;
+    }
+
+    #upgrade-todo-problem-solving .hero-diagram-note {
+        grid-column: 1;
+        grid-row: 5;
+    }
+
+    .hero-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hero-headline-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .k6-overview-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+    }
+
+    .k6-overview-summary-item:not(:last-child)::after {
+        display: none;
+    }
+
+    .k6-overview-body-cols {
+        grid-template-columns: 1fr;
+    }
+
+    .section-recruiter-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .section-header {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        padding: 1rem;
+        gap: 2rem;
+    }
+
+    .top-panels {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .top-panels>.code-evidence-split-panel:nth-child(4) {
+        grid-column: auto;
+    }
+
+    #about {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #upgrade-todo-problem-solving {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .status-bar {
+        grid-template-columns: auto auto;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0 0.9rem;
+    }
+
+    .nav-toggle {
+        display: inline-flex;
+    }
+
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: calc(100% + 1px);
+        left: 0.75rem;
+        right: 0.75rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+        padding: 0.45rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--panel-bg);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .nav-links.is-open {
+        display: flex;
+    }
+
+    .nav-item {
+        display: block;
+        width: 100%;
+        padding: 0.55rem 0.6rem;
+        border-radius: 4px;
+    }
+
+    .nav-item:hover {
+        background: rgba(88, 166, 255, 0.12);
+    }
+
+    .nav-item-wrap {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nav-submenu {
+        position: static;
+        display: flex;
+        min-width: 0;
+        margin-top: 0.2rem;
+        padding: 0.28rem;
+        gap: 0.2rem;
+        box-shadow: none;
+        background: rgba(0, 0, 0, 0.25);
+    }
+
+    .nav-sub-item {
+        display: block;
+        width: 100%;
+        padding: 0.45rem 0.55rem;
+        font-size: 0.7rem;
+    }
+
+    .service-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-evidence-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-scan-row {
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
+    }
+
+    .skill-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .graph-container {
+        height: 320px;
+    }
+
+    #intro .graph-container {
+        height: 250px;
+    }
+
+    #upgrade-todo-problem-solving .graph-container {
+        height: 255px;
+    }
+
+    .hero-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hero-headline-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #upgrade-django4-code-evidence .graph-container {
+        height: 230px;
+        padding: 0.5rem;
+    }
+
+    .code-evidence-split-panel .graph-container {
+        height: 235px;
+        padding: 0.5rem;
+    }
+
+    .code-evidence-summary-panel .graph-container {
+        height: 215px;
+        padding: 0.5rem;
+    }
+
+    .section-title {
+        font-size: 1.35rem;
+    }
+
+    .section-header {
+        align-items: flex-start;
+    }
+
+    .section-header-main {
+        width: 100%;
+    }
+
+    .section-lead {
+        font-size: 0.78rem;
+    }
+
+    .section-recruiter-brief {
+        padding: 0.68rem 0.72rem;
+    }
+
+    .section-recruiter-title {
+        font-size: 0.9rem;
+    }
+
+    .section-recruiter-card-grid {
+        grid-template-columns: 1fr;
+        gap: 0.48rem;
+    }
+
+    .section-recruiter-card {
+        padding: 0.52rem 0.56rem;
+    }
+
+    .section-recruiter-card-title {
+        font-size: 0.78rem;
+    }
+
+    .section-recruiter-card-value {
+        font-size: 0.71rem;
+    }
+
+    .section-recruiter-actions {
+        width: 100%;
+    }
+
+    .section-recruiter-list li {
+        font-size: 0.74rem;
+    }
+
+    .group-divider {
+        flex-wrap: wrap;
+        gap: 0.35rem 0.5rem;
+    }
+
+    .group-divider::before,
+    .group-divider::after {
+        display: none;
+    }
+
+    .group-title {
+        font-size: 0.74rem;
+    }
+
+    .group-desc {
+        font-size: 0.7rem;
+        white-space: normal;
+    }
+
+    .mermaid-modal {
+        padding: 0.45rem;
+    }
+
+    .mermaid-modal-dialog {
+        width: 100%;
+        height: 92vh;
+    }
+
+    .extra-evidence-modal {
+        padding: 0.45rem;
+    }
+
+    .extra-evidence-dialog {
+        width: 100%;
+        height: 92vh;
+    }
+
+    .k6-overview-modal {
+        padding: 0.45rem;
+    }
+
+    .k6-overview-dialog {
+        width: 100%;
+        height: 92vh;
+    }
+
+    .extra-evidence-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .extra-evidence-pairs {
+        max-height: 42vh;
+    }
+
+    .extra-evidence-pair-body {
+        grid-template-columns: 1fr;
+    }
+
+    .extra-evidence-item img {
+        height: 84px;
+    }
+
+    .extra-evidence-empty {
+        min-height: 108px;
+    }
+
+    .extra-evidence-preview {
+        min-height: 42vh;
+    }
+
+    .k6-overview-summary-grid,
+    .k6-overview-body-cols,
+    .k6-overview-compare-body {
+        grid-template-columns: 1fr;
+    }
+
+    .k6-overview-figure img {
+        height: 170px;
+    }
+
+    .mermaid-modal-canvas svg {
+        min-width: 0;
+    }
+
+    .mermaid-modal-controls {
+        top: 2.75rem;
+        left: 0.45rem;
+        gap: 0.22rem;
+    }
+
+    .mermaid-zoom-btn {
+        min-width: 28px;
+        padding: 0.24rem 0.34rem;
+        font-size: 0.68rem;
+    }
+
+    .mermaid-zoom-value {
+        min-width: 48px;
+        font-size: 0.66rem;
+        padding: 0.22rem 0.35rem;
+    }
+}

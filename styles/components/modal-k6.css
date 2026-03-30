@@ -1,0 +1,294 @@
+.k6-overview-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1260;
+}
+
+.k6-overview-modal.is-open {
+    display: flex;
+}
+
+.k6-overview-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 8, 12, 0.84);
+    backdrop-filter: blur(2px);
+}
+
+.k6-overview-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(1320px, 96vw);
+    height: min(90vh, 980px);
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.k6-overview-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.65rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-secondary);
+    font-family: var(--font-code);
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+}
+
+.k6-overview-close:hover {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.k6-overview-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--accent-blue);
+    font-family: var(--font-code);
+    font-size: 0.82rem;
+}
+
+.k6-overview-content {
+    flex: 1;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 1rem;
+}
+
+.k6-overview-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.k6-overview-body-cols {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.k6-overview-col-side,
+.k6-overview-col-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
+}
+
+.k6-overview-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+    padding: 0.2rem;
+    background: rgba(88, 166, 255, 0.05);
+    border: 1px solid rgba(88, 166, 255, 0.15);
+    border-radius: 12px;
+}
+
+.k6-overview-summary-item {
+    border: none;
+    background: transparent;
+    padding: 0.8rem 1rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.k6-overview-summary-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 1px;
+    background: var(--border-color);
+    opacity: 0.5;
+}
+
+.k6-overview-summary-label {
+    font-family: var(--font-code);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+}
+
+.k6-overview-summary-value {
+    font-family: var(--font-code);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.25;
+}
+
+.k6-overview-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.24);
+    padding: 0.9rem 1rem;
+    min-width: 0;
+    transition: border-color 0.2s ease;
+}
+
+.k6-overview-card:hover {
+    border-color: rgba(88, 166, 255, 0.3);
+}
+
+.k6-overview-card-title {
+    font-family: var(--font-code);
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    color: var(--accent-blue);
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.k6-overview-card-title::before {
+    content: "•";
+    color: var(--accent-blue);
+}
+
+.k6-overview-list {
+    margin: 0;
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+}
+
+.k6-overview-list li {
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.k6-overview-comparisons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.k6-overview-compare-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.22);
+    padding: 0.7rem;
+}
+
+.k6-overview-compare-title {
+    font-family: var(--font-code);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    color: var(--accent-blue);
+    margin-bottom: 0.55rem;
+}
+
+.k6-overview-compare-body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.k6-overview-figure {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.22);
+    overflow: hidden;
+}
+
+.k6-overview-figure.is-clickable {
+    cursor: zoom-in;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.k6-overview-figure.is-clickable:hover {
+    border-color: var(--accent-blue);
+}
+
+.k6-overview-figure.is-clickable:focus-visible {
+    outline: 2px solid rgba(88, 166, 255, 0.68);
+    outline-offset: 1px;
+    box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.42);
+}
+
+.k6-overview-figure img {
+    display: block;
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #0a1019;
+}
+
+.k6-overview-phase {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    padding: 0.14rem 0.32rem;
+    border-radius: 999px;
+    font-family: var(--font-code);
+    font-size: 0.57rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    border: 1px solid var(--border-color);
+    margin: 0.38rem 0.4rem 0;
+    background: rgba(0, 0, 0, 0.72);
+    color: var(--text-secondary);
+}
+
+.k6-overview-phase.is-before {
+    color: #ffb4b4;
+    border-color: rgba(255, 180, 180, 0.6);
+}
+
+.k6-overview-phase.is-current {
+    color: #9be9a8;
+    border-color: rgba(155, 233, 168, 0.6);
+}
+
+.k6-overview-figure-caption {
+    padding: 0.35rem 0.45rem 0.5rem;
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+}
+
+.k6-overview-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.k6-overview-link {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(88, 166, 255, 0.5);
+    border-radius: 6px;
+    background: rgba(88, 166, 255, 0.12);
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-family: var(--font-code);
+    font-size: 0.72rem;
+    line-height: 1;
+    padding: 0.42rem 0.62rem;
+}
+
+.k6-overview-link:hover {
+    color: #ffffff;
+    border-color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.2);
+}
