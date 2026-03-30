@@ -1,0 +1,130 @@
+.mermaid-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1200;
+}
+
+.mermaid-modal.is-open {
+    display: flex;
+}
+
+.mermaid-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 8, 12, 0.84);
+    backdrop-filter: blur(2px);
+}
+
+.mermaid-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(1400px, 96vw);
+    height: min(88vh, 980px);
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.mermaid-modal-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.65rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-secondary);
+    font-family: var(--font-code);
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+}
+
+.mermaid-modal-controls {
+    position: absolute;
+    top: 3.05rem;
+    left: 0.65rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    z-index: 2;
+}
+
+.mermaid-zoom-btn {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-secondary);
+    font-family: var(--font-code);
+    font-size: 0.72rem;
+    line-height: 1;
+    min-width: 32px;
+    padding: 0.28rem 0.42rem;
+    cursor: pointer;
+}
+
+.mermaid-zoom-btn:hover {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.mermaid-zoom-value {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.25rem 0.42rem;
+    color: var(--text-secondary);
+    font-family: var(--font-code);
+    font-size: 0.7rem;
+    min-width: 54px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.mermaid-modal-close:hover {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.mermaid-modal-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--accent-blue);
+    font-family: var(--font-code);
+    font-size: 0.82rem;
+}
+
+.mermaid-modal-content {
+    flex: 1;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 3rem 1rem 1rem;
+    display: block;
+}
+
+.mermaid-modal-canvas {
+    width: max-content;
+    height: max-content;
+    margin: 0 auto;
+}
+
+.mermaid-modal-canvas svg {
+    display: block;
+    max-width: none;
+    min-width: 0;
+}
+
+.mermaid-modal-content.can-pan {
+    cursor: grab;
+    user-select: none;
+}
+
+.mermaid-modal-content.is-panning {
+    cursor: grabbing;
+}
+

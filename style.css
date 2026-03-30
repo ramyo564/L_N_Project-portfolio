@@ -1,3 +1,8 @@
 @import "./styles/core/tokens.css";
 @import "./styles/core/base.css";
+@import "./styles/components/navigation.css";
+@import "./styles/components/modal-mermaid.css";
+@import "./styles/components/modal-extra-evidence.css";
+@import "./styles/components/modal-k6.css";
 @import "./styles/pages/home.css";
+@import "./styles/responsive/home.css";

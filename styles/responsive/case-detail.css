@@ -1,0 +1,69 @@
+@media (max-width: 1024px) {
+    .case-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .case-review-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .case-review-root {
+        padding: 1rem 0.8rem 2rem;
+    }
+
+    .case-review-panel {
+        padding: 0.95rem;
+    }
+
+    .case-recruiter-summary-block {
+        padding: 0.66rem 0.7rem;
+    }
+
+    .case-recruiter-summary-list li {
+        font-size: 0.78rem;
+    }
+
+    .case-summary-grid,
+    .case-list-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .case-evidence-frame {
+        grid-template-columns: 1fr;
+    }
+
+    .case-review-panel h1 {
+        font-size: 1.22rem;
+    }
+
+    .case-evidence-modal {
+        padding: 0.6rem;
+    }
+
+    .case-evidence-modal-dialog {
+        width: 100%;
+        height: min(92vh, 860px);
+    }
+
+    .case-evidence-modal-content {
+        grid-template-columns: 44px minmax(0, 1fr) 44px;
+    }
+
+    .case-evidence-modal-header {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .case-evidence-counter {
+        grid-row: 2;
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+
+    .case-evidence-modal-close {
+        grid-row: 1;
+        grid-column: 3;
+    }
+}
