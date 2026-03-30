@@ -156,3 +156,148 @@ export function createCaseDetailTracking() {
         trackInitialPageView
     };
 }
+
+export function createCaseDetailInteractionTracking({
+    trackSelectContent,
+    getCurrentItemId,
+    getCurrentItemName,
+    getPageType,
+    detectLinkType,
+    isPerformanceEvidenceLink,
+    parseCaseQueryFromHref,
+    openEvidenceModalByElement,
+    toSafeLabel
+} = {}) {
+    function setupInteractionTracking() {
+        document.addEventListener('click', (event) => {
+            const trigger = event.target.closest('[data-track-kind]');
+            if (!trigger) {
+                return;
+            }
+
+            const kind = trigger.dataset.trackKind || '';
+            const href = trigger.getAttribute('href') || '';
+            const itemId = getCurrentItemId?.();
+            const itemName = getCurrentItemName?.();
+            const pageType = getPageType?.() || '';
+
+            if (kind === 'header_home') {
+                trackSelectContent?.({
+                    contentType: 'navigation',
+                    itemId,
+                    itemName,
+                    sectionName: 'case_review_header',
+                    interactionAction: 'navigate',
+                    elementType: 'link',
+                    elementLabel: 'BACK_TO_PORTFOLIO',
+                    linkUrl: href,
+                    linkType: detectLinkType?.(href),
+                    page_type: pageType
+                });
+                return;
+            }
+
+            if (kind === 'case_list_card') {
+                const caseIdRaw = String(trigger.dataset.caseNumber || '');
+                const parsedNum = Number.parseInt(caseIdRaw, 10);
+                const caseNumber = Number.isFinite(parsedNum) ? parsedNum : caseIdRaw;
+
+                const caseTitle = trigger.dataset.caseTitle || `CASE ${caseNumber}`;
+                trackSelectContent?.({
+                    contentType: 'navigation_case',
+                    itemId: caseNumber ? `case_${caseNumber}` : 'unknown_case',
+                    itemName: caseTitle,
+                    sectionName: 'case_list',
+                    interactionAction: 'open_case',
+                    elementType: 'card_link',
+                    elementLabel: caseNumber ? `CASE_${caseNumber}` : 'CASE_UNKNOWN',
+                    linkUrl: href,
+                    linkType: detectLinkType?.(href),
+                    value: typeof caseNumber === 'number' ? caseNumber : undefined
+                });
+                return;
+            }
+
+            if (kind === 'case_nav') {
+                const navLabel = trigger.dataset.navLabel || trigger.textContent?.trim() || 'CASE_NAV';
+                const destinationCase = parseCaseQueryFromHref?.(href);
+                trackSelectContent?.({
+                    contentType: 'navigation',
+                    itemId,
+                    itemName,
+                    sectionName: 'case_review_navigation',
+                    interactionAction: 'navigate',
+                    elementType: 'link',
+                    elementLabel: navLabel,
+                    linkUrl: href,
+                    linkType: detectLinkType?.(href),
+                    destination_case: destinationCase || '',
+                    page_type: pageType
+                });
+                return;
+            }
+
+            if (kind === 'traceability_link') {
+                const linkLabel = trigger.dataset.linkLabel || trigger.textContent?.trim() || 'REFERENCE';
+                const linkRole = trigger.dataset.linkRole || 'reference';
+                const contentType = isPerformanceEvidenceLink?.(linkLabel, href) ? 'performance_evidence' : 'case_link';
+                trackSelectContent?.({
+                    contentType,
+                    itemId,
+                    itemName,
+                    sectionName: 'traceability',
+                    interactionAction: 'open_link',
+                    elementType: 'link',
+                    elementLabel: linkLabel,
+                    linkUrl: href,
+                    linkType: detectLinkType?.(href),
+                    link_role: linkRole,
+                    page_type: pageType
+                });
+                return;
+            }
+
+            if (kind === 'evidence_slot') {
+                const phase = trigger.dataset.evidencePhase || 'other';
+                const tier = trigger.dataset.evidenceTier || 'core';
+                const evidenceLabel = trigger.dataset.evidenceLabel || 'EVIDENCE';
+                const pairTitle = trigger.dataset.evidencePair || 'PAIR';
+                const pairIndexRaw = Number.parseInt(trigger.dataset.evidencePairIndex || '', 10);
+                const pairIndex = Number.isFinite(pairIndexRaw) ? pairIndexRaw : undefined;
+                const baseLabel = typeof toSafeLabel === 'function'
+                    ? toSafeLabel(evidenceLabel)
+                    : String(evidenceLabel || 'EVIDENCE');
+                const safeLabel = baseLabel.replace(/\s+/g, '_').toUpperCase();
+
+                trackSelectContent?.({
+                    contentType: 'performance_evidence',
+                    itemId,
+                    itemName,
+                    sectionName: 'evidence_frame',
+                    interactionAction: 'open_image',
+                    elementType: 'image_link',
+                    elementLabel: `${phase.toUpperCase()}_${safeLabel}`,
+                    linkUrl: href,
+                    linkType: detectLinkType?.(href),
+                    evidence_phase: phase,
+                    evidence_tier: tier,
+                    evidence_pair: pairTitle,
+                    evidence_pair_index: pairIndex,
+                    page_type: pageType
+                });
+
+                const isModifiedClick = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+                if (isModifiedClick) {
+                    return;
+                }
+
+                event.preventDefault();
+                openEvidenceModalByElement?.(trigger);
+            }
+        });
+    }
+
+    return {
+        setupInteractionTracking
+    };
+}
