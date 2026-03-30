@@ -1,4 +1,5 @@
 @import "./styles/core/tokens.css";
 @import "./styles/core/base.css";
+@import "./styles/components/diagram-mermaid.css";
 @import "./styles/pages/case-detail.css";
 @import "./styles/responsive/case-detail.css";
