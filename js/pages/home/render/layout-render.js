@@ -365,7 +365,7 @@ export function renderContact({
     });
 }
 
-export function buildDefaultNavigation({ templateConfig, normalizeHashTarget } = {}) {
+function buildDefaultNavigation({ templateConfig, normalizeHashTarget } = {}) {
     const items = [];
 
     const hero = templateConfig?.hero ?? {};
@@ -406,7 +406,7 @@ export function buildDefaultNavigation({ templateConfig, normalizeHashTarget } =
     return items;
 }
 
-export function buildCaseNavigationItems({ templateConfig, normalizeHashTarget, casesTarget } = {}) {
+function buildCaseNavigationItems({ templateConfig, normalizeHashTarget, casesTarget } = {}) {
     const normalizedCasesTarget = normalizeHashTarget?.(casesTarget || 'cases');
     const sections = Array.isArray(templateConfig?.serviceSections) ? templateConfig.serviceSections : [];
     const casesSection = sections.find((section) => normalizeHashTarget?.(section.id || '') === normalizedCasesTarget);

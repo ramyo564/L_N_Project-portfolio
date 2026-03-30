@@ -2,7 +2,7 @@ import { detectLinkType, inferDestinationPageType } from './link.js';
 
 const DEFAULT_TRACKING_VERSION = '2026-03-ga4-unified-v1';
 
-export function pushDataLayerEvent(payload) {
+function pushDataLayerEvent(payload) {
     if (!payload || typeof payload !== 'object') {
         return;
     }
@@ -10,7 +10,7 @@ export function pushDataLayerEvent(payload) {
     window.dataLayer.push(payload);
 }
 
-export function readScrollPercent() {
+function readScrollPercent() {
     const documentElement = document.documentElement;
     const maxScrollable = Math.max(0, documentElement.scrollHeight - window.innerHeight);
     if (maxScrollable <= 0) {

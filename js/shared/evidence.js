@@ -1,4 +1,4 @@
-export function detectEvidencePhase(item) {
+function detectEvidencePhase(item) {
     const searchSpace = `${item?.label || ''} ${item?.src || ''}`.toLowerCase();
     if (searchSpace.includes('before')) {
         return 'before';

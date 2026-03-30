@@ -12,7 +12,7 @@ const baseMermaidConfig = {
 
 let mermaidRenderSequence = 0;
 
-export function buildMermaidConfig(overrideConfig = {}) {
+function buildMermaidConfig(overrideConfig = {}) {
     return {
         ...baseMermaidConfig,
         ...(overrideConfig ?? {}),
