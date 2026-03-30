@@ -64,11 +64,6 @@
         grid-template-columns: 1fr;
     }
 
-    .k6-overview-cards-grid {
-        display: flex;
-        flex-direction: column;
-    }
-
     .section-recruiter-card-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -270,21 +265,6 @@
         font-size: 0.74rem;
     }
 
-    .case-showcase-controls {
-        width: 100%;
-        justify-content: space-between;
-        gap: 0.45rem;
-    }
-
-    .case-showcase-state {
-        font-size: 0.68rem;
-    }
-
-    .case-showcase-toggle {
-        width: 100%;
-        justify-content: center;
-    }
-
     .group-divider {
         flex-wrap: wrap;
         gap: 0.35rem 0.5rem;
@@ -360,11 +340,6 @@
     .k6-overview-body-cols,
     .k6-overview-compare-body {
         grid-template-columns: 1fr;
-    }
-
-    .k6-overview-cards-grid {
-        display: flex;
-        flex-direction: column;
     }
 
     .k6-overview-figure img {
