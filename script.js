@@ -1,32 +1,21 @@
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
 import { templateConfig } from './config.js';
+import { byId, toSafeLabel } from './js/shared/dom.js';
+import { detectLinkType } from './js/shared/link.js';
+import {
+    createTrackSelectContent,
+    updateMaxScrollPercent as updateAnalyticsMaxScrollPercent,
+    stopVisibleTimer as stopAnalyticsVisibleTimer,
+    startVisibleTimer as startAnalyticsVisibleTimer,
+    setupAnalyticsLifecycle as setupSharedAnalyticsLifecycle
+} from './js/shared/analytics.js';
+import {
+    buildEvidencePairs,
+    normalizeEvidenceItems
+} from './js/shared/evidence.js';
+import { initializeMermaid, runMermaidWithTempClass } from './js/shared/mermaid.js';
 
-const baseMermaidConfig = {
-    startOnLoad: false,
-    theme: 'dark',
-    securityLevel: 'loose',
-    fontFamily: 'Inter',
-    flowchart: {
-        useMaxWidth: true,
-        htmlLabels: true,
-        curve: 'linear'
-    }
-};
-
-const mermaidConfig = {
-    ...baseMermaidConfig,
-    ...(templateConfig.mermaid ?? {}),
-    flowchart: {
-        ...baseMermaidConfig.flowchart,
-        ...(templateConfig.mermaid?.flowchart ?? {})
-    }
-};
-
-mermaid.initialize(mermaidConfig);
-
-function byId(id) {
-    return document.getElementById(id);
-}
+initializeMermaid(mermaid, templateConfig.mermaid);
 
 function normalizeHashTarget(target) {
     if (!target) {
@@ -34,12 +23,6 @@ function normalizeHashTarget(target) {
     }
     return target.startsWith('#') ? target : `#${target}`;
 }
-
-function toSafeLabel(value) {
-    return String(value ?? 'unknown').replace(/[^a-zA-Z0-9_-]+/g, ' ').trim() || 'unknown';
-}
-
-let mermaidRenderSequence = 0;
 
 async function renderMermaidContainer(container, options = {}) {
     if (!(container instanceof HTMLElement)) {
@@ -66,17 +49,12 @@ async function renderMermaidContainer(container, options = {}) {
         `;
     }
 
-    mermaidRenderSequence += 1;
-    const tempClass = `mermaid-reflow-target-${mermaidRenderSequence}`;
-    container.classList.add(tempClass);
     try {
-        await mermaid.run({ querySelector: `.${tempClass}` });
+        await runMermaidWithTempClass(mermaid, container, { classPrefix: 'mermaid-reflow-target' });
     } catch (error) {
         console.error('Mermaid re-render failed for node:', container, error);
         const failedId = container.getAttribute('data-mermaid-id') || 'unknown';
         container.innerHTML = `<p style="margin:0;color:#ffb4b4;">Diagram render failed: ${failedId}</p>`;
-    } finally {
-        container.classList.remove(tempClass);
     }
 }
 
@@ -116,72 +94,6 @@ function setText(id, value) {
     }
 }
 
-function pushDataLayerEvent(payload) {
-    if (!payload || typeof payload !== 'object') {
-        return;
-    }
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(payload);
-}
-
-function detectLinkType(href) {
-    const target = String(href || '').trim().toLowerCase();
-    if (!target) {
-        return 'unknown';
-    }
-    if (target.startsWith('mailto:')) {
-        return 'mailto';
-    }
-    if (target.startsWith('#')) {
-        return 'anchor';
-    }
-    if (target.startsWith('http://') || target.startsWith('https://')) {
-        return 'external';
-    }
-    return 'internal';
-}
-
-function inferDestinationPageType(destinationUrl) {
-    const raw = String(destinationUrl || '').trim();
-    if (!raw) {
-        return '';
-    }
-
-    const linkType = detectLinkType(raw);
-    if (linkType === 'anchor') {
-        return analyticsSession.pageType;
-    }
-    if (linkType === 'mailto') {
-        return 'contact';
-    }
-    if (linkType === 'external') {
-        return 'external';
-    }
-
-    let parsedUrl;
-    try {
-        parsedUrl = new URL(raw, window.location.href);
-    } catch {
-        return analyticsSession.pageType;
-    }
-
-    const normalizedPath = String(parsedUrl.pathname || '').toLowerCase();
-    if (!normalizedPath || normalizedPath === '/') {
-        return analyticsSession.pageType;
-    }
-    if (
-        normalizedPath === '/portfolio/' ||
-        normalizedPath === '/portfolio/index.html' ||
-        normalizedPath === '/portfolio'
-    ) {
-        return 'portfolio_hub';
-    }
-    if (normalizedPath.includes('-portfolio') || normalizedPath.includes('/docs/')) {
-        return 'portfolio';
-    }
-    return analyticsSession.pageType;
-}
-
 function parseCaseDetailNumber(href) {
     const text = String(href || '').trim();
     // Support numeric case/CASE-N.md AND alphanumeric case-A/CASE-A.md
@@ -219,101 +131,14 @@ const analyticsSession = {
     ended: false
 };
 
-function trackSelectContent({
-    contentType,
-    itemId,
-    itemName,
-    sectionName,
-    interactionAction = 'click',
-    elementType,
-    elementLabel,
-    linkUrl,
-    linkType,
-    modalName,
-    value,
-    sourceEvent = 'ui_click',
-    ...extra
-}) {
-    const resolvedDestinationUrl = String(linkUrl || extra.destination_url || '').trim();
-    const payload = {
-        event: 'select_content',
-        tracking_version: '2026-03-ga4-unified-v1',
-        session_id: analyticsSession.id,
-        page_path: window.location.pathname,
-        page_title: document.title,
-        page_type: analyticsSession.pageType,
-        source_page_type: analyticsSession.pageType,
-        content_type: contentType || 'unknown',
-        item_id: itemId || 'unknown',
-        section_name: sectionName || 'unknown',
-        interaction_action: interactionAction,
-        source_event: sourceEvent
-    };
+const trackSelectContent = createTrackSelectContent({
+    session: analyticsSession,
+    getPageType: () => analyticsSession.pageType
+});
 
-    if (itemName) {
-        payload.item_name = itemName;
-    }
-    if (elementType) {
-        payload.element_type = elementType;
-    }
-    if (elementLabel) {
-        payload.element_label = elementLabel;
-    }
-    if (linkType) {
-        payload.link_type = linkType;
-    }
-    if (resolvedDestinationUrl) {
-        payload.link_url = resolvedDestinationUrl;
-        if (!payload.link_type) {
-            payload.link_type = detectLinkType(resolvedDestinationUrl);
-        }
-        payload.destination_url = resolvedDestinationUrl;
-        payload.destination_page_type = inferDestinationPageType(resolvedDestinationUrl);
-    }
-    if (modalName) {
-        payload.modal_name = modalName;
-    }
-    if (typeof value === 'number' && Number.isFinite(value)) {
-        payload.value = value;
-    }
-
-    Object.entries(extra).forEach(([key, valueItem]) => {
-        if (valueItem !== undefined && valueItem !== null && valueItem !== '') {
-            payload[key] = valueItem;
-        }
-    });
-
-    pushDataLayerEvent(payload);
-}
-
-function readScrollPercent() {
-    const documentElement = document.documentElement;
-    const maxScrollable = Math.max(0, documentElement.scrollHeight - window.innerHeight);
-    if (maxScrollable <= 0) {
-        return 100;
-    }
-    const ratio = (window.scrollY / maxScrollable) * 100;
-    return Math.max(0, Math.min(100, Math.round(ratio)));
-}
-
-function updateMaxScrollPercent() {
-    analyticsSession.maxScrollPercent = Math.max(analyticsSession.maxScrollPercent, readScrollPercent());
-}
-
-function stopVisibleTimer(timestamp = Date.now()) {
-    if (!analyticsSession.visibleStartedAt) {
-        return;
-    }
-    analyticsSession.visibleDurationMs += Math.max(0, timestamp - analyticsSession.visibleStartedAt);
-    analyticsSession.visibleStartedAt = 0;
-}
-
-function startVisibleTimer(timestamp = Date.now()) {
-    if (document.visibilityState === 'hidden' || analyticsSession.visibleStartedAt) {
-        return;
-    }
-    analyticsSession.visibleStartedAt = timestamp;
-}
+const updateMaxScrollPercent = () => updateAnalyticsMaxScrollPercent(analyticsSession);
+const stopVisibleTimer = (timestamp = Date.now()) => stopAnalyticsVisibleTimer(analyticsSession, timestamp);
+const startVisibleTimer = (timestamp = Date.now()) => startAnalyticsVisibleTimer(analyticsSession, timestamp);
 
 function trackCurrentSectionDwell(interactionAction) {
     if (!analyticsSession.currentSectionId || !analyticsSession.currentSectionEnteredAt) {
@@ -371,27 +196,24 @@ function endAnalyticsSession(reason = 'pagehide') {
 }
 
 function setupAnalyticsLifecycle() {
-    updateMaxScrollPercent();
-
-    trackSelectContent({
-        contentType: 'page_engagement',
-        itemId: 'portfolio_page',
-        itemName: document.title || 'Life Navigation Portfolio',
-        sectionName: 'lifecycle',
-        interactionAction: 'start',
-        elementType: 'page',
-        elementLabel: 'PAGE_START',
-        sourceEvent: 'lifecycle'
-    });
-
-    window.addEventListener('scroll', updateMaxScrollPercent, { passive: true });
-
-    document.addEventListener('visibilitychange', () => {
-        if (analyticsSession.ended) {
-            return;
-        }
-        if (document.visibilityState === 'hidden') {
-            stopVisibleTimer();
+    setupSharedAnalyticsLifecycle({
+        session: analyticsSession,
+        updateMaxScrollPercent,
+        startVisibleTimer,
+        stopVisibleTimer,
+        onStart: () => {
+            trackSelectContent({
+                contentType: 'page_engagement',
+                itemId: 'portfolio_page',
+                itemName: document.title || 'Life Navigation Portfolio',
+                sectionName: 'lifecycle',
+                interactionAction: 'start',
+                elementType: 'page',
+                elementLabel: 'PAGE_START',
+                sourceEvent: 'lifecycle'
+            });
+        },
+        onHidden: () => {
             trackSelectContent({
                 contentType: 'page_visibility',
                 itemId: 'portfolio_page',
@@ -402,24 +224,21 @@ function setupAnalyticsLifecycle() {
                 elementLabel: 'PAGE_HIDDEN',
                 sourceEvent: 'lifecycle'
             });
-            return;
-        }
-
-        startVisibleTimer();
-        trackSelectContent({
-            contentType: 'page_visibility',
-            itemId: 'portfolio_page',
-            itemName: document.title || 'Life Navigation Portfolio',
-            sectionName: 'lifecycle',
-            interactionAction: 'visible',
-            elementType: 'page',
-            elementLabel: 'PAGE_VISIBLE',
-            sourceEvent: 'lifecycle'
-        });
+        },
+        onVisible: () => {
+            trackSelectContent({
+                contentType: 'page_visibility',
+                itemId: 'portfolio_page',
+                itemName: document.title || 'Life Navigation Portfolio',
+                sectionName: 'lifecycle',
+                interactionAction: 'visible',
+                elementType: 'page',
+                elementLabel: 'PAGE_VISIBLE',
+                sourceEvent: 'lifecycle'
+            });
+        },
+        onEnd: endAnalyticsSession
     });
-
-    window.addEventListener('pagehide', () => endAnalyticsSession('pagehide'));
-    window.addEventListener('beforeunload', () => endAnalyticsSession('beforeunload'));
 }
 
 function syncModalBodyLock() {
@@ -1248,80 +1067,6 @@ function createHighlightList(items) {
     return list;
 }
 
-function detectEvidencePhase(item) {
-    const searchSpace = `${item?.label || ''} ${item?.src || ''}`.toLowerCase();
-    if (searchSpace.includes('before')) {
-        return 'before';
-    }
-    if (searchSpace.includes('after')) {
-        return 'after';
-    }
-    return 'other';
-}
-
-function buildEvidencePairKey(item) {
-    const explicitKey = String(item?.pairKey || '').trim().toLowerCase();
-    if (explicitKey) {
-        return explicitKey;
-    }
-
-    const normalizedLabel = String(item?.label || '')
-        .toLowerCase()
-        .replace(/\bbefore\b|\bafter\b/g, ' ')
-        .replace(/\([^)]*\)/g, ' ')
-        .replace(/[_-]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-    if (normalizedLabel) {
-        return normalizedLabel;
-    }
-
-    return String(item?.src || '')
-        .toLowerCase()
-        .replace(/\bbefore\b|\bafter\b/g, ' ')
-        .replace(/[_-]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-}
-
-function buildEvidencePairs(items) {
-    const grouped = new Map();
-
-    items.forEach((item) => {
-        const key = buildEvidencePairKey(item);
-        if (!grouped.has(key)) {
-            grouped.set(key, { before: [], after: [], other: [] });
-        }
-        const bucket = grouped.get(key);
-        if (item.phase === 'before') {
-            bucket.before.push(item);
-            return;
-        }
-        if (item.phase === 'after') {
-            bucket.after.push(item);
-            return;
-        }
-        bucket.other.push(item);
-    });
-
-    const pairs = [];
-    grouped.forEach((bucket) => {
-        const leftItems = [...bucket.before, ...bucket.other];
-        const rightItems = bucket.after;
-        const pairCount = Math.max(leftItems.length, rightItems.length);
-
-        for (let index = 0; index < pairCount; index += 1) {
-            pairs.push({
-                before: leftItems[index] || null,
-                after: rightItems[index] || null
-            });
-        }
-    });
-
-    return pairs;
-}
-
 function toPairSuffix(index) {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let value = index;
@@ -1331,23 +1076,6 @@ function toPairSuffix(index) {
         value = Math.floor(value / 26) - 1;
     } while (value >= 0);
     return output;
-}
-
-function normalizeEvidenceItems(items) {
-    const normalizedItems = Array.isArray(items)
-        ? items.filter((item) => item?.src).map((item) => ({
-            src: item.src,
-            label: item.label || 'EVIDENCE',
-            alt: item.alt || item.label || 'evidence image',
-            phase: ['before', 'after', 'other'].includes(String(item.phase || '').toLowerCase())
-                ? String(item.phase).toLowerCase()
-                : detectEvidencePhase(item),
-            pairKey: item.pairKey || '',
-            missingBeforeReason: item.missingBeforeReason || '',
-            missingAfterReason: item.missingAfterReason || ''
-        }))
-        : [];
-    return normalizedItems;
 }
 
 function createEvidenceGallery(items, caseTitle) {
@@ -3452,16 +3180,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mermaidNodes = injectMermaidSources();
     for (let index = 0; index < mermaidNodes.length; index += 1) {
         const node = mermaidNodes[index];
-        const tempClass = `mermaid-render-target-${index}`;
-        node.classList.add(tempClass);
         try {
-            await mermaid.run({ querySelector: `.${tempClass}` });
+            await runMermaidWithTempClass(mermaid, node, { classPrefix: `mermaid-render-target-${index}` });
         } catch (error) {
             console.error('Mermaid render failed for node:', node, error);
             const failedId = node.getAttribute('data-mermaid-id') || 'unknown';
             node.innerHTML = `<p style="margin:0;color:#ffb4b4;">Diagram render failed: ${failedId}</p>`;
-        } finally {
-            node.classList.remove(tempClass);
         }
     }
 
