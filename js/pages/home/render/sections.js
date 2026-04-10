@@ -451,6 +451,39 @@ function createExtraEvidenceButton(items, caseTitle, options = {}) {
     return wrapper;
 }
 
+function createK6ComparisonButton(card, options = {}) {
+    const getOpenK6OverviewModal = options.getOpenK6OverviewModal;
+    const heroConfig = options.heroConfig;
+    const trackSelectContent = options.trackSelectContent;
+
+    const button = document.createElement('button');
+    button.className = 'card-extra-btn is-highlight';
+    button.type = 'button';
+    button.textContent = card.k6ComparisonLabel || '성능 비교 : 500VU BEFORE/CURRENT';
+    button.style.marginLeft = '0.5rem';
+
+    button.addEventListener('click', () => {
+        const openK6OverviewModal = typeof getOpenK6OverviewModal === 'function'
+            ? getOpenK6OverviewModal()
+            : null;
+        if (typeof openK6OverviewModal === 'function') {
+            openK6OverviewModal(heroConfig?.k6Overview, card.k6ComparisonLabel || 'K6_TEST_ENVIRONMENT_OVERVIEW');
+        }
+
+        trackSelectContent?.({
+            contentType: 'k6_comparison_button',
+            itemId: card.title || 'unknown_case',
+            sectionName: 'case_card',
+            interactionAction: 'click',
+            elementType: 'button',
+            elementLabel: 'K6_COMPARISON',
+            modalName: 'k6_overview_modal'
+        });
+    });
+
+    return button;
+}
+
 function createCardLinks(card, options = {}) {
     const toCaseReviewLink = options.toCaseReviewLink;
     const getOpenK6OverviewModal = options.getOpenK6OverviewModal;
@@ -586,8 +619,26 @@ function createServiceCard(card, sectionConfig, options = {}) {
     if (evidenceGallery) {
         content.append(evidenceGallery);
     }
-    if (extraEvidenceButton) {
-        content.append(extraEvidenceButton);
+    
+    if (extraEvidenceButton || card.showK6Comparison) {
+        const extraWrapper = extraEvidenceButton || document.createElement('div');
+        if (!extraEvidenceButton) {
+            extraWrapper.className = 'card-extra-actions';
+        }
+        
+        if (card.showK6Comparison) {
+            const k6Btn = createK6ComparisonButton(card, options);
+            if (k6Btn) {
+                // If there's already a button in the wrapper, add some margin
+                if (extraWrapper.children.length > 0) {
+                    k6Btn.style.marginLeft = '0.6rem';
+                } else {
+                    k6Btn.style.marginLeft = '0';
+                }
+                extraWrapper.appendChild(k6Btn);
+            }
+        }
+        content.append(extraWrapper);
     }
     if (links) {
         content.append(links);

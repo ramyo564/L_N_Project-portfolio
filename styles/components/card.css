@@ -487,6 +487,20 @@
     background: rgba(139, 148, 158, 0.14);
 }
 
+.card-extra-btn.is-highlight {
+    border-color: var(--accent-orange);
+    background: rgba(210, 153, 34, 0.12);
+    color: var(--accent-orange);
+    font-weight: 600;
+    box-shadow: 0 0 8px rgba(210, 153, 34, 0.1);
+}
+
+.card-extra-btn.is-highlight:hover {
+    background: var(--accent-orange);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(210, 153, 34, 0.3);
+}
+
 .card-meta-line {
     display: flex;
     align-items: baseline;

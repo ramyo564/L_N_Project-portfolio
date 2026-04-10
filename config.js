@@ -337,6 +337,8 @@ export const templateConfig = {
                                     pairKey: 'case-4-vt-validation'
                                 }
                             ],
+                            showK6Comparison: true,
+                            k6ComparisonLabel: '동일 조건 테스트 : MVP vs 최적화 성능 비교',
                             skills: ['1000VU Ramp-up', 'Matrix Testing', 'Bottleneck Tracing', 'Integrated Optimization'],
                             highlights: [
                                 'Request-thread RabbitMQ synchronous publish blocking resolved',
