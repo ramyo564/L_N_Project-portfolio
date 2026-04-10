@@ -314,6 +314,8 @@
     .extra-evidence-layout {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto;
+        min-height: auto;
+        height: auto;
     }
 
     .extra-evidence-pairs {
@@ -334,6 +336,7 @@
 
     .extra-evidence-preview {
         min-height: 42vh;
+        height: auto;
     }
 
     .k6-overview-summary-grid,

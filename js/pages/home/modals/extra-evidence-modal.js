@@ -72,17 +72,23 @@ export function setupExtraEvidenceModal({
         }
         returnFocusTarget = getModalReturnFocusTarget?.(modal) || null;
         modal.inert = false;
+        const phaseOrder = { before: 0, after: 1, other: 2 };
+        const sortedItems = normalizedItems
+            .map((item, sourceIndex) => ({ ...item, __sourceIndex: sourceIndex }))
+            .sort((left, right) => {
+                const phaseDiff = (phaseOrder[left.phase] ?? 9) - (phaseOrder[right.phase] ?? 9);
+                if (phaseDiff !== 0) {
+                    return phaseDiff;
+                }
+                return (left.__sourceIndex ?? 0) - (right.__sourceIndex ?? 0);
+            })
+            .map((item, index) => ({ ...item, __index: index, __displayIndex: index + 1 }));
+        const totalEvidenceCount = sortedItems.length;
+        const formatEvidenceTitle = (item) => `${item.__displayIndex}/${totalEvidenceCount}. ${item.label}`;
+        const formatEvidencePreviewTitle = (item) => `[${String(item.phase || 'other').toUpperCase()}] ${formatEvidenceTitle(item)}`;
         modalTitle.textContent = heading
             ? heading
             : 'Extra Images · EXTRA_IMAGES';
-        const phaseOrder = { before: 0, after: 1, other: 2 };
-        const sortedItems = [...normalizedItems].sort((left, right) => {
-            const phaseDiff = (phaseOrder[left.phase] ?? 9) - (phaseOrder[right.phase] ?? 9);
-            if (phaseDiff !== 0) {
-                return phaseDiff;
-            }
-            return left.label.localeCompare(right.label, 'ko');
-        }).map((item, index) => ({ ...item, __index: index }));
 
         const evidencePairs = buildEvidencePairs?.(sortedItems) || [];
 
@@ -316,7 +322,7 @@ export function setupExtraEvidenceModal({
             zoomValueText.textContent = '200%';
             previewImage.src = activeItem.src;
             previewImage.alt = activeItem.alt;
-            previewCaption.textContent = `[${activeItem.phase.toUpperCase()}] ${activeItem.label}`;
+            previewCaption.textContent = formatEvidencePreviewTitle(activeItem);
             originalLink.href = activeItem.src;
 
             thumbButtons.forEach((button) => {
@@ -363,10 +369,11 @@ export function setupExtraEvidenceModal({
 
             const caption = document.createElement('span');
             caption.className = 'extra-evidence-caption';
-            caption.textContent = item.label;
+            caption.textContent = formatEvidenceTitle(item);
 
             visual.append(image, phaseBadge);
             button.append(visual, caption);
+            button.setAttribute('aria-label', `${laneLabel} ${formatEvidenceTitle(item)}`);
             button.addEventListener('click', () => setActive(item.__index, true));
             thumbButtons.push(button);
             return button;
