@@ -8,8 +8,9 @@
 - **문제:** 10분간 1000VU 쓰기 Ramp-up에서 요청 스레드의 RabbitMQ 동기 발행 때문에 실패율 0.93%와 초기 지연이 먼저 드러났고, 이어지는 저장 경로에서는 위치 계산과 INSERT 분리, 인덱스 미정리로 추가 tail latency가 남아 있었습니다.
 - **원인:** 가상 스레드 매트릭스로 VT 자체를 교차 검증한 뒤, 실제 병목이 요청 스레드 블로킹과 저장 경로의 원자성 부족이었음을 확인했습니다.
 - **해결:** RabbitMQ 발행을 전용 executor 기반 비동기 데코레이터로 분리하고, insertWithPosition 네이티브 쿼리와 Flyway 인덱스 튜닝을 통합 적용했습니다.
-- **결과(안정성):** RabbitMQ 동기 발행 블로킹을 분리해 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms를 달성했습니다.
-- **결과(지연):** 원자적 INSERT와 partial index 튜닝으로 1000VU 쓰기 p95 2.3s -> 124ms로 단축했습니다.
+- **결과(안정성):** 최종 수치 · RabbitMQ 동기 발행 블로킹을 분리해 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms를 달성했습니다.
+- **결과(시각 증거):** 화면 캡처 · 같은 개선 화면에서 Request Failed 100.0% -> 0.0%, Request Duration p95 30.4s -> 137ms를 확인했습니다.
+- **결과(지연):** DB 경로 · 원자적 INSERT와 partial index 튜닝으로 1000VU 쓰기 p95 2.3s -> 137ms로 단축했습니다.
 - **결과(처리량):** 초기 테스트(500VU) 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916) 대폭 향상을 달성했습니다.
 
 ## 증거 구조
@@ -17,6 +18,15 @@
 1. **Pair 1**: 1000VU 쓰기 Ramp-up에서 RabbitMQ 동기 발행 블로킹을 async publisher split으로 해소
 2. **Pair 2**: Pair 1 적용 이후에도 남아 있던 DB 경로 경쟁을 insertWithPosition + Flyway index tuning으로 해소
 3. **Supplementary · Case 4**: VT matrix로 root cause를 교차 검증
+
+> 참고: Pair 1 After와 Pair 2 Before는 같은 bridge k6 캡처를 재사용한다.
+
+## 출처
+
+- [케이스 상세 보기](../case-detail.html?case=A)
+- [이전 리포트](../case5/before/report.html)
+- [이후 리포트](../case5/after/report.html)
+- [성능 증거 페이지](../evidence/upgrade_todo/index.html#case-5)
 
 ## 문제 (Phase 1. 문제 상황 및 베이스라인)
 
@@ -37,23 +47,23 @@
 
 RabbitMQ 비동기 발행 분리, 원자적 쿼리(insertWithPosition), Flyway 인덱스 튜닝을 순차 적용한 후, 인프라 증설 없이도 동일 부하에서 시스템이 완벽하게 트래픽을 소화하는 것을 증명했습니다.
 
-- **[Pair 1 After] 요청 스레드 블로킹 제거 결과:** RabbitMQ 동기 발행 분리를 적용해 실패율 0% 달성과 p95 488ms -> 124ms를 확인했습니다.
-- **[Pair 2 After] 잔여 병목 제거 결과:** 저장 경로 경쟁을 원자화 및 인덱스 최적화로 해소해 1000VU 쓰기 p95 2.3s -> 124ms를 확인했습니다.
+- **[Pair 1 After] 요청 스레드 블로킹 제거 결과:** 최종 수치 · RabbitMQ 동기 발행 분리를 적용해 실패율 0% 달성과 p95 488ms -> 124ms를 확인했습니다.
+- **[Pair 2 After] 잔여 병목 제거 결과:** DB 경로 · 저장 경로 경쟁을 원자화 및 인덱스 최적화로 해소해 1000VU 쓰기 p95 2.3s -> 137ms를 확인했습니다.
 
 ## 사용한 증거 (EVIDENCE AT A GLANCE)
 
 1. **[Pair 1 Before]** 1000VU 쓰기 Ramp-up RabbitMQ 동기 발행 baseline k6 그래프
 2. **[Pair 1 After]** RabbitMQ 비동기 발행 분리 후 k6 그래프
 3. **[Pair 2 Before]** Pair 1 개선 이후에도 남아 있던 DB 경로 경쟁 캡처
-4. **[Pair 2 After]** 원자적 INSERT + 인덱스 최적화 후 k6 그래프 (p95 124ms, RPS 향상)
+4. **[Pair 2 After]** 원자적 INSERT + 인덱스 최적화 후 k6 그래프 (p95 137ms, RPS 향상)
 5. **[Supplementary / Case 4]** 가상 스레드 및 인프라 변수 교차 검증 매트릭스
 
 ## 핵심 파일
 
 - `case5/before/case5-k6-write-1000-before.png` (Pair 1 Before, RabbitMQ sync publish baseline)
-- `case5/after/case6-k6-write-1000-backup.png` (Pair 1 After, async publisher split)
+- `case5/after/case6-k6-write-1000-backup.png` (Pair 1 After, async publisher split bridge)
 - `case5/after/case5-grafana-rabbitmq-message-processing-after.png` (Pair 1 After, RabbitMQ message processing proof)
-- `case6/before/case6-k6-write-1000-before.png` (Pair 2 Before, Pair 1 이후 남아 있던 DB path 경쟁)
+- `case6/before/case6-k6-write-1000-before.png` (Pair 2 Before, bridge capture reused after Pair 1)
 - `case6/after/case6-k6-write-1000-after.png` (Pair 2 After, atomic INSERT + index tuning)
 - `case4/before/case4-phase-a-matrix-before-2026-03-13.svg` (Supplementary Before, VT matrix validation)
 - `case4/after/case4-phase-c-matrix-after-2026-03-14.svg` (Supplementary After, VT root cause ruled out)

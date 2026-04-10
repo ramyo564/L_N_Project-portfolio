@@ -55,15 +55,20 @@ export const templateConfig = {
                 kind: 'metric'
             },
             {
-                label: '핵심 지표',
-                value: '1000VU 쓰기 Ramp-up 안정성: http_req_failed.rate 0.93% -> 0%, p95 2.3s -> 124ms',
+                label: '최종 수치',
+                value: 'RabbitMQ 동기 발행 블로킹을 비동기 데코레이터로 분리해 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms',
                 kind: 'metric'
             },
             {
-                label: '핵심 지표',
+                label: '화면 캡처',
+                value: '같은 개선 화면에서 Request Failed 100.0% -> 0.0%, Request Duration p95 30.4s -> 137ms',
+                kind: 'metric'
+            },
+            {
+                label: '처리량',
                 value: '초기 테스트(500VU) 대비 read p95 975ms -> 141ms, read RPS 972 -> 3680, write RPS 373 -> 916',
                 kind: 'metric'
-            }
+            },
         ],
         k6Overview: {
             modalTitle: 'K6_TEST_ENVIRONMENT_OVERVIEW',
@@ -278,17 +283,16 @@ export const templateConfig = {
                             businessImpact: '인프라 증설 없이 고부하(1000VU) 환경에서 실패율 0%를 달성하고, 기존 대비 2~3배 이상의 폭발적인 트래픽을 수용할 수 있는 고성능 아키텍처를 완성했습니다.',
                             overview: '가상 스레드 도입 후 1000VU 쓰기 Ramp-up에서 요청 스레드의 동기 발행과 저장 경로 경합을 순차적으로 제거해, 실패율과 tail latency를 동시에 안정화한 통합 성능 최적화 사례입니다.',
                             recruiterSummary: [
-                                'RabbitMQ 발행을 전용 executor 기반 비동기 데코레이터로 분리해 1000VU 쓰기에서 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms를 달성했습니다.',
-                                '원자성을 보장하는 insertWithPosition과 Flyway 인덱스 최적화를 통합 적용해 1000VU 쓰기 p95 2.3s -> 124ms로 단축했습니다.',
-                                '초기 테스트(500VU) 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916)로 처리량을 크게 끌어올렸습니다.',
-                                '가상 스레드 매트릭스로 VT 자체가 아니라 요청 스레드 블로킹과 저장 경로 경쟁이 원인임을 교차 검증했습니다.'
+                                '최종 수치 · RabbitMQ 발행을 전용 executor 기반 비동기 데코레이터로 분리해 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms를 달성했습니다.',
+                                '화면 캡처 · 같은 개선 화면에서 Request Failed 100.0% -> 0.0%, Request Duration p95 30.4s -> 137ms를 확인했습니다.',
+                                '처리량 · 초기 테스트(500VU) 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916)로 처리량을 크게 끌어올렸습니다.'
                             ],
                             role: '1000VU 부하 테스트 설계 및 병목 추적, RabbitMQ 비동기 데코레이터 구현, DB 인덱스 및 원자적 쿼리 통합 튜닝',
                             stackSummary: 'Virtual Threads, RabbitMQ (Async Publisher), Flyway index migration, k6, Grafana',
                             cause: '가상 스레드 도입 후 1000VU 쓰기 Ramp-up을 수행한 결과, 요청 스레드의 RabbitMQ 동기 발행 구간과 저장 경로의 원자성 부족이 동시에 드러났습니다.',
                             problem: '1000VU 쓰기 Ramp-up에서는 요청 스레드가 RabbitMQ 동기 발행 대기를 직접 부담하면서 실패율 0.93%와 초기 지연이 발생했고, 이어지는 저장 경로에서는 위치 계산과 INSERT 분리, 인덱스 미정리로 추가 tail latency가 남아 있었습니다.',
                             solution: '가상 스레드 매트릭스로 VT 자체를 배제한 뒤, RabbitMQ 발행을 전용 executor 기반 비동기 데코레이터로 분리하고, insertWithPosition과 Flyway 인덱스 최적화를 통합 적용해 저장 경로의 경쟁을 제거했습니다.',
-                            result: 'RabbitMQ 동기 발행 블로킹을 비동기 데코레이터로 분리해 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms를 달성했습니다.\n원자적 INSERT와 partial index 튜닝으로 1000VU 쓰기 p95 2.3s -> 124ms로 단축했습니다.\n초기 테스트(500VU) 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916) 향상을 달성했습니다.',
+                            result: '최종 수치 · RabbitMQ 동기 발행 블로킹을 비동기 데코레이터로 분리해 http_req_failed.rate 0.93% -> 0%, p95 488ms -> 124ms를 달성했습니다.\n화면 캡처 · 같은 개선 화면에서 Request Failed 100.0% -> 0.0%, Request Duration p95 30.4s -> 137ms를 확인했습니다.\nDB 경로 · 원자적 INSERT와 partial index 튜닝으로 1000VU 쓰기 p95 2.3s -> 137ms로 단축했습니다.\n처리량 · 초기 테스트(500VU) 대비 읽기 RPS +279% (972 -> 3,680), 쓰기 RPS +145% (373 -> 916) 향상을 달성했습니다.\n추적 결과 · 가상 스레드 매트릭스로 VT 자체가 아니라 요청 스레드 블로킹과 저장 경로 경쟁이 원인임을 교차 검증했습니다.',
                             evidenceImages: [
                                 {
                                     label: 'RabbitMQ sync publish on request thread',
@@ -298,16 +302,16 @@ export const templateConfig = {
                                     pairKey: 'case-5-messaging-async'
                                 },
                                 {
-                                    label: 'Async publisher split',
+                                    label: 'Async publisher split (bridge)',
                                     src: './case5/after/case6-k6-write-1000-backup.png',
-                                    alt: 'Async publisher split',
+                                    alt: 'Async publisher split bridge capture',
                                     phase: 'after',
                                     pairKey: 'case-5-messaging-async'
                                 },
                                 {
-                                    label: 'DB path contention',
+                                    label: 'DB path contention (bridge)',
                                     src: './case6/before/case6-k6-write-1000-before.png',
-                                    alt: 'DB path contention',
+                                    alt: 'DB path contention bridge capture',
                                     phase: 'before',
                                     pairKey: 'case-6-db-path'
                                 },
@@ -341,8 +345,10 @@ export const templateConfig = {
                                 'Integrated tuning achieved 0% error rate at peak 1000VU load'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_A', href: './case-A/CASE-A.md' },
-                                { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-5' }
+                                { label: '케이스 상세 보기', href: './case-detail.html?case=A' },
+                                { label: '출처 · 이전 리포트', href: './case5/before/report.html' },
+                                { label: '출처 · 이후 리포트', href: './case5/after/report.html' },
+                                { label: '성능 증거 보기', href: './evidence/upgrade_todo/index.html#case-5' }
                             ]
                         },
                         {
@@ -397,8 +403,8 @@ export const templateConfig = {
                                 'Outbox pattern decouples write transactions from messaging latency'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_B', href: './case-B/CASE-B.md' },
-                                { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-1-path' }
+                                { label: '케이스 상세 보기', href: './case-B/CASE-B.md' },
+                                { label: '성능 증거 보기', href: './evidence/upgrade_todo/index.html#case-1-path' }
                             ]
                         },
                         {
@@ -446,8 +452,8 @@ export const templateConfig = {
                                 'Unified gate achieves 3:1 reduction in per-request database calls'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_C', href: './case-C/CASE-C.md' },
-                                { label: 'PERFORMANCE_EVIDENCE', href: './evidence/upgrade_todo/index.html#case-2-path' }
+                                { label: '케이스 상세 보기', href: './case-C/CASE-C.md' },
+                                { label: '성능 증거 보기', href: './evidence/upgrade_todo/index.html#case-2-path' }
                             ]
                         },
                         {
@@ -509,7 +515,7 @@ export const templateConfig = {
                                 'FastAPI handles AI work while Spring handles core work'
                             ],
                             links: [
-                                { label: 'EVIDENCE_CASE_D', href: './case-D/CASE-D.md' }
+                                { label: '케이스 상세 보기', href: './case-D/CASE-D.md' }
                             ]
                         }
                     ]
@@ -592,11 +598,11 @@ export const legacyCases = [
         title: 'RabbitMQ 동기 발행 블로킹을 비동기 데코레이터로 분리',
         mermaidId: 'case-rabbit-async-publisher',
         anchorId: 'upgrade-todo-case-5',
-        subtitle: '2025-12 · 1000VU write raw summary 기준 안정화',
+        subtitle: '2025-12 · 1000VU write 측정 결과 안정화',
         overview: 'API 스레드에서 직접 `convertAndSend`를 수행하던 구조를 전용 executor 비동기 발행으로 분리한 케이스입니다.',
         skills: ['RabbitMQ', 'Async Messaging', 'Executor Tuning', 'Latency Reduction'],
         links: [
-            { label: 'EVIDENCE_CASE_5', href: './case5/CASE-5.md' }
+            { label: '케이스 상세 보기', href: './case-detail.html?case=5' }
         ]
     },
     {

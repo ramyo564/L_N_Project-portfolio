@@ -294,6 +294,7 @@ export function createCaseEvidenceModal({
             const pairIndexRaw = Number.parseInt(element.dataset.evidencePairIndex || '', 10);
             const pairIndex = Number.isFinite(pairIndexRaw) ? pairIndexRaw : undefined;
             const label = element.dataset.evidenceLabel || element.textContent?.trim() || 'EVIDENCE';
+            const displayLabel = element.dataset.evidenceDisplayLabel || element.querySelector('.case-evidence-slot-caption')?.textContent?.trim() || label;
             const image = element.querySelector('img');
             const alt = image?.getAttribute('alt') || label;
 
@@ -306,6 +307,7 @@ export function createCaseEvidenceModal({
                 pair,
                 pairIndex,
                 label,
+                displayLabel,
                 alt
             };
         });
@@ -330,9 +332,10 @@ export function createCaseEvidenceModal({
         resetEvidenceZoomState(elements);
         elements.image.src = item.href;
         elements.image.alt = item.alt || item.label || 'Evidence image';
+        const visibleLabel = item.displayLabel || item.label;
         const titleText = (item.pair && item.label && item.pair.toUpperCase() === item.label.toUpperCase())
-            ? item.label
-            : `${item.pair} · ${item.label}`;
+            ? visibleLabel
+            : `${item.pair} · ${visibleLabel}`;
         elements.title.textContent = titleText;
         elements.counter.textContent = `${evidenceModalState.currentIndex + 1} / ${items.length}`;
 

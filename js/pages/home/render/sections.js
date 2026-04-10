@@ -343,7 +343,7 @@ function createEvidenceGallery(items, caseTitle, options = {}) {
 
     const title = document.createElement('h4');
     title.className = 'card-evidence-title';
-    title.textContent = 'PERFORMANCE_EVIDENCE (k6)';
+    title.textContent = '성능 증거 (k6)';
 
     const grid = document.createElement('div');
     grid.className = 'card-evidence-grid';
@@ -371,7 +371,7 @@ function createEvidenceGallery(items, caseTitle, options = {}) {
             if (typeof openExtraEvidenceModal === 'function') {
                 openExtraEvidenceModal(
                     normalizedItems,
-                    `${caseTitle || 'Case'} · PERFORMANCE_EVIDENCE`,
+                    `${caseTitle || 'Case'} · 성능 증거`,
                     {
                         initialSrc: item.src,
                         source: 'performance_evidence_grid',
@@ -417,8 +417,8 @@ function createExtraEvidenceButton(items, caseTitle, options = {}) {
     const button = document.createElement('button');
     button.className = 'card-extra-btn';
     button.type = 'button';
-    button.textContent = `EXTRA_IMAGES (${normalizedItems.length})`;
-    button.setAttribute('aria-label', `${caseTitle || 'case'} extra evidence images`);
+    button.textContent = `보조 이미지 (${normalizedItems.length})`;
+    button.setAttribute('aria-label', `${caseTitle || 'case'} 보조 이미지`);
 
     button.addEventListener('click', () => {
         const openExtraEvidenceModal = typeof getOpenExtraEvidenceModal === 'function'
@@ -427,7 +427,7 @@ function createExtraEvidenceButton(items, caseTitle, options = {}) {
         if (typeof openExtraEvidenceModal === 'function') {
             openExtraEvidenceModal(
                 normalizedItems,
-                `${caseTitle || 'Extra Images'} · EXTRA_IMAGES`,
+                `${caseTitle || '보조 이미지'} · 보조 이미지`,
                 {
                     source: 'extra_images_button',
                     caseId: caseTitle || 'unknown_case'
@@ -473,14 +473,17 @@ function createCardLinks(card, options = {}) {
     links.forEach((item) => {
         const originalHref = String(item.href || '');
         const resolvedHref = toCaseReviewLink?.(originalHref) || originalHref;
-        const isCaseReviewLink = resolvedHref !== originalHref;
+        const isCaseReviewLink = resolvedHref !== originalHref || originalHref.includes('case-detail.html?case=');
+        const linkText = isCaseReviewLink
+            ? (item.label || '케이스 상세 보기')
+            : (item.label || 'LINK');
         const link = document.createElement('a');
         link.className = 'card-link';
         if (isCaseReviewLink) {
             link.classList.add('case-review-link');
         }
         link.href = resolvedHref;
-        link.textContent = isCaseReviewLink ? 'CASE_REVIEW' : (item.label || 'LINK');
+        link.textContent = linkText;
         if (!String(resolvedHref).startsWith('mailto:')) {
             link.target = '_blank';
             link.rel = 'noopener noreferrer';
@@ -504,7 +507,7 @@ function createCardLinks(card, options = {}) {
                 sectionName: 'case_card',
                 interactionAction: 'open_link',
                 elementType: 'link',
-                elementLabel: isCaseReviewLink ? 'CASE_REVIEW' : (item.label || 'LINK'),
+                elementLabel: linkText,
                 linkUrl: resolvedHref,
                 linkType: detectLinkType?.(resolvedHref),
                 source_link_url: isCaseReviewLink ? originalHref : ''

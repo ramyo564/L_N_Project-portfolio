@@ -141,6 +141,7 @@ function buildEvidenceSlotHtml(item, phase, missingReason, options = {}) {
     const pairTitle = options.pairTitle || 'PAIR';
     const pairIndex = options.pairIndex || 0;
     const tier = options.tier || 'core';
+    const displayLabel = item?.displayLabel || item?.caption || item?.label || 'EVIDENCE';
 
     if (!item) {
         return `
@@ -161,12 +162,14 @@ function buildEvidenceSlotHtml(item, phase, missingReason, options = {}) {
             data-evidence-phase="${escapeHtml(phase)}"
             data-evidence-tier="${escapeHtml(tier)}"
             data-evidence-label="${escapeHtml(item.label)}"
+            data-evidence-display-label="${escapeHtml(displayLabel)}"
             data-evidence-pair="${escapeHtml(pairTitle)}"
             data-evidence-pair-index="${pairIndex}"
+            aria-label="${phaseLabel} ${escapeHtml(displayLabel)}"
         >
             <span class="case-evidence-phase-badge ${toneClass}">${phaseLabel}</span>
             <img loading="lazy" src="${escapeHtml(item.src)}" alt="${escapeHtml(item.alt)}">
-            <span class="case-evidence-slot-caption">${escapeHtml(item.caption || item.label)}</span>
+            <span class="case-evidence-slot-caption">${escapeHtml(displayLabel)}</span>
         </a>
     `;
 }
@@ -190,6 +193,22 @@ function buildEvidencePairsHtml(items, tier, startIndex = 1, options = {}) {
         return '<p class="case-review-empty">Before/After 페어를 구성할 수 있는 증거가 없습니다.</p>';
     }
 
+    const totalEvidenceCount = Math.max(1, items.filter(Boolean).length);
+    let displayIndex = 1;
+    const decorateEvidenceItem = (item) => {
+        if (!item) {
+            return null;
+        }
+
+        const rawLabel = item.caption || item.label || 'EVIDENCE';
+        const decorated = {
+            ...item,
+            displayLabel: `${displayIndex}/${totalEvidenceCount}. ${rawLabel}`
+        };
+        displayIndex += 1;
+        return decorated;
+    };
+
     return `
         <div class="case-evidence-pairs">
             ${pairs.map((pair, index) => {
@@ -197,16 +216,18 @@ function buildEvidencePairsHtml(items, tier, startIndex = 1, options = {}) {
                     pair.before?.label || pair.after?.label || pair.key,
                     normalizeEvidenceLabel
                 ) || `PAIR ${index + 1}`;
-                const missingBeforeReason = !pair.before ? pair.after?.missingBeforeReason : '';
-                const missingAfterReason = !pair.after ? pair.before?.missingAfterReason : '';
+                const beforeItem = decorateEvidenceItem(pair.before);
+                const afterItem = decorateEvidenceItem(pair.after);
+                const missingBeforeReason = !beforeItem ? pair.after?.missingBeforeReason : '';
+                const missingAfterReason = !afterItem ? pair.before?.missingAfterReason : '';
                 const pairNumber = startIndex + index;
 
                 return `
                 <article class="case-evidence-pair-card">
                     <p class="case-evidence-pair-title">PAIR ${pairNumber} · ${escapeHtml(pairTitle)}</p>
                     <div class="case-evidence-frame">
-                        ${buildEvidenceSlotHtml(pair.before, 'before', missingBeforeReason, { pairTitle, pairIndex: index + 1, tier })}
-                        ${buildEvidenceSlotHtml(pair.after, 'after', missingAfterReason, { pairTitle, pairIndex: index + 1, tier })}
+                        ${buildEvidenceSlotHtml(beforeItem, 'before', missingBeforeReason, { pairTitle, pairIndex: index + 1, tier })}
+                        ${buildEvidenceSlotHtml(afterItem, 'after', missingAfterReason, { pairTitle, pairIndex: index + 1, tier })}
                     </div>
                 </article>
                 `;
@@ -268,7 +289,9 @@ export function buildCaseDetail(root, cards, selected, options = {}) {
     const normalizeEvidenceLabel = options.normalizeEvidenceLabel;
 
     const { caseNumber, groupTitle, card } = selected;
-    const cardLinks = Array.isArray(card?.links) ? card.links.filter((item) => item?.href) : [];
+    const cardLinks = Array.isArray(card?.links)
+        ? card.links.filter((item) => item?.href && parseCaseQueryFromHref(item.href) !== caseNumber)
+        : [];
     const caseDocLink = cardLinks.find((item) => isCaseDetailLink(item.href)) || null;
     const referenceLinks = cardLinks.filter((item) => !isCaseDetailLink(item.href));
 
@@ -308,6 +331,7 @@ export function buildCaseDetail(root, cards, selected, options = {}) {
 
     const referenceButtons = [];
     if (caseDocLink) {
+        const caseDocLabel = String(caseDocLink.label || '케이스 상세 보기').trim() || '케이스 상세 보기';
         referenceButtons.push(`
             <a
                 class="case-link-btn case-link-btn-detail"
@@ -315,10 +339,10 @@ export function buildCaseDetail(root, cards, selected, options = {}) {
                 target="_blank"
                 rel="noopener noreferrer"
                 data-track-kind="traceability_link"
-                data-link-label="CASE_MD"
+                data-link-label="${escapeHtml(caseDocLabel)}"
                 data-link-role="detail"
             >
-                CASE_MD
+                ${escapeHtml(caseDocLabel)}
             </a>
         `);
     }
@@ -429,8 +453,8 @@ export function buildCaseDetail(root, cards, selected, options = {}) {
         </section>
 
         <section class="case-review-panel">
-            <p class="section-kicker">TRACEABILITY</p>
-            <h2>원문 및 코드 추적 링크</h2>
+            <p class="section-kicker">출처</p>
+            <h2>원문과 증거 링크</h2>
             <div class="case-link-row">
                 ${referenceButtons.join('')}
             </div>

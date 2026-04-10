@@ -23,7 +23,7 @@ export function setupExtraEvidenceModal({
 
     const closeModal = () => {
         const wasOpen = modal.classList.contains('is-open');
-        const closingTitle = modalTitle.textContent || 'Extra Images';
+        const closingTitle = modalTitle.textContent || '보조 이미지';
         const modalDurationMs = analyticsSession?.extraEvidenceModalOpenedAt
             ? Math.max(0, Date.now() - analyticsSession.extraEvidenceModalOpenedAt)
             : 0;
@@ -88,7 +88,7 @@ export function setupExtraEvidenceModal({
         const formatEvidencePreviewTitle = (item) => `[${String(item.phase || 'other').toUpperCase()}] ${formatEvidenceTitle(item)}`;
         modalTitle.textContent = heading
             ? heading
-            : 'Extra Images · EXTRA_IMAGES';
+            : '보조 이미지';
 
         const evidencePairs = buildEvidencePairs?.(sortedItems) || [];
 
@@ -129,7 +129,7 @@ export function setupExtraEvidenceModal({
         const zoomResetBtn = document.createElement('button');
         zoomResetBtn.className = 'extra-evidence-zoom-btn is-text';
         zoomResetBtn.type = 'button';
-        zoomResetBtn.textContent = 'RESET';
+        zoomResetBtn.textContent = '초기화';
 
         const zoomInBtn = document.createElement('button');
         zoomInBtn.className = 'extra-evidence-zoom-btn is-icon';
@@ -147,7 +147,7 @@ export function setupExtraEvidenceModal({
         originalLink.className = 'extra-evidence-open-original';
         originalLink.target = '_blank';
         originalLink.rel = 'noopener noreferrer';
-        originalLink.textContent = 'OPEN_ORIGINAL';
+        originalLink.textContent = '원본 열기';
 
         const initialSrc = String(options.initialSrc || '').trim();
         const initialIndex = Number.isInteger(options.initialIndex) ? options.initialIndex : 0;
