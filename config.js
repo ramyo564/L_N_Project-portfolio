@@ -29,7 +29,7 @@ export const templateConfig = {
             },
             {
                 label: '결과',
-                value: '500VU 고부하 환경에서 Failed Rate 0% 및 주요 지표 15배 개선, 코드 단위의 기술적 근거 확보'
+                value: '500VU 지속 부하(Read p95 141ms / Write p95 126ms) 및 1,000VU 피크 부하 725,382건 무손실 완결(실패율 0.00%) 실증'
             }
         ],
         kpiCards: [
