@@ -65,35 +65,36 @@
 }
 
 .case-evidence-slot.is-before {
-    border-color: rgba(248, 81, 73, 0.5);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .case-evidence-slot.is-after {
-    border-color: rgba(35, 134, 54, 0.5);
+    border-color: rgba(255, 255, 255, 0.35);
 }
 
 .case-evidence-slot:hover {
-    color: #ffffff;
-    border-color: var(--accent-blue);
+    color: #FFFFFF;
+    border-color: #FFFFFF;
 }
 
 .case-evidence-phase-badge {
     display: block;
-    font-family: var(--font-code);
-    font-size: 0.67rem;
-    letter-spacing: 0.06em;
-    padding: 0.33rem 0.48rem;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 0.35rem 0.6rem;
     border-bottom: 1px solid var(--border-color);
 }
 
 .case-evidence-phase-badge.is-before {
-    color: var(--accent-red);
-    background: rgba(248, 81, 73, 0.12);
+    color: var(--text-muted);
+    background: #141414;
 }
 
 .case-evidence-phase-badge.is-after {
-    color: var(--accent-green);
-    background: rgba(35, 134, 54, 0.14);
+    color: #000000;
+    background: #FFFFFF;
 }
 
 .case-evidence-slot img {

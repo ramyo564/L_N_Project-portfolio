@@ -1,0 +1,709 @@
+/* ==========================================================================
+   SWISS MINIMALIST CASE DETAIL STYLESHEET (Awwwards / Paul Kalkbrenner Standard)
+   - Zero Tacky Blue Gradients / Zero Cyberpunk Grid Overlays / Zero Box Traps
+   - Pure Black Canvas (#000000), Pure Whitespace, Crisp Editorial Typography
+   ========================================================================== */
+
+/* 1. Base Reset & Layout Constraints */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    background-color: #000000;
+    color: #FFFFFF;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+}
+
+body.case-review-body {
+    background-color: #000000;
+    color: #D4D4D8;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Remove dated grid overlay */
+.grid-overlay {
+    display: none !important;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+button {
+    font-family: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+}
+
+/* 2. Minimal Sticky Header */
+.case-review-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.case-review-header-inner {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 3.5rem);
+    height: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.case-review-home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: 0.04em;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.case-review-home-link:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+.case-review-header-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #71717A;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.case-review-clock {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: #A1A1AA;
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 768px) {
+    .case-review-header-label {
+        display: none;
+    }
+}
+
+/* 3. Main Case Container */
+.case-review-root {
+    width: 100%;
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 3.5rem) 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* 4. Section Panels (Dismantle Box Cards to Editorial Rows) */
+.case-review-panel {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: clamp(3.5rem, 7vw, 5.5rem) 0 !important;
+}
+
+/* 5. Hero Block */
+.case-review-hero-panel {
+    padding-top: clamp(4rem, 8vw, 6.5rem) !important;
+}
+
+.case-kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+    font-weight: 600;
+    color: #71717A;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.case-kicker::before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: #71717A;
+}
+
+.case-review-hero-panel h1 {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    max-width: 1100px;
+    margin-bottom: 1.5rem;
+}
+
+.case-subtitle {
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    line-height: 1.7;
+    color: #A1A1AA;
+    max-width: 850px;
+    margin-bottom: 2.25rem;
+}
+
+.case-chip-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+}
+
+.case-chip {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #D4D4D8;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Architecture View (Mermaid) */
+.case-review-diagram-area {
+    margin: 2.5rem 0;
+    padding: 2rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Recruiter Summary Block */
+.case-recruiter-summary-block {
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 2px solid #FFFFFF;
+    padding: 1.75rem 2rem;
+    margin: 2.5rem 0 1.5rem;
+}
+
+.case-recruiter-kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #71717A;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.case-recruiter-summary-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.case-recruiter-summary-list li {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #E4E4E7;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.case-recruiter-summary-list li::before {
+    content: "—";
+    color: #71717A;
+    font-family: "JetBrains Mono", monospace;
+}
+
+/* 6. Section Headers */
+.section-kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #71717A;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.case-review-panel h2 {
+    font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+    margin-bottom: 2rem;
+}
+
+.case-section-subtitle {
+    font-size: 1.25rem !important;
+    color: #A1A1AA !important;
+    margin-top: 3.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* 7. Reviewer Summary Grid (문제/원인/해결/결과 4열 에디토리얼) */
+.case-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 2.5rem;
+}
+
+@media (max-width: 1024px) {
+    .case-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2.5rem 1.5rem;
+    }
+}
+
+@media (max-width: 580px) {
+    .case-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.case-summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.case-summary-card h3 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.case-summary-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+}
+
+.case-summary-card li {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: #A1A1AA;
+}
+
+/* 8. Evidence Frames (Before / After Pairs) */
+.case-evidence-pairs {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    margin-top: 1.5rem;
+}
+
+.case-evidence-pair-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.case-evidence-pair-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.04em;
+}
+
+.case-evidence-frame {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .case-evidence-frame {
+        grid-template-columns: 1fr;
+    }
+}
+
+.case-evidence-slot {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: #080808;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    overflow: hidden;
+    display: block;
+    text-decoration: none;
+    transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.case-evidence-slot:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px);
+}
+
+.case-evidence-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #050505;
+}
+
+.case-evidence-phase-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.55rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    backdrop-filter: blur(8px);
+}
+
+.case-evidence-phase-badge.is-before {
+    background: rgba(239, 68, 68, 0.25);
+    color: #FCA5A5;
+    border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
+.case-evidence-phase-badge.is-after {
+    background: rgba(34, 197, 94, 0.25);
+    color: #86EFAC;
+    border: 1px solid rgba(34, 197, 94, 0.45);
+}
+
+.case-evidence-slot-caption {
+    display: block;
+    font-size: 0.8rem;
+    color: #A1A1AA;
+    line-height: 1.45;
+    margin-top: 0.6rem;
+}
+
+.case-evidence-slot-missing {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #0D0D0D;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+}
+
+.case-evidence-missing-text {
+    font-size: 0.82rem;
+    color: #71717A;
+    font-family: "JetBrains Mono", monospace;
+}
+
+.case-note-box {
+    margin-top: 2rem;
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+}
+
+.case-note-box h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #A1A1AA;
+    margin-bottom: 0.5rem;
+}
+
+.case-note-box ul {
+    list-style: none;
+    font-size: 0.8rem;
+    color: #71717A;
+}
+
+/* 9. Traceability & Links */
+.case-link-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.case-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    padding: 0.7rem 1.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.case-link-btn:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+    border-color: #FFFFFF;
+}
+
+.case-link-btn-detail {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* 10. Navigation Buttons */
+.case-nav-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.case-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    padding: 0.75rem 1.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.case-nav-btn:hover {
+    background: #FFFFFF;
+    color: #000000;
+    border-color: #FFFFFF;
+}
+
+/* 11. Modal Viewer */
+.case-evidence-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.case-evidence-modal[aria-hidden="false"] {
+    display: flex;
+}
+
+.case-evidence-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(16px);
+}
+
+.case-evidence-modal-dialog {
+    position: relative;
+    z-index: 1001;
+    max-width: 90vw;
+    background: #0A0A0A;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+}
+
+.case-evidence-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.case-evidence-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.case-evidence-modal-close {
+    color: #A1A1AA;
+    font-size: 0.82rem;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.case-evidence-modal-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.case-evidence-image-wrap {
+    width: 100%;
+    max-height: 75vh;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.case-evidence-image {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.case-evidence-nav-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85rem;
+    color: #FFFFFF;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+}
+
+.case-evidence-modal-actions {
+    margin-top: 1rem;
+    text-align: right;
+}
+
+.case-evidence-open-original {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8rem;
+    color: #A1A1AA;
+}
+
+.case-evidence-open-original:hover {
+    color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   12. CASE ARCHIVE DIRECTORY (Pure Swiss Minimalist Typography)
+   - Zero Tacky Badges / Zero Repetitive Categories / Pure Line & Typography
+   -------------------------------------------------------------------------- */
+.case-archive-section {
+    border-bottom: none !important;
+}
+
+.case-archive-headline {
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+}
+
+.case-archive-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: 3.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.case-archive-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 40px;
+    align-items: baseline;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    padding: clamp(1.8rem, 3.5vw, 2.75rem) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-decoration: none;
+    transition: padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.case-archive-row:hover {
+    padding-left: 1rem;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.case-archive-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: clamp(1.25rem, 2.5vw, 1.8rem);
+    font-weight: 700;
+    color: #52525B;
+    transition: color 0.2s ease;
+}
+
+.case-archive-row:hover .case-archive-num {
+    color: #FFFFFF;
+}
+
+.case-archive-title {
+    font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+    transition: opacity 0.2s ease;
+}
+
+.case-archive-arrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.25rem;
+    color: #52525B;
+    text-align: right;
+    transition: transform 0.25s ease, color 0.2s ease;
+}
+
+.case-archive-row:hover .case-archive-arrow {
+    color: #FFFFFF;
+    transform: translate(4px, -4px);
+}
+
+@media (max-width: 640px) {
+    .case-archive-row {
+        grid-template-columns: 50px 1fr 30px;
+        gap: 1rem;
+        padding: 1.5rem 0;
+    }
+}

@@ -37,8 +37,10 @@ export function initCaseDetailPage({
     }
 
     const caseParamRaw = new URLSearchParams(window.location.search).get('case') || '';
-    const caseParamNum = Number.parseInt(caseParamRaw, 10);
-    const caseParam = Number.isFinite(caseParamNum) ? caseParamNum : caseParamRaw;
+    const aliasMap = { 'a': 1, 'b': 2, 'c': 3, 'd': 4, '01': 1, '02': 2, '03': 3, '04': 4 };
+    const normalizedRaw = aliasMap[caseParamRaw.toLowerCase()] ?? caseParamRaw;
+    const caseParamNum = Number.parseInt(normalizedRaw, 10);
+    const caseParam = Number.isFinite(caseParamNum) ? caseParamNum : normalizedRaw;
 
     const selected = cards.find((item) => String(item.caseNumber) === String(caseParam));
 

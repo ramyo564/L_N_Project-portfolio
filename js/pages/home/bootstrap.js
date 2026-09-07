@@ -99,18 +99,14 @@ function setupUptime() {
         return;
     }
 
-    const startTime = new Date();
-    const updateUptime = () => {
+    const updateClock = () => {
         const now = new Date();
-        const diff = Math.floor((now - startTime) / 1000);
-        const h = Math.floor(diff / 3600).toString().padStart(2, '0');
-        const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-        const s = (diff % 60).toString().padStart(2, '0');
-        uptimeElement.textContent = `${h}:${m}:${s}`;
+        const options = { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        uptimeElement.textContent = now.toLocaleTimeString('en-GB', options);
     };
 
-    updateUptime();
-    setInterval(updateUptime, 1000);
+    updateClock();
+    setInterval(updateClock, 1000);
 }
 
 function setupMobileNav(trackSelectContent) {

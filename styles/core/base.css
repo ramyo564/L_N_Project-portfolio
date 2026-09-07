@@ -6,6 +6,7 @@
 
 html {
     scroll-behavior: smooth;
+    background-color: #000000;
 }
 
 body {
@@ -14,20 +15,37 @@ body {
     font-family: var(--font-ui);
     min-height: 100vh;
     overflow-x: hidden;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 body.modal-open {
     overflow: hidden;
 }
 
+/* Minimalist Clean View: Hide tacky grid lines */
 .grid-overlay {
-    position: fixed;
-    inset: 0;
-    background-image:
-        linear-gradient(var(--border-color) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
-    background-size: 46px 46px;
-    opacity: 0.05;
-    z-index: -1;
-    pointer-events: none;
+    display: none;
+}
+
+/* Custom Sleek Monochrome Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
 }

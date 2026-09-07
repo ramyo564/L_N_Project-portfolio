@@ -146,11 +146,13 @@ function createTopPanel(panel, index) {
     title.className = 'panel-title';
     title.textContent = panel.panelTitle || `TOP_PANEL_${index + 1}`;
 
-    const uid = document.createElement('span');
-    uid.className = 'panel-uid';
-    uid.textContent = panel.panelUid || `ID: TOP-${String(index + 1).padStart(2, '0')}`;
-
-    header.append(title, uid);
+    header.append(title);
+    if (panel.panelUid) {
+        const uid = document.createElement('span');
+        uid.className = 'panel-uid';
+        uid.textContent = panel.panelUid;
+        header.append(uid);
+    }
 
     const graphContainer = document.createElement('div');
     graphContainer.className = 'graph-container';

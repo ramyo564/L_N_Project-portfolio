@@ -1,14 +1,14 @@
 /* Highlight Animation */
 @keyframes target-highlight-pulse {
-    0% { background-color: rgba(88, 166, 255, 0.4); box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.2); }
-    50% { background-color: rgba(88, 166, 255, 0.15); box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1); }
+    0% { background-color: rgba(255, 255, 255, 0.3); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2); }
+    50% { background-color: rgba(255, 255, 255, 0.1); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08); }
     100% { background-color: transparent; box-shadow: none; }
 }
 
 @keyframes hero-button-pulse {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.4); }
-    70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(88, 166, 255, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(88, 166, 255, 0); }
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3); }
+    70% { transform: scale(1.01); box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
 }
 
 .is-target-highlight {
@@ -122,12 +122,12 @@
 
 @keyframes highlightFade {
     0% {
-        background-color: rgba(30, 64, 175, 0.4); /* Blue highlight */
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+        background-color: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
     }
     100% {
         background-color: transparent;
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
     }
 }
 

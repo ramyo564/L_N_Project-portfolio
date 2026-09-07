@@ -74,7 +74,7 @@ function createScanSummary(card) {
     wrapper.className = 'card-scan-summary';
 
     rows.forEach((item) => {
-        const line = document.createElement('p');
+        const line = document.createElement('div');
         line.className = 'card-scan-row';
 
         const key = document.createElement('span');
@@ -110,9 +110,9 @@ function createRecruiterCardSummary(card) {
     const wrapper = document.createElement('section');
     wrapper.className = 'card-recruiter-summary';
 
-    const kicker = document.createElement('p');
+    const kicker = document.createElement('div');
     kicker.className = 'card-recruiter-kicker';
-    kicker.textContent = 'SUMMARY';
+    kicker.textContent = 'KEY TAKEAWAYS';
 
     const list = document.createElement('ul');
     list.className = 'card-recruiter-list';
@@ -203,7 +203,7 @@ function createSectionRecruiterBrief(sectionConfig, options = {}) {
 
             const toggleHint = document.createElement('div');
             toggleHint.className = 'section-recruiter-card-toggle-hint';
-            toggleHint.textContent = 'DETAILS';
+            toggleHint.textContent = '요약 펼치기';
             header.appendChild(toggleHint);
 
             const details = document.createElement('div');
@@ -215,20 +215,14 @@ function createSectionRecruiterBrief(sectionConfig, options = {}) {
                 }
                 const row = document.createElement('p');
                 row.className = 'section-recruiter-card-row';
-                row.style.marginBottom = '0.4rem';
+                row.style.marginBottom = '0.5rem';
 
                 const label = document.createElement('span');
                 label.className = 'section-recruiter-card-key';
-                label.style.display = 'block';
-                label.style.fontWeight = 'bold';
-                label.style.color = 'var(--accent-orange)';
-                label.style.fontSize = '0.65rem';
                 label.textContent = labelText;
 
                 const value = document.createElement('span');
                 value.className = 'section-recruiter-card-value';
-                value.style.fontSize = '0.78rem';
-                value.style.color = 'var(--text-secondary)';
                 value.textContent = valueText;
 
                 row.append(label, value);
@@ -257,7 +251,7 @@ function createSectionRecruiterBrief(sectionConfig, options = {}) {
                     btn.href = linkInfo.href;
                     btn.target = '_blank';
                     btn.rel = 'noopener noreferrer';
-                    btn.textContent = linkInfo.label || 'GO TO PAGE';
+                    btn.textContent = linkInfo.label || '문서 확인 ↗';
                     btn.addEventListener('click', () => {
                         trackSelectContent?.({
                             contentType: 'recruiter_brief_link',
@@ -279,7 +273,7 @@ function createSectionRecruiterBrief(sectionConfig, options = {}) {
                 gotoBtn.className = 'card-extra-btn';
                 gotoBtn.style.marginTop = '0.8rem';
                 gotoBtn.style.width = '100%';
-                gotoBtn.textContent = 'GO_TO_FULL_PROBLEM_SOLVING';
+                gotoBtn.textContent = '케이스 상세 분석으로 이동 ↓';
 
                 gotoBtn.addEventListener('click', (event) => {
                     event.stopPropagation();
@@ -341,9 +335,18 @@ function createEvidenceGallery(items, caseTitle, options = {}) {
     const wrapper = document.createElement('div');
     wrapper.className = 'card-evidence';
 
+    const headerWrap = document.createElement('div');
+    headerWrap.className = 'card-evidence-header';
+
     const title = document.createElement('h4');
     title.className = 'card-evidence-title';
-    title.textContent = '성능 증거 (k6)';
+    title.textContent = '실측 성능 증거 (k6 Evidence)';
+
+    const hint = document.createElement('span');
+    hint.className = 'card-evidence-hint';
+    hint.textContent = '클릭하여 원본 해상도로 확대 검증';
+
+    headerWrap.append(title, hint);
 
     const grid = document.createElement('div');
     grid.className = 'card-evidence-grid';
@@ -354,16 +357,30 @@ function createEvidenceGallery(items, caseTitle, options = {}) {
         trigger.type = 'button';
         trigger.setAttribute('aria-label', `${caseTitle || 'case'} performance evidence ${item.label}`);
 
+        const labelLower = String(item.label || '').toLowerCase();
+        const isBefore = item.phase === 'before' || labelLower.includes('before') || labelLower.includes('sync') || labelLower.includes('contention');
+        const isAfter = item.phase === 'after' || labelLower.includes('after') || labelLower.includes('async') || labelLower.includes('atomic') || labelLower.includes('separated');
+
+        // Floating Metric Badge
+        const badge = document.createElement('span');
+        badge.className = `card-evidence-badge ${isBefore ? 'is-before' : isAfter ? 'is-after' : ''}`.trim();
+        badge.textContent = isBefore ? 'BEFORE' : isAfter ? 'AFTER' : 'EVIDENCE';
+
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'card-evidence-img-wrap';
+
         const image = document.createElement('img');
         image.src = item.src;
-        image.alt = item.alt;
+        image.alt = item.alt || item.label;
         image.loading = 'lazy';
+
+        imgContainer.append(image, badge);
 
         const caption = document.createElement('span');
         caption.className = 'card-evidence-caption';
         caption.textContent = item.label || 'EVIDENCE';
 
-        trigger.append(image, caption);
+        trigger.append(imgContainer, caption);
         trigger.addEventListener('click', () => {
             const openExtraEvidenceModal = typeof getOpenExtraEvidenceModal === 'function'
                 ? getOpenExtraEvidenceModal()
@@ -397,7 +414,7 @@ function createEvidenceGallery(items, caseTitle, options = {}) {
         grid.appendChild(trigger);
     });
 
-    wrapper.append(title, grid);
+    wrapper.append(headerWrap, grid);
     return wrapper;
 }
 
@@ -560,6 +577,89 @@ function createServiceCard(card, sectionConfig, options = {}) {
         article.id = card.anchorId;
     }
 
+    // 1. Full-Width Top Header (F-shape Top Horizontal Bar)
+    const cardHeader = document.createElement('header');
+    cardHeader.className = 'card-header';
+
+    const headerTop = document.createElement('div');
+    headerTop.className = 'card-header-top';
+
+    const title = document.createElement('h3');
+    title.className = 'card-title';
+    title.textContent = card.title ?? 'Card Title';
+
+    const subtitleText = card.subtitle ?? card.period ?? '';
+    const subtitle = document.createElement('p');
+    subtitle.className = 'card-subtitle';
+    subtitle.textContent = subtitleText;
+
+    headerTop.append(title);
+    if (subtitleText) {
+        headerTop.append(subtitle);
+    }
+    cardHeader.append(headerTop);
+
+    if (card.businessImpact) {
+        const impact = document.createElement('div');
+        impact.className = 'card-business-impact';
+        impact.innerHTML = '<span class="impact-badge">BUSINESS IMPACT</span> ' + card.businessImpact;
+        cardHeader.append(impact);
+    }
+
+    article.append(cardHeader);
+
+    // 2. 2-Column Body Layout (F-shape Middle Split)
+    const bodyLayout = document.createElement('div');
+    bodyLayout.className = 'card-body-layout';
+
+    // 2A. Left Column: Narrative (Problem, Solution, Key Metrics, CTAs)
+    const narrativeCol = document.createElement('div');
+    narrativeCol.className = 'card-narrative-col';
+
+    const description = document.createElement('p');
+    description.className = 'card-desc';
+    const overviewText = card.overview ?? card.description ?? '';
+    description.textContent = overviewText;
+    narrativeCol.append(description);
+
+    const scanSummary = createScanSummary(card);
+    if (scanSummary) {
+        narrativeCol.append(scanSummary);
+    }
+
+    const recruiterSummary = createRecruiterCardSummary(card);
+    if (recruiterSummary) {
+        narrativeCol.append(recruiterSummary);
+    }
+
+    const stackLine = createMetaLine('TECH STACK', card.stackSummary);
+    if (stackLine) {
+        narrativeCol.append(stackLine);
+    }
+
+    // Action buttons container in narrative
+    const actionContainer = document.createElement('div');
+    actionContainer.className = 'card-actions-wrapper';
+
+    const links = createCardLinks(card, options);
+    if (links) {
+        actionContainer.append(links);
+    }
+
+    if (card.showK6Comparison) {
+        const k6Btn = createK6ComparisonButton(card, options);
+        if (k6Btn) {
+            actionContainer.appendChild(k6Btn);
+        }
+    }
+
+    narrativeCol.append(actionContainer);
+
+    // 2B. Right Column: Visual Evidence Showcase (Notion funnel's core purpose!)
+    const evidenceCol = document.createElement('div');
+    evidenceCol.className = 'card-evidence-col';
+
+    // Architecture diagram (with header badge)
     const visual = document.createElement('div');
     visual.className = 'card-visual';
     const visualHeight = card.visualHeight || sectionConfig.cardVisualHeight;
@@ -571,79 +671,22 @@ function createServiceCard(card, sectionConfig, options = {}) {
     mermaidContainer.className = 'mermaid';
     mermaidContainer.setAttribute('data-mermaid-id', card.mermaidId ?? '');
     visual.appendChild(mermaidContainer);
+    evidenceCol.appendChild(visual);
 
-    const content = document.createElement('div');
-    content.className = 'card-content';
-
-    const title = document.createElement('h3');
-    title.className = 'card-title';
-    title.textContent = card.title ?? 'Card Title';
-
-    const subtitleText = card.subtitle ?? card.period ?? '';
-    const subtitle = document.createElement('p');
-    subtitle.className = 'card-subtitle';
-    subtitle.textContent = subtitleText;
-
-    const description = document.createElement('p');
-    description.className = 'card-desc';
-    const overviewText = card.overview ?? card.description ?? '';
-    description.textContent = overviewText;
-
-    const recruiterSummary = createRecruiterCardSummary(card);
-    const stackLine = createMetaLine('TECH_DETAIL', card.stackSummary);
-    const scanSummary = createScanSummary(card);
+    // k6 Performance Evidence Images
     const evidenceGallery = createEvidenceGallery(card.evidenceImages, card.title, options);
-    const extraEvidenceButton = createExtraEvidenceButton(card.extraEvidenceImages, card.title, options);
-    const links = createCardLinks(card, options);
-
-    content.append(title);
-    if (subtitleText) {
-        content.append(subtitle);
-    }
-    if (card.businessImpact) {
-        const impact = document.createElement('p');
-        impact.className = 'card-business-impact';
-        impact.innerHTML = '<strong>🎯 비즈니스 임팩트:</strong> ' + card.businessImpact;
-        content.append(impact);
-    }
-    content.append(description);
-    if (recruiterSummary) {
-        content.append(recruiterSummary);
-    }
-    if (stackLine) {
-        content.append(stackLine);
-    }
-    if (scanSummary) {
-        content.append(scanSummary);
-    }
     if (evidenceGallery) {
-        content.append(evidenceGallery);
+        evidenceCol.appendChild(evidenceGallery);
     }
-    
-    if (extraEvidenceButton || card.showK6Comparison) {
-        const extraWrapper = extraEvidenceButton || document.createElement('div');
-        if (!extraEvidenceButton) {
-            extraWrapper.className = 'card-extra-actions';
-        }
-        
-        if (card.showK6Comparison) {
-            const k6Btn = createK6ComparisonButton(card, options);
-            if (k6Btn) {
-                // If there's already a button in the wrapper, add some margin
-                if (extraWrapper.children.length > 0) {
-                    k6Btn.style.marginLeft = '0.6rem';
-                } else {
-                    k6Btn.style.marginLeft = '0';
-                }
-                extraWrapper.appendChild(k6Btn);
-            }
-        }
-        content.append(extraWrapper);
+
+    const extraEvidenceButton = createExtraEvidenceButton(card.extraEvidenceImages, card.title, options);
+    if (extraEvidenceButton) {
+        evidenceCol.appendChild(extraEvidenceButton);
     }
-    if (links) {
-        content.append(links);
-    }
-    article.append(visual, content);
+
+    bodyLayout.append(narrativeCol, evidenceCol);
+    article.append(bodyLayout);
+
     return article;
 }
 

@@ -2,43 +2,43 @@ import { diagrams } from './diagrams.js';
 
 export const templateConfig = {
     system: {
-        documentTitle: 'Yohan | Life Navigation Problem Solving Portfolio',
-        systemName: 'LIFE_NAVIGATION_PROBLEM_SOLVING_V.1.0'
+        documentTitle: 'Yohan | Backend Architecture & Troubleshooting Portfolio',
+        systemName: 'YOHAN · BACKEND ARCHITECT'
     },
 
     hero: {
         sectionId: 'upgrade-todo-problem-solving',
-        panelTitle: 'LIFE_NAVIGATION_PROBLEM_SOLVING_OVERVIEW',
-        panelUid: 'ID: LIFE-NAV-PS-00',
+        panelTitle: 'SYSTEM ARCHITECTURE & EVIDENCE OVERVIEW',
+        panelUid: 'EVIDENCE VERIFICATION FUNNEL',
         diagramId: 'architecture',
-        headline: '성능 병목 재현 및 단계적 아키텍처 튜닝을 통한 고부하 처리 역량 입증',
+        headline: '노션 포트폴리오의 실측 부하 테스트 및 아키텍처 개선 증거를 시각적으로 검증합니다',
         headlineItems: [
-            'Reliability: http_req_failed 0.93% → 0.0% (Failed Rate Zero)',
-            'Throughput: Read RPS +137%↑, Write RPS +350%↑ 달성',
-            'Latency: Write p95 3.4s → 126ms (15배 개선)',
-            '초기 테스트(500VU) 실측 증거 기반'
+            'Reliability: 1,000VU 피크 부하 실패율 0.0% (Failed Rate Zero)',
+            'Throughput: Write RPS +350%↑ (373 → 916 RPS) 대폭 향상',
+            'Latency: Write p95 3.4s → 126ms (15배 개선) 실측 검증',
+            '초기 테스트(500VU) 및 1000VU 램프업 실측 증거 기반'
         ],
         summaryRows: [
             {
-                label: '문제',
-                value: '비즈니스 로직 확장 시 고부하에서 인증/권한 쿼리, 메시지 발행 블로킹 등 복합적 병목 발생'
+                label: '문제 배경',
+                value: '비즈니스 로직 확장 시 고부하 환경에서 인증/권한 쿼리 N+1, RabbitMQ 동기 발행 블로킹, DB 저장 경로 경합 발생'
             },
             {
-                label: '해결',
-                value: '병목을 6개 케이스로 분해: Spring Hexagonal 구조를 활용한 비동기 발행 분리 및 DB 경로 튜닝'
+                label: '구조적 해결',
+                value: '병목을 6개 핵심 케이스로 분해: Spring Hexagonal 구조 기반 비동기 발행 분리, Outbox 패턴, 원자적 DB 쿼리 및 인덱스 최적화'
             },
             {
-                label: '결과',
-                value: '500VU 지속 부하(Read p95 141ms / Write p95 126ms) 및 1,000VU 피크 부하 725,382건 무손실 완결(실패율 0.00%) 실증'
+                label: '실측 결과',
+                value: '500VU 지속 부하(Write p95 126ms) 및 1,000VU 피크 부하 725,382건 무손실 완결(실패율 0.00%) 기계적 실측 입증'
             }
         ],
         kpiCards: [
-            { label: 'AUTH GATE QUERY', value: '3 -> 1', delta: '-67%' },
-            { label: 'FAILED RATE (500VU)', value: '0.93% -> 0.0%' },
-            { label: 'WRITE p95 (500VU)', value: '3.4s -> 126ms', delta: '-96%' },
-            { label: 'READ p95 (500VU)', value: '712ms -> 141ms', delta: '-80%' }
+            { label: 'FAILED RATE (1000VU)', value: '0.00%', delta: '무손실 완결 (Zero Error)' },
+            { label: 'WRITE RPS BOOST', value: '+350% ↑', delta: '373 → 916 RPS' },
+            { label: 'WRITE p95 LATENCY', value: '15배 단축', delta: '3.4s → 126ms (-96%)' },
+            { label: 'AUTH GATE QUERY', value: '3 → 1회', delta: '단일 게이트 통합 (-67%)' }
         ],
-        diagramNote: '세부 코드 경로와 증거 체인은 아래 CODE_EVIDENCE_MAP에서 확인 가능합니다.',
+        diagramNote: '세부 아키텍처 코드 경로와 실행 트레일은 아래 Code Evidence Map에서 확인 가능합니다.',
         k6ButtonLabel: '성능 비교 : 500VU BEFORE/CURRENT',
         metrics: [
             {
@@ -129,93 +129,93 @@ export const templateConfig = {
     topPanels: [
         {
             sectionId: 'upgrade-todo-code-evidence',
-            panelTitle: 'CODE_EVIDENCE_MAP',
-            panelUid: 'ID: LIFE-NAV-PS-01',
+            panelTitle: 'Architecture Code Evidence Map',
+            panelUid: '',
             diagramId: 'upgrade-todo-code-evidence-overview',
             panelClass: 'code-evidence-summary-panel',
-            navLabel: 'CODE_EVIDENCE',
+            navLabel: 'Architecture Map',
             metrics: [
-                '영역 1: IDENTITY_AUTH - UUIDv7 Persistable, Outbox 저장/발행/처리, JWT Claims 인증 경계',
-                '영역 2: CACHE_ASYNC_GAP - ownership readOnly cache 경계, pending cache TTL 600, false cache 차단',
-                '영역 3: MESSAGING_PERFORMANCE - async publisher, producer adapters, insertWithPosition + index 튜닝'
+                '영역 1: IDENTITY_AUTH — UUIDv7 Persistable, Outbox 비동기 발행/처리, JWT Claims 기반 단일 인증 게이트',
+                '영역 2: CACHE_ASYNC_GAP — Ownership readOnly cache 경계, Pending Cache TTL 600 설정, Null/False Cache 침투 방어',
+                '영역 3: MESSAGING_PERFORMANCE — Async Publisher Decorator, 전용 Worker 분리, Atomic INSERT + Index 튜닝'
             ]
         },
         {
             sectionId: 'upgrade-todo-code-evidence-identity',
-            panelTitle: 'IDENTITY_AUTH',
-            panelUid: 'ID: LIFE-NAV-PS-01A',
+            panelTitle: 'Identity & Authentication Boundary',
+            panelUid: '',
             diagramId: 'upgrade-todo-code-evidence-identity',
             panelClass: 'code-evidence-split-panel',
             metrics: [
-                'Identity Core: AuthUserEntity, UserEntity, Persistable isNew',
+                'Identity Core: AuthUserEntity, UserEntity, Persistable isNew() 강제 경로',
                 'Outbox Flow: OutboxAuthAdapter, OutboxEventAuthPublisher, OutboxEventAuthProcessor',
-                'Auth Gate: JwtAuthenticationFilter, JwtProvider, ProjectAccessAspect'
+                'Auth Gate: JwtAuthenticationFilter, JwtProvider, ProjectAccessAspect (AOP 단일화)'
             ]
         },
         {
             sectionId: 'upgrade-todo-code-evidence-cache',
-            panelTitle: 'CACHE_ASYNC_GAP',
-            panelUid: 'ID: LIFE-NAV-PS-01B',
+            panelTitle: 'Cache Isolation & Async Consistency',
+            panelUid: '',
             diagramId: 'upgrade-todo-code-evidence-cache',
             panelClass: 'code-evidence-split-panel',
             metrics: [
-                'Ownership Boundary: ProjectOwnershipPersistenceAdapter readOnly + cache',
-                'Pending Cache: ProjectCommandService + RedisProjectPendingCacheAdapter + ProjectCacheKeys',
-                'Cache Guard: unless result false and self-injection proxy path'
+                'Ownership Boundary: ProjectOwnershipPersistenceAdapter readOnly + Redis 캐시 분리',
+                'Pending Cache: ProjectCommandService + RedisProjectPendingCacheAdapter 동시성 방어',
+                'Cache Guard: Self-injection 프록시 경로를 통한 내부 캐시 무효화 및 일관성 확보'
             ]
         },
         {
             sectionId: 'upgrade-todo-code-evidence-messaging',
-            panelTitle: 'MESSAGING_PERFORMANCE',
-            panelUid: 'ID: LIFE-NAV-PS-01C',
+            panelTitle: 'High-Throughput Messaging & DB Contention',
+            panelUid: '',
             diagramId: 'upgrade-todo-code-evidence-messaging',
             panelClass: 'code-evidence-split-panel',
             metrics: [
-                'Async Publish: AsyncMessagePublishingDecorator + rabbitPublisherExecutor',
-                'Producer Adapters: Project Task SubTask convertAndSend async path',
-                'Performance Path: insertWithPosition + Flyway index migrations V2 V6 V7'
+                'Async Publish: AsyncMessagePublishingDecorator + rabbitPublisherExecutor 전용 스레드풀 분리',
+                'Producer Adapters: Project / Task / SubTask 비동기 변환 및 일괄 발행 파이프라인',
+                'Performance Path: insertWithPosition 위치 계산 단축 + Flyway 인덱스 마이그레이션(V2, V6, V7)'
             ]
         }
     ],
 
     navigation: [
-        { label: 'OVERVIEW', target: '#upgrade-todo-problem-solving' },
-        { label: 'CASES', target: '#upgrade-todo-cases', caseMenu: true },
-        { label: 'CODE_EVIDENCE', target: '#upgrade-todo-code-evidence' },
-        { label: 'SKILL_SET', target: '#upgrade-todo-skill-set' },
-        { label: 'CONTACT', target: '#contact' }
+        { label: 'Architecture Overview', target: '#upgrade-todo-problem-solving' },
+        { label: 'Engineering Cases', target: '#upgrade-todo-cases', caseMenu: true },
+        { label: 'Code Evidence Map', target: '#upgrade-todo-code-evidence' },
+        { label: 'Core Competencies', target: '#upgrade-todo-skill-set' },
+        { label: 'Contact', target: '#contact' }
     ],
 
     skills: {
         sectionId: 'upgrade-todo-skill-set',
-        panelTitle: 'SKILL_SET',
-        panelUid: 'ID: LIFE-NAV-STACK',
+        panelTitle: 'Engineering Competencies & Tech Stack',
+        panelUid: '',
         items: [
             { title: 'BACKEND CORE', stack: 'Java 21, Spring Boot 3.5, JPA, PostgreSQL, Flyway' },
-            { title: 'MESSAGING', stack: 'RabbitMQ, Outbox Pattern, Async Decorator, Worker Split' },
-            { title: 'CACHE', stack: 'Redis, Cache Aside, Pending Cache, Transaction Boundary' },
-            { title: 'SECURITY', stack: 'JWT Claims, Spring Security, AOP Project Access Gate' },
-            { title: 'PERFORMANCE', stack: 'k6, Query Reduction, Atomic Insert, Index Tuning' },
-            { title: 'OPS', stack: 'Docker Compose, API Worker Role Split, Monitoring Stack' }
+            { title: 'MESSAGING & EVENT', stack: 'RabbitMQ, Transactional Outbox, Async Decorator, Worker Split' },
+            { title: 'CACHE & DATA', stack: 'Redis, Cache-Aside, Pending Cache, Transaction Boundary Isolation' },
+            { title: 'SECURITY & AUTH', stack: 'JWT Claims, Spring Security, AOP Unified Access Gate, OAuth2/OIDC' },
+            { title: 'PERFORMANCE', stack: 'k6 Load Testing, Query Plan Optimization, Atomic INSERT, Partial Index' },
+            { title: 'INFRA & OPS', stack: 'Docker Compose, Multi-Worker Architecture, Grafana Monitoring Stack' }
         ]
     },
 
     serviceSections: [
         {
             id: 'upgrade-todo-cases',
-            title: 'LIFE_NAVIGATION_TROUBLESHOOTING_CASES',
-            navLabel: 'CASES',
-            sectionLead: '핵심 성능 개선, 인증 아키텍처 최적화 및 AI 서비스 분리 사례를 1분 요약과 상세 증거로 구성했습니다.',
+            title: 'Engineering Case Studies',
+            navLabel: 'Engineering Cases',
+            sectionLead: '실제 고부하 병목을 추적하고 구조적으로 해결한 4대 핵심 트러블슈팅 사례와 실측 증거입니다.',
             recruiterBrief: {
-                kicker: 'QUICK_BRIEF',
-                title: '1분 요약으로 먼저 보는 핵심 변화',
+                kicker: 'KEY TAKEAWAYS',
+                title: '핵심 성과 1분 요약 (Quick Overview)',
                 actions: [
-                    { label: 'ARCHITECTURE_PAGE', href: 'https://ramyo564.github.io/L_N_Project/', variant: 'primary' },
-                    { label: 'GITHUB_REPO', href: 'https://github.com/ramyo564/L_N_Project', variant: 'secondary' }
+                    { label: 'Architecture Docs ↗', href: 'https://ramyo564.github.io/L_N_Project/', variant: 'primary' },
+                    { label: 'GitHub Repository ↗', href: 'https://github.com/ramyo564/L_N_Project', variant: 'secondary' }
                 ],
                 cases: [
                     {
-                        id: 'Case A',
+                        id: 'Case 01',
                         anchorId: 'upgrade-todo-case-A',
                         title: '대용량 램프업(Ramp-up) 부하 테스트 기반 통합 성능 최적화',
                         problem: '가상 스레드 환경에서 1000VU 테스트 시 Redis/RabbitMQ 동기 발행 대기로 인한 응답 실패(0.93%) 및 지연 발생',
@@ -223,7 +223,7 @@ export const templateConfig = {
                         impact: '실전 부하 환경에서 실패율 0% 달성 및 주요 지표 대폭 향상'
                     },
                     {
-                        id: 'Case B',
+                        id: 'Case 02',
                         anchorId: 'upgrade-todo-case-B',
                         title: '트랜잭션 분리와 JPA 튜닝을 통한 커넥션 안정화',
                         problem: 'JPA merge(SELECT+INSERT)와 Redis I/O 결합으로 인한 Idle in transaction 및 커넥션 풀 고갈 위험',
@@ -231,7 +231,7 @@ export const templateConfig = {
                         impact: '커넥션 점유 시간 단축으로 고부하 환경 동시 처리 능력 확보'
                     },
                     {
-                        id: 'Case C',
+                        id: 'Case 03',
                         anchorId: 'upgrade-todo-case-C',
                         title: '인증/권한 게이트 단일화 및 OAuth2 추상화',
                         problem: '인증 N+1 쿼리 병목(3회→1회) 및 소셜 로그인 채널 확장에 따른 도메인 결합도 증가',
@@ -239,7 +239,7 @@ export const templateConfig = {
                         impact: '권한 게이트 단축으로 응답성 확보 및 확장성(OCP) 실현'
                     },
                     {
-                        id: 'Case D',
+                        id: 'Case 04',
                         anchorId: 'upgrade-todo-case-D',
                         title: 'AI 오케스트레이션 파이프라인 구축 및 서비스 경계 분리',
                         problem: '실패 분석, 추천, 피드백, 재요청, Task 생성이 한 요청 흐름에 섞여 AI 지연이 메인 서비스에 전파될 위험 존재',
@@ -249,21 +249,21 @@ export const templateConfig = {
                     {
                         id: 'Architecture',
                         title: '시스템 전체 아키텍처 및 설계 의도',
-                        problem: '프로젝트의 전체적인 서비스 구조와 레이어별 설계 의도를 파악하기 위해 아키텍처 페이지로 이동합니다.',
-                        action: '아키텍처 대시보드 버튼 클릭',
+                        problem: '프로젝트의 전체적인 서비스 구조와 레이어별 설계 의도를 파악하기 위해 아키텍처 대시보드를 확인합니다.',
+                        action: '아키텍처 대시보드 링크',
                         impact: '전체 컴포넌트 간의 통신 흐름과 기술 결정 근거를 시각화하여 확인 가능',
                         links: [
-                            { label: 'ARCHITECTURE_PAGE_OPEN', href: 'https://ramyo564.github.io/L_N_Project/' }
+                            { label: 'Architecture Docs ↗', href: 'https://ramyo564.github.io/L_N_Project/' }
                         ]
                     },
                     {
-                        id: 'Git repo',
-                        title: '기술 상세 구현 및 코드 베이스',
-                        problem: '실제 구현된 코드와 상세 기술 문서를 확인하기 위해 깃허브 레포지토리로 이동합니다.',
-                        action: '깃허브 레포지토리 버튼 클릭',
+                        id: 'Git Repo',
+                        title: '기술 상세 구현 및 오픈소스 코드베이스',
+                        problem: '실제 구현된 소스 코드와 상세 기술 문서를 확인하기 위해 깃허브 레포지토리로 이동합니다.',
+                        action: '깃허브 레포지토리 링크',
                         impact: '전체 소스 코드와 커밋 히스토리, 기술 Wiki 확인 가능',
                         links: [
-                            { label: 'GITHUB_REPO_OPEN', href: 'https://github.com/ramyo564/L_N_Project' }
+                            { label: 'GitHub Repository ↗', href: 'https://github.com/ramyo564/L_N_Project' }
                         ]
                     }
                 ]
@@ -278,7 +278,7 @@ export const templateConfig = {
                         {
                             mermaidId: 'case-integrated-ramp-up-tuning',
                             anchorId: 'upgrade-todo-case-A',
-                            title: 'Case A. 대용량 트래픽 램프업(Ramp-up) 부하 테스트 기반 통합 성능 최적화',
+                            title: 'Case 01. 대용량 트래픽 램프업(Ramp-up) 부하 테스트 기반 통합 성능 최적화',
                             subtitle: '2025-12 ~ 2026-03 · 1000VU 쓰기 Ramp-up 통합 최적화',
                             businessImpact: '인프라 증설 없이 고부하(1000VU) 환경에서 실패율 0%를 달성하고, 기존 대비 2~3배 이상의 폭발적인 트래픽을 수용할 수 있는 고성능 아키텍처를 완성했습니다.',
                             overview: '가상 스레드 도입 후 1000VU 쓰기 Ramp-up에서 요청 스레드의 동기 발행과 저장 경로 경합을 순차적으로 제거해, 실패율과 tail latency를 동시에 안정화한 통합 성능 최적화 사례입니다.',
@@ -356,7 +356,7 @@ export const templateConfig = {
                         {
                             mermaidId: 'case-b-database-optimization',
                             anchorId: 'upgrade-todo-case-B',
-                            title: 'Case B. 트랜잭션 경계 분리와 영속성(JPA) 튜닝을 통한 DB 커넥션 안정화',
+                            title: 'Case 02. 트랜잭션 경계 분리와 영속성(JPA) 튜닝을 통한 DB 커넥션 안정화',
                             subtitle: '2025.09 ~ 2025.12 · 데이터베이스 세션 효율화 및 커넥션 풀 고갈 방지',
                             businessImpact: '대용량 트래픽 상황에서도 DB 커넥션 풀 고갈을 원천 차단하고, 회원가입 및 조회 트랜잭션의 병목을 해소하여 서비스 다운타임을 방지했습니다.',
                             overview: 'UUIDv7 엔티티의 JPA merge 제거와 조회 트랜잭션 경량화를 통합하여 DB 리소스 사용률을 최적화한 케이스입니다.',
@@ -413,7 +413,7 @@ export const templateConfig = {
                             mermaidId: 'case-c-auth-optimization',
                             hideReviewDiagram: true,
                             anchorId: 'upgrade-todo-case-C',
-                            title: 'Case C. 단일 권한 게이트 구축 및 소셜 로그인 통합을 통한 인증 아키텍처 최적화',
+                            title: 'Case 03. 단일 권한 게이트 구축 및 소셜 로그인 통합을 통한 인증 아키텍처 최적화',
                             subtitle: '2025.09 ~ 2025.11 · 도메인 결합도 완화 및 인증 쿼리 병목 해소',
                             businessImpact: '대표 단일 요청의 권한 검증 게이트를 3단계에서 1단계로 축소하여 고부하 환경에서도 지연 없는 응답을 보장하고, 확장성 높은 다중 소셜 로그인 아키텍처를 완성했습니다.',
                             overview: 'JWT Claims 기반 인증과 AOP 권한 게이트를 통합하고, OAuth2 인터페이스 기반 추상화로 다중 소셜 로그인 확장성을 확보한 케이스입니다.',
@@ -461,7 +461,7 @@ export const templateConfig = {
                         {
                             mermaidId: 'case-d-ai-orchestration',
                             anchorId: 'upgrade-todo-case-D',
-                            title: 'Case D. AI 오케스트레이션 파이프라인 구축 및 서비스 경계 분리',
+                            title: 'Case 04. AI 오케스트레이션 파이프라인 구축 및 서비스 경계 분리',
                             subtitle: '2026.01 ~ 2026.03 · FastAPI AI 서비스 분리와 Redis 상태 기반 Loose Coupling',
                             businessImpact: '외부 LLM 지연에 따른 장애 전파를 격리해 코어 서비스의 응답성을 유지하고, 세션 복구가 가능한 AI 워크플로우를 구현했습니다.',
                             overview: '실패한 TODO를 분류·추천·피드백·재요청 흐름으로 오케스트레이션하고, Redis 상태로 분석 세션을 Stateful하게 관리하면서 Spring Task handoff로 두 서비스 간 느슨한 결합을 구현한 사례입니다.',
@@ -528,20 +528,38 @@ export const templateConfig = {
 
     contact: {
         sectionId: 'contact',
-        panelTitle: 'CONTACT',
-        panelUid: 'ID: LIFE-NAV-COMMS',
-        description: 'Life Navigation 포트폴리오 관련 문의 및 전체 문서는 아래 경로로 확인 가능합니다.',
+        panelTitle: 'CONTACT & RESOURCES',
+        panelUid: '',
+        description: '백엔드 아키텍처 및 성능 최적화 관련 문의는 이메일이나 아래 채널로 연락 부탁드립니다.',
         actions: [
-            { label: 'ARCHITECTURE_DEEP_DIVE', href: 'https://ramyo564.github.io/L_N_Project/', variant: 'primary' },
-            { label: 'PORTFOLIO_HUB', href: 'https://ramyo564.github.io/Portfolio/', variant: 'ghost' },
-            { label: 'EMAIL', href: 'mailto:yohan032yohan@gmail.com' },
-            { label: 'LIFE_NAVIGATION_REPO', href: 'https://github.com/ramyo564/L_N_Project' },
-            { label: 'EVIDENCE_DOCS', href: './evidence/upgrade_todo/index.html' }
+            { label: 'Architecture Docs ↗', href: 'https://ramyo564.github.io/L_N_Project/', variant: 'primary' },
+            { label: 'Notion Portfolio ↗', href: 'https://ramyo564.github.io/Portfolio/', variant: 'ghost' },
+            { label: 'GitHub Repository ↗', href: 'https://github.com/ramyo564/L_N_Project' },
+            { label: 'Performance Evidence ↗', href: './evidence/upgrade_todo/index.html' },
+            { label: 'Email Contact ↗', href: 'mailto:yohan032yohan@gmail.com' }
         ]
     },
 
     mermaid: {
-        theme: 'dark',
+        theme: 'base',
+        themeVariables: {
+            darkMode: true,
+            background: '#050505',
+            mainBkg: '#111111',
+            primaryColor: '#141414',
+            primaryTextColor: '#FFFFFF',
+            primaryBorderColor: 'rgba(255, 255, 255, 0.35)',
+            lineColor: 'rgba(255, 255, 255, 0.45)',
+            secondaryColor: '#181818',
+            tertiaryColor: '#0A0A0A',
+            nodeBorder: 'rgba(255, 255, 255, 0.35)',
+            clusterBkg: '#0A0A0A',
+            clusterBorder: 'rgba(255, 255, 255, 0.2)',
+            titleColor: '#FFFFFF',
+            edgeLabelBackground: '#000000',
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '12px'
+        },
         securityLevel: 'loose',
         fontFamily: 'Inter',
         flowchart: {

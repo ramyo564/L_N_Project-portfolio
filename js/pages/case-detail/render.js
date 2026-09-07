@@ -255,24 +255,29 @@ export function buildCaseList(root, cards) {
     }
 
     root.innerHTML = `
-        <section class="case-review-panel">
-            <p class="case-kicker">SELECT_CASE</p>
-            <h1>심사자용 케이스 브리프</h1>
-            <p class="case-subtitle">각 케이스는 문제, 원인, 해결, 결과를 먼저 확인하도록 구성됩니다.</p>
-            <div class="case-list-grid">
-                ${cards.map(({ caseNumber, card, groupTitle }) => `
+        <section class="case-review-panel case-archive-section">
+            <div class="case-kicker">ARCHIVE DIRECTORY</div>
+            <h1 class="case-archive-headline">Architecture Case Studies</h1>
+            <p class="case-subtitle">각 아키텍처 케이스의 문제 정의, 원인 분석, 엔지니어링 해결책 및 k6 실측 증거 리포트입니다.</p>
+            <div class="case-archive-list">
+                ${cards.map(({ caseNumber, card }) => {
+                    const formattedNum = String(caseNumber).padStart(2, '0');
+                    const rawTitle = String(card?.title || '');
+                    const cleanTitle = rawTitle.replace(/^Case\s*\d+\.?\s*/i, '');
+                    return `
                     <a
-                        class="case-list-card"
+                        class="case-archive-row"
                         href="./case-detail.html?case=${caseNumber}"
                         data-track-kind="case_list_card"
                         data-case-number="${caseNumber}"
-                        data-case-title="${escapeHtml(card?.title || '')}"
+                        data-case-title="${escapeHtml(rawTitle)}"
                     >
-                        <p class="case-list-id">CASE ${caseNumber}</p>
-                        <h2>${escapeHtml(card?.title || '')}</h2>
-                        <p>${escapeHtml(groupTitle)}</p>
+                        <span class="case-archive-num">${formattedNum}</span>
+                        <span class="case-archive-title">${escapeHtml(cleanTitle)}</span>
+                        <span class="case-archive-arrow">↗</span>
                     </a>
-                `).join('')}
+                `;
+                }).join('')}
             </div>
         </section>
     `;

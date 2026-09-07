@@ -71,6 +71,22 @@ const { setupInteractionTracking } = createCaseDetailInteractionTracking({
     toSafeLabel
 });
 
+function setupClock() {
+    const clockEl = document.getElementById('clock-display');
+    if (!clockEl) return;
+
+    const updateTime = () => {
+        const now = new Date();
+        const options = { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        clockEl.textContent = now.toLocaleTimeString('en-GB', options);
+    };
+
+    updateTime();
+    setInterval(updateTime, 1000);
+}
+
+setupClock();
+
 initCaseDetailPage({
     byId,
     setupInteractionTracking,
@@ -85,3 +101,4 @@ initCaseDetailPage({
     setupAnalyticsLifecycle,
     trackInitialPageView
 });
+
