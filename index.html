@@ -143,16 +143,26 @@
         </div>
     </footer>
 
-    <!-- Image Modal for Full-Res Evidence Inspection -->
+    <!-- Image & Diagram Modal for High-Res Inspection -->
     <div id="image-modal" class="mermaid-modal" aria-hidden="true" style="display: none;">
         <div class="mermaid-modal-backdrop" id="modal-backdrop"></div>
-        <div class="mermaid-modal-dialog" role="dialog" aria-modal="true" style="max-width: 90vw; background: #0A0A0A; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.75rem;">
-                <h3 id="modal-title" style="font-size: 1rem; font-weight: 600; color: #FFFFFF;">실측 증거 고해상도 검증</h3>
-                <button id="modal-close" type="button" style="color: #A1A1AA; font-size: 0.85rem; padding: 0.2rem 0.6rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;">CLOSE [ESC]</button>
+        <div class="mermaid-modal-dialog" role="dialog" aria-modal="true">
+            <div class="modal-header-bar">
+                <div class="modal-title-wrap">
+                    <span class="modal-title-badge">HIGH-RES INSPECTION</span>
+                    <h3 id="modal-title">실측 증거 고해상도 검증</h3>
+                </div>
+                <div class="modal-action-tools">
+                    <button id="modal-zoom-out" class="modal-tool-btn" type="button" title="Zoom Out">−</button>
+                    <span id="modal-zoom-value" class="modal-zoom-display">100%</span>
+                    <button id="modal-zoom-in" class="modal-tool-btn" type="button" title="Zoom In">+</button>
+                    <button id="modal-zoom-reset" class="modal-tool-btn" type="button" title="Reset Zoom">RESET</button>
+                    <button id="modal-close" class="modal-tool-btn modal-close-btn" type="button">CLOSE [ESC]</button>
+                </div>
             </div>
-            <div style="width: 100%; max-height: 80vh; overflow: auto; display: flex; justify-content: center; align-items: center;">
-                <img id="modal-img" src="" alt="" style="max-width: 100%; max-height: 75vh; object-fit: contain; border-radius: 6px;">
+            <div id="modal-content-wrap">
+                <img id="modal-img" src="" alt="">
+                <div id="modal-svg-wrap" style="display: none;"></div>
             </div>
         </div>
     </div>
