@@ -5,6 +5,188 @@
  * - Open-Closed Principle (OCP): Works out of the box for any project without modifying engine code
  */
 
+/**
+ * ------------------------------------------------------------------
+ * Unified GA4 & GTM Telemetry Dispatcher (Single Source of Truth)
+ * ------------------------------------------------------------------
+ * - Follows GTM single-event contract: Only 'select_content' custom event is routed to GA4.
+ * - Manages session ID, scroll depth, lifecycle (start/end/visibility), and user interactions.
+ */
+const analyticsSession = {
+    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
+    pageType: 'portfolio',
+    pageStartedAt: Date.now(),
+    visibleStartedAt: document.visibilityState === 'hidden' ? 0 : Date.now(),
+    visibleDurationMs: 0,
+    maxScrollPercent: 0,
+    ended: false
+};
+
+export function pushDataLayerEvent(payload) {
+    if (!payload || typeof payload !== 'object') return;
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(payload);
+}
+
+export function detectLinkType(href) {
+    const target = String(href || '').trim().toLowerCase();
+    if (!target) return 'unknown';
+    if (target.startsWith('mailto:')) return 'mailto';
+    if (target.startsWith('#')) return 'anchor';
+    if (target.startsWith('http://') || target.startsWith('https://')) return 'external';
+    return 'internal';
+}
+
+export function trackSelectContent({
+    contentType,
+    itemId,
+    itemName,
+    sectionName,
+    interactionAction = 'click',
+    elementType,
+    elementLabel,
+    linkUrl,
+    linkType,
+    modalName,
+    value,
+    sourceEvent = 'ui_click',
+    ...extra
+}) {
+    const resolvedLinkUrl = String(linkUrl || extra.destination_url || '').trim();
+    const payload = {
+        event: 'select_content',
+        tracking_version: '2026-03-ga4-unified-v1',
+        session_id: analyticsSession.id,
+        page_path: window.location.pathname,
+        page_title: document.title,
+        page_type: analyticsSession.pageType,
+        source_page_type: analyticsSession.pageType,
+        content_type: contentType || 'unknown',
+        item_id: itemId || 'unknown',
+        section_name: sectionName || 'unknown',
+        interaction_action: interactionAction,
+        source_event: sourceEvent
+    };
+
+    if (itemName) payload.item_name = itemName;
+    if (elementType) payload.element_type = elementType;
+    if (elementLabel) payload.element_label = elementLabel;
+    if (resolvedLinkUrl) {
+        payload.link_url = resolvedLinkUrl;
+        payload.destination_url = resolvedLinkUrl;
+        payload.link_type = linkType || detectLinkType(resolvedLinkUrl);
+    }
+    if (modalName) payload.modal_name = modalName;
+    if (typeof value === 'number' && Number.isFinite(value)) payload.value = value;
+
+    Object.entries(extra).forEach(([key, val]) => {
+        if (val !== undefined && val !== null && val !== '') payload[key] = val;
+    });
+
+    pushDataLayerEvent(payload);
+}
+
+function readScrollPercent() {
+    const docEl = document.documentElement;
+    const maxScrollable = Math.max(0, docEl.scrollHeight - window.innerHeight);
+    if (maxScrollable <= 0) return 100;
+    return Math.max(0, Math.min(100, Math.round((window.scrollY / maxScrollable) * 100)));
+}
+
+function updateMaxScrollPercent() {
+    analyticsSession.maxScrollPercent = Math.max(analyticsSession.maxScrollPercent, readScrollPercent());
+}
+
+function stopVisibleTimer(timestamp = Date.now()) {
+    if (!analyticsSession.visibleStartedAt) return;
+    analyticsSession.visibleDurationMs += Math.max(0, timestamp - analyticsSession.visibleStartedAt);
+    analyticsSession.visibleStartedAt = 0;
+}
+
+function startVisibleTimer(timestamp = Date.now()) {
+    if (document.visibilityState === 'hidden' || analyticsSession.visibleStartedAt) return;
+    analyticsSession.visibleStartedAt = timestamp;
+}
+
+function endAnalyticsSession(reason = 'pagehide') {
+    if (analyticsSession.ended) return;
+    analyticsSession.ended = true;
+
+    updateMaxScrollPercent();
+    stopVisibleTimer();
+
+    const totalDurationMs = Math.max(0, Date.now() - analyticsSession.pageStartedAt);
+    const visibleDurationMs = Math.min(totalDurationMs, analyticsSession.visibleDurationMs);
+    const hiddenDurationMs = Math.max(0, totalDurationMs - visibleDurationMs);
+
+    trackSelectContent({
+        contentType: 'page_engagement',
+        itemId: 'portfolio_page',
+        itemName: document.title || 'Portfolio',
+        sectionName: 'lifecycle',
+        interactionAction: 'end',
+        elementType: 'page',
+        elementLabel: 'PAGE_END',
+        duration_ms: totalDurationMs,
+        engagement_time_msec: visibleDurationMs,
+        hidden_duration_ms: hiddenDurationMs,
+        max_scroll_percent: analyticsSession.maxScrollPercent,
+        end_reason: reason,
+        sourceEvent: 'lifecycle',
+        value: Math.round(visibleDurationMs / 1000)
+    });
+}
+
+export function setupAnalyticsLifecycle(options = {}) {
+    if (options.pageType) analyticsSession.pageType = options.pageType;
+    updateMaxScrollPercent();
+
+    trackSelectContent({
+        contentType: 'page_engagement',
+        itemId: 'portfolio_page',
+        itemName: document.title || 'Portfolio',
+        sectionName: 'lifecycle',
+        interactionAction: 'start',
+        elementType: 'page',
+        elementLabel: 'PAGE_START',
+        sourceEvent: 'lifecycle'
+    });
+
+    window.addEventListener('scroll', updateMaxScrollPercent, { passive: true });
+
+    document.addEventListener('visibilitychange', () => {
+        if (analyticsSession.ended) return;
+        if (document.visibilityState === 'hidden') {
+            stopVisibleTimer();
+            trackSelectContent({
+                contentType: 'page_visibility',
+                itemId: 'portfolio_page',
+                itemName: document.title || 'Portfolio',
+                sectionName: 'lifecycle',
+                interactionAction: 'hidden',
+                elementType: 'page',
+                elementLabel: 'PAGE_HIDDEN',
+                sourceEvent: 'lifecycle'
+            });
+        } else {
+            startVisibleTimer();
+            trackSelectContent({
+                contentType: 'page_visibility',
+                itemId: 'portfolio_page',
+                itemName: document.title || 'Portfolio',
+                sectionName: 'lifecycle',
+                interactionAction: 'visible',
+                elementType: 'page',
+                elementLabel: 'PAGE_VISIBLE',
+                sourceEvent: 'lifecycle'
+            });
+        }
+    });
+
+    window.addEventListener('pagehide', () => endAnalyticsSession('pagehide'));
+    window.addEventListener('beforeunload', () => endAnalyticsSession('beforeunload'));
+}
+
 export function setupClock(clockId = 'clock-display') {
     const clockEl = document.getElementById(clockId);
     if (!clockEl) return;
@@ -409,6 +591,14 @@ export function renderHeroIndex(cases, containerId = 'hero-case-index') {
 
         link.addEventListener('click', (e) => {
             e.preventDefault();
+            trackSelectContent({
+                contentType: 'case_index_jump',
+                itemId: item.number,
+                itemName: item.shortTitle || item.title,
+                sectionName: 'hero_index',
+                interactionAction: 'click_jump',
+                linkUrl: `#case-${item.number}`
+            });
             const target = document.getElementById(`case-${item.number}`);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth' });
@@ -471,6 +661,16 @@ export function renderCases(cases, containerId = 'cases-container', modalControl
         cta.className = 'case-detail-cta';
         cta.href = item.detailLink || `./case-detail.html?case=${item.number}`;
         cta.textContent = item.detailLinkLabel || '상세 기술 리포트 보기 ↗';
+        cta.addEventListener('click', () => {
+            trackSelectContent({
+                contentType: 'case_detail_link',
+                itemId: item.number,
+                itemName: item.title,
+                sectionName: `case_${item.number}`,
+                interactionAction: 'click_detail',
+                linkUrl: cta.href
+            });
+        });
 
         narrative.append(metaTop, title, summary, metricsList, cta);
 
@@ -501,13 +701,15 @@ export function renderCases(cases, containerId = 'cases-container', modalControl
 
                 figure.addEventListener('click', () => {
                     modalControls?.openModal(ev.src, `${item.number} · ${ev.tag}: ${ev.title}`);
-                    if (window.dataLayer) {
-                        window.dataLayer.push({
-                            event: 'view_evidence_image',
-                            case_number: item.number,
-                            evidence_tag: ev.tag
-                        });
-                    }
+                    trackSelectContent({
+                        contentType: 'evidence_modal',
+                        itemId: `${item.number}_image`,
+                        itemName: ev.title,
+                        sectionName: `case_${item.number}`,
+                        interactionAction: 'view_image',
+                        elementLabel: ev.tag,
+                        modalName: `${item.number} · ${ev.tag}: ${ev.title}`
+                    });
                 });
             } else if (ev.mermaidId && config?.diagrams?.[ev.mermaidId]) {
                 const diagramCode = config.diagrams[ev.mermaidId];
@@ -524,14 +726,16 @@ export function renderCases(cases, containerId = 'cases-container', modalControl
                     if (svgEl) {
                         modalControls?.openSvgModal(svgEl.outerHTML, `${item.number} · ${ev.tag || 'ARCHITECTURE'}: ${ev.title}`);
                     }
-                    if (window.dataLayer) {
-                        window.dataLayer.push({
-                            event: 'view_evidence_diagram',
-                            case_number: item.number,
-                            evidence_tag: ev.tag || 'ARCHITECTURE',
-                            mermaid_id: ev.mermaidId
-                        });
-                    }
+                    trackSelectContent({
+                        contentType: 'evidence_modal',
+                        itemId: `${item.number}_diagram`,
+                        itemName: ev.title,
+                        sectionName: `case_${item.number}`,
+                        interactionAction: 'view_diagram',
+                        elementLabel: ev.tag || 'ARCHITECTURE',
+                        modalName: `${item.number} · ${ev.tag || 'ARCHITECTURE'}: ${ev.title}`,
+                        mermaid_id: ev.mermaidId
+                    });
                 });
             } else {
                 figure.innerHTML = `
@@ -571,6 +775,13 @@ export function setupFloatingTicker(cases, tickerId = 'floating-case-ticker', se
 
         tickerItem.addEventListener('click', (e) => {
             e.preventDefault();
+            trackSelectContent({
+                contentType: 'floating_ticker',
+                itemId: item.number,
+                sectionName: 'ticker',
+                interactionAction: 'click_ticker',
+                linkUrl: `#case-${item.number}`
+            });
             const target = document.getElementById(`case-${item.number}`);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth' });
@@ -647,6 +858,14 @@ export function renderArchitectureIndex(sections, containerId = 'hero-case-index
 
         link.addEventListener('click', (e) => {
             e.preventDefault();
+            trackSelectContent({
+                contentType: 'architecture_index_jump',
+                itemId: sec.number || sec.id,
+                itemName: sec.title,
+                sectionName: 'hero_index',
+                interactionAction: 'click_jump',
+                linkUrl: `#section-${sec.number || sec.id}`
+            });
             const target = document.getElementById(`section-${sec.number || sec.id}`);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth' });
@@ -728,13 +947,16 @@ export function renderArchitectureSections(sections, containerId = 'cases-contai
                     if (svgEl) {
                         modalControls?.openSvgModal(svgEl.outerHTML, `${sec.number} · ${diag.title}`);
                     }
-                    if (window.dataLayer) {
-                        window.dataLayer.push({
-                            event: 'view_evidence_diagram',
-                            section: sec.number,
-                            mermaid_id: diag.mermaidId
-                        });
-                    }
+                    trackSelectContent({
+                        contentType: 'evidence_modal',
+                        itemId: `${sec.number}_${diag.id || 'diag'}`,
+                        itemName: diag.title,
+                        sectionName: `section_${sec.number}`,
+                        interactionAction: 'view_diagram',
+                        elementLabel: 'ARCHITECTURE',
+                        modalName: `${sec.number} · ${diag.title}`,
+                        mermaid_id: diag.mermaidId
+                    });
                 });
             }
             diagGrid.appendChild(figure);
@@ -763,6 +985,13 @@ export function setupArchitectureTicker(sections, tickerId = 'floating-case-tick
 
         tickerItem.addEventListener('click', (e) => {
             e.preventDefault();
+            trackSelectContent({
+                contentType: 'floating_ticker',
+                itemId: item.number || item.id,
+                sectionName: 'ticker',
+                interactionAction: 'click_ticker',
+                linkUrl: `#section-${item.number || item.id}`
+            });
             const target = document.getElementById(`section-${item.number || item.id}`);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth' });
@@ -826,6 +1055,7 @@ export function initPortfolio(config) {
         return;
     }
 
+    setupAnalyticsLifecycle({ pageType: config.pageType || 'portfolio' });
     setupClock();
     const modalControls = setupModal();
     renderHero(config.hero, modalControls, config);
