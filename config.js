@@ -13,9 +13,9 @@ export const templateConfig = {
         diagramId: 'architecture',
         headline: '노션 포트폴리오의 실측 부하 테스트 및 아키텍처 개선 증거를 시각적으로 검증합니다',
         headlineItems: [
-            'Reliability: 1,000VU 피크 부하 실패율 0.0% (Failed Rate Zero)',
-            'Throughput: Write RPS +350%↑ (373 → 916 RPS) 대폭 향상',
-            'Latency: Write p95 3.4s → 126ms (15배 개선) 실측 검증',
+            'Reliability: 1,000VU 피크 부하 http_req_failed 0건 달성',
+            'Throughput: Write RPS +145%↑ (373 → 916 RPS, @500VU) 향상',
+            'Latency: Write p95 1.9s → 126ms (15배 개선, @500VU) 실측 검증',
             '초기 테스트(500VU) 및 1000VU 램프업 실측 증거 기반'
         ],
         summaryRows: [
@@ -29,13 +29,13 @@ export const templateConfig = {
             },
             {
                 label: '실측 결과',
-                value: '500VU 지속 부하(Write p95 126ms) 및 1,000VU 피크 부하 725,382건 무손실 완결(실패율 0.00%) 기계적 실측 입증'
+                value: '500VU 지속 부하(Write p95 126ms) 및 1,000VU 피크 부하 725,382건 완결(http_req_failed 0건) 기계적 실측 입증'
             }
         ],
         kpiCards: [
-            { label: 'FAILED RATE (1000VU)', value: '0.00%', delta: '무손실 완결 (Zero Error)' },
-            { label: 'WRITE RPS BOOST', value: '+350% ↑', delta: '373 → 916 RPS' },
-            { label: 'WRITE p95 LATENCY', value: '15배 단축', delta: '3.4s → 126ms (-96%)' },
+            { label: 'FAILED REQ (1000VU)', value: '0건', delta: '72.5만건 완주 (0건 실패)' },
+            { label: 'WRITE RPS BOOST (@500VU)', value: '+145% ↑', delta: '373 → 916 RPS' },
+            { label: 'WRITE p95 LATENCY (@500VU)', value: '15배 단축', delta: '1.9s → 126ms (-93%)' },
             { label: 'AUTH GATE QUERY', value: '3 → 1회', delta: '단일 게이트 통합 (-67%)' }
         ],
         diagramNote: '세부 아키텍처 코드 경로와 실행 트레일은 아래 Code Evidence Map에서 확인 가능합니다.',
@@ -86,7 +86,7 @@ export const templateConfig = {
                 '지표 정의: p95(지연 상위 5% 경계), RPS(초당 처리량), 에러율(요청 실패 비율).'
             ],
             resultInterpretation: [
-                'WRITE p95 3.4s -> 126ms, p99 4.2s -> 226ms: 체감 지연이 크게 줄어 고부하 구간의 응답 안정성이 향상.',
+                'WRITE p95 1.9s -> 126ms (@500VU), p99 4.2s -> 226ms: 체감 지연이 크게 줄어 고부하 구간의 응답 안정성이 향상.',
                 'READ p95 712ms -> 141ms, p99 1.1s -> 159ms: 권한/조회 경로 병목 완화로 tail latency가 낮아짐.',
                 'READ RPS 1.55k/s -> 3.68k/s, WRITE RPS 203.7/s -> 915.7/s: 동일 VU에서 처리량 한계가 확장됨.'
             ],
@@ -358,7 +358,7 @@ export const templateConfig = {
                             anchorId: 'upgrade-todo-case-B',
                             title: 'Case 02. 트랜잭션 경계 분리와 영속성(JPA) 튜닝을 통한 DB 커넥션 안정화',
                             subtitle: '2025.09 ~ 2025.12 · 데이터베이스 세션 효율화 및 커넥션 풀 고갈 방지',
-                            businessImpact: '대용량 트래픽 상황에서도 DB 커넥션 풀 고갈을 원천 차단하고, 회원가입 및 조회 트랜잭션의 병목을 해소하여 서비스 다운타임을 방지했습니다.',
+                            businessImpact: '대용량 트래픽 상황에서도 DB 커넥션 풀 고갈을 선제적으로 방어하고, 회원가입 및 조회 트랜잭션의 병목을 해소하여 서비스 다운타임을 방지했습니다.',
                             overview: 'UUIDv7 엔티티의 JPA merge 제거와 조회 트랜잭션 경량화를 통합하여 DB 리소스 사용률을 최적화한 케이스입니다.',
                             recruiterSummary: [
                                 'UUIDv7 엔티티의 JPA merge(SELECT+INSERT) 병목을 Persistable 구현과 비동기 Outbox 패턴으로 해결해 쓰기 지연을 방지했습니다.',

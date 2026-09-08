@@ -15,12 +15,12 @@ export const portfolioConfig = {
     ],
     hero: {
         kicker: 'Notion Portfolio Verification Funnel',
-        headline: '1,000 VU Peak Load.<br>0.00% Failed Rate.<br>Zero System Loss.',
+        headline: '1,000 VU Peak Load.<br>http_req_failed 0건.<br>High Concurrency Verified.',
         description: '노션 포트폴리오의 부하 테스트 및 시스템 최적화 수치를 기계적 실측 증거로 검증합니다. 가상 스레드 환경에서 RabbitMQ 비동기 분리, JPA 영속성 튜닝, 권한 게이트 단일화를 통해 고부하 병목을 구조적으로 해결했습니다.',
         killerMetrics: [
-            { number: '0.00%', label: 'Failed Rate (1,000 VU)', desc: '725,382건 무손실 완결' },
-            { number: '+350%', label: 'Write RPS Boost', desc: '373 → 916 RPS 처리량 확장' },
-            { number: '15x', label: 'Latency Cut', desc: 'Write p95 3.4s → 126ms (-96%)' },
+            { number: '0건', label: 'Failed Req (@1,000 VU)', desc: '725,382건 완주 (요청 실패 0건)' },
+            { number: '+145%', label: 'Write RPS Boost (@500 VU)', desc: '373 → 916 RPS 처리량 확장' },
+            { number: '15x', label: 'Latency Cut (@500 VU)', desc: 'Write p95 1.9s → 126ms (-93%)' },
             { number: '3 → 1', label: 'Auth Gate Queries', desc: 'AOP 기반 단일 권한 검증' }
         ]
     },
